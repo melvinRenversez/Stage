@@ -1,0 +1,186 @@
+<link rel="stylesheet" href="https://cloudflare.com">
+<style>
+  /* --- 1. COULEURS DU THÈME SOMBRE --- */
+  body {
+    background-color: #121417 !important;
+    color: #e1e4e8 !important;
+  }
+
+  /* Titres */
+  h1, h2, h3, h4, h5, h6, #toctitle, .sidebarblock > .content > .title {
+    color: #58a6ff !important;
+  }
+  #header h1 {
+    border-bottom-color: #30363d !important;
+  }
+  #header .details {
+    color: #8b949e !important;
+    border-bottom-color: #30363d !important;
+  }
+
+  /* Sommaire latéral (TOC) et sommaire du haut */
+  #toc.toc2 {
+    background-color: #161b22 !important;
+    border-right: 1px solid #30363d !important;
+    min-width: 20%;
+  }
+  #toc a, #top-toc a {
+    color: #c9d1d9 !important;
+    text-decoration: none !important;
+  }
+  #toc a:hover, #top-toc a:hover {
+    color: #58a6ff !important;
+    text-decoration: none !important;
+  }
+
+  /* Liens, titres cliquables et texte en ligne (sans soulignement) */
+  a, a:hover, a:focus, a:active,
+  h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+    color: #58a6ff !important;
+    text-decoration: none !important;
+    border-bottom: none !important;
+  }
+
+  :not(pre) > code {
+    background-color: #21262d !important;
+    color: #ff7b72 !important;
+    border: 1px solid #30363d !important;
+  }
+
+  /* Blocs de code et terminaux */
+  .listingblock pre, .literalblock pre {
+    background-color: #161b22 !important;
+    color: #e6edf3 !important;
+    border: 1px solid #30363d !important;
+  }
+  .listingblock > .title, .literalblock > .title, .imageblock > .title, .tableblock > .title {
+    color: #8b949e !important;
+  }
+
+  /* Tableaux */
+  table.tableblock, th.tableblock, td.tableblock {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    color: #e1e4e8 !important;
+  }
+  table.tableblock thead th {
+    background-color: #21262d !important;
+    color: #58a6ff !important;
+  }
+
+  /* Encadrés (NOTE, TIP, IMPORTANT, WARNING) */
+  .admonitionblock > table {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+  }
+  .admonitionblock td.content {
+    color: #c9d1d9 !important;
+    border-left-color: #30363d !important;
+  }
+
+  /* Pied de page */
+  #footer {
+    background-color: #0d1117 !important;
+    color: #8b949e !important;
+  }
+
+  /* --- 2. COLORATION SYNTAXIQUE HLJS (DARK MODE) --- */
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    background: #161b22 !important;
+    color: #abb2bf !important;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    color: #7f848e !important;
+    font-style: italic;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-subst {
+    color: #c678dd !important;
+    font-weight: bold;
+  }
+
+  .hljs-string,
+  .hljs-doctag,
+  .hljs-regexp {
+    color: #98c379 !important;
+  }
+
+  .hljs-number,
+  .hljs-literal,
+  .hljs-symbol,
+  .hljs-bullet {
+    color: #d19a66 !important;
+  }
+
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-attr,
+  .hljs-attribute {
+    color: #e06c75 !important;
+  }
+
+  .hljs-title,
+  .hljs-section,
+  .hljs-name,
+  .hljs-selector-id,
+  .hljs-selector-class {
+    color: #61afef !important;
+    font-weight: bold;
+  }
+
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-builtin-name,
+  .hljs-params {
+    color: #e5c07b !important;
+  }
+
+  .hljs-meta,
+  .hljs-meta-keyword {
+    color: #56b6c2 !important;
+  }
+
+  .hljs-addition {
+    color: #98c379 !important;
+    background-color: rgba(46, 160, 67, 0.15) !important;
+  }
+  .hljs-deletion {
+    color: #e06c75 !important;
+    background-color: rgba(248, 81, 73, 0.15) !important;
+  }
+
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  .hljs-strong {
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const sideToc = document.getElementById("toc");
+    const content = document.getElementById("content");
+
+    if (sideToc && content) {
+      const topToc = sideToc.cloneNode(true);
+      topToc.id = "top-toc";
+      topToc.className = "toc";
+      topToc.style.marginBottom = "2em";
+      topToc.style.padding = "1.2em";
+      topToc.style.border = "1px solid #30363d";
+      topToc.style.borderRadius = "6px";
+      topToc.style.backgroundColor = "#161b22";
+
+      content.insertBefore(topToc, content.firstChild);
+    }
+  });
+</script>
+
+

@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.26">
+<meta name="author" content="Melvin">
+<title>Documentation technique : Stage Besttic</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<style>
+/*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
+/* Uncomment the following line when using as a custom stylesheet */
+/* @import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700"; */
+html{font-family:sans-serif;-webkit-text-size-adjust:100%}
+a{background:none}
+a:focus{outline:thin dotted}
+a:active,a:hover{outline:0}
+h1{font-size:2em;margin:.67em 0}
+b,strong{font-weight:bold}
+abbr{font-size:.9em}
+abbr[title]{cursor:help;border-bottom:1px dotted #dddddf;text-decoration:none}
+dfn{font-style:italic}
+hr{height:0}
+mark{background:#ff0;color:#000}
+code,kbd,pre,samp{font-family:monospace;font-size:1em}
+pre{white-space:pre-wrap}
+q{quotes:"\201C" "\201D" "\2018" "\2019"}
+small{font-size:80%}
+sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
+sup{top:-.5em}
+sub{bottom:-.25em}
+img{border:0}
+svg:not(:root){overflow:hidden}
+figure{margin:0}
+audio,video{display:inline-block}
+audio:not([controls]){display:none;height:0}
+fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}
+legend{border:0;padding:0}
+button,input,select,textarea{font-family:inherit;font-size:100%;margin:0}
+button,input{line-height:normal}
+button,select{text-transform:none}
+button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}
+button[disabled],html input[disabled]{cursor:default}
+input[type=checkbox],input[type=radio]{padding:0}
+button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}
+textarea{overflow:auto;vertical-align:top}
+table{border-collapse:collapse;border-spacing:0}
+*,::before,::after{box-sizing:border-box}
+html,body{font-size:100%}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;line-height:1;position:relative;cursor:auto;-moz-tab-size:4;-o-tab-size:4;tab-size:4;word-wrap:anywhere;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
+a:hover{cursor:pointer}
+img,object,embed{max-width:100%;height:auto}
+object,embed{height:100%}
+img{-ms-interpolation-mode:bicubic}
+.left{float:left!important}
+.right{float:right!important}
+.text-left{text-align:left!important}
+.text-right{text-align:right!important}
+.text-center{text-align:center!important}
+.text-justify{text-align:justify!important}
+.hide{display:none}
+img,object,svg{display:inline-block;vertical-align:middle}
+textarea{height:auto;min-height:50px}
+select{width:100%}
+.subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#7a2518;font-weight:400;margin-top:0;margin-bottom:.25em}
+div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0}
+a{color:#2156a5;text-decoration:underline;line-height:inherit}
+a:hover,a:focus{color:#1d4b8f}
+a img{border:0}
+p{line-height:1.6;margin-bottom:1.25em;text-rendering:optimizeLegibility}
+p aside{font-size:.875em;line-height:1.35;font-style:italic}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{font-family:"Open Sans","DejaVu Sans",sans-serif;font-weight:300;font-style:normal;color:#ba3925;text-rendering:optimizeLegibility;margin-top:1em;margin-bottom:.5em;line-height:1.0125em}
+h1 small,h2 small,h3 small,#toctitle small,.sidebarblock>.content>.title small,h4 small,h5 small,h6 small{font-size:60%;color:#e99b8f;line-height:0}
+h1{font-size:2.125em}
+h2{font-size:1.6875em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.375em}
+h4,h5{font-size:1.125em}
+h6{font-size:1em}
+hr{border:solid #dddddf;border-width:1px 0 0;clear:both;margin:1.25em 0 1.1875em}
+em,i{font-style:italic;line-height:inherit}
+strong,b{font-weight:bold;line-height:inherit}
+small{font-size:60%;line-height:inherit}
+code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;color:rgba(0,0,0,.9)}
+ul,ol,dl{line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
+ul,ol{margin-left:1.5em}
+ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0}
+ul.circle{list-style-type:circle}
+ul.disc{list-style-type:disc}
+ul.square{list-style-type:square}
+ul.circle ul:not([class]),ul.disc ul:not([class]),ul.square ul:not([class]){list-style:inherit}
+ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
+dl dt{margin-bottom:.3125em;font-weight:bold}
+dl dd{margin-bottom:1.25em}
+blockquote{margin:0 0 1.25em;padding:.5625em 1.25em 0 1.1875em;border-left:1px solid #ddd}
+blockquote,blockquote p{line-height:1.6;color:rgba(0,0,0,.85)}
+@media screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
+h1{font-size:2.75em}
+h2{font-size:2.3125em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
+h4{font-size:1.4375em}}
+table{background:#fff;margin-bottom:1.25em;border:1px solid #dedede;word-wrap:normal}
+table thead,table tfoot{background:#f7f8f7}
+table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.8);text-align:left}
+table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
+table tr.even,table tr.alt{background:#f8f8f7}
+table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{line-height:1.6}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
+h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
+.center{margin-left:auto;margin-right:auto}
+.stretch{width:100%}
+.clearfix::before,.clearfix::after,.float-group::before,.float-group::after{content:" ";display:table}
+.clearfix::after,.float-group::after{clear:both}
+:not(pre).nobreak{word-wrap:normal}
+:not(pre).nowrap{white-space:nowrap}
+:not(pre).pre-wrap{white-space:pre-wrap}
+:not(pre):not([class^=L])>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background:#f7f7f8;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;line-height:1.45;text-rendering:optimizeSpeed}
+pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
+pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
+em em{font-style:normal}
+strong strong{font-weight:400}
+.keyseq{color:rgba(51,51,51,.8)}
+kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background:#f7f7f7;border:1px solid #ccc;border-radius:3px;box-shadow:0 1px 0 rgba(0,0,0,.2),inset 0 0 0 .1em #fff;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
+.keyseq kbd:first-child{margin-left:0}
+.keyseq kbd:last-child{margin-right:0}
+.menuseq,.menuref{color:#000}
+.menuseq b:not(.caret),.menuref{font-weight:inherit}
+.menuseq{word-spacing:-.02em}
+.menuseq b.caret{font-size:1.25em;line-height:.8}
+.menuseq i.caret{font-weight:bold;text-align:center;width:.45em}
+b.button::before,b.button::after{position:relative;top:-1px;font-weight:400}
+b.button::before{content:"[";padding:0 3px 0 2px}
+b.button::after{content:"]";padding:0 2px 0 3px}
+p a>code:hover{color:rgba(0,0,0,.9)}
+#header,#content,#footnotes,#footer{width:100%;margin:0 auto;max-width:62.5em;*zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
+#header::before,#header::after,#content::before,#content::after,#footnotes::before,#footnotes::after,#footer::before,#footer::after{content:" ";display:table}
+#header::after,#content::after,#footnotes::after,#footer::after{clear:both}
+#content{margin-top:1.25em}
+#content::before{content:none}
+#header>h1:first-child{color:rgba(0,0,0,.85);margin-top:2.25rem;margin-bottom:0}
+#header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #dddddf}
+#header>h1:only-child{border-bottom:1px solid #dddddf;padding-bottom:8px}
+#header .details{border-bottom:1px solid #dddddf;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:flex;flex-flow:row wrap}
+#header .details span:first-child{margin-left:-.125em}
+#header .details span.email a{color:rgba(0,0,0,.85)}
+#header .details br{display:none}
+#header .details br+span::before{content:"\00a0\2013\00a0"}
+#header .details br+span.author::before{content:"\00a0\22c5\00a0";color:rgba(0,0,0,.85)}
+#header .details br+span#revremark::before{content:"\00a0|\00a0"}
+#header #revnumber{text-transform:capitalize}
+#header #revnumber::after{content:"\00a0"}
+#content>h1:first-child:not([class]){color:rgba(0,0,0,.85);border-bottom:1px solid #dddddf;padding-bottom:8px;margin-top:0;padding-top:1rem;margin-bottom:1.25rem}
+#toc{border-bottom:1px solid #e7e7e9;padding-bottom:.5em}
+#toc>ul{margin-left:.125em}
+#toc ul.sectlevel0>li>a{font-style:italic}
+#toc ul.sectlevel0 ul.sectlevel1{margin:.5em 0}
+#toc ul{font-family:"Open Sans","DejaVu Sans",sans-serif;list-style-type:none}
+#toc li{line-height:1.3334;margin-top:.3334em}
+#toc a{text-decoration:none}
+#toc a:active{text-decoration:underline}
+#toctitle{color:#7a2518;font-size:1.2em}
+@media screen and (min-width:768px){#toctitle{font-size:1.375em}
+body.toc2{padding-left:15em;padding-right:0}
+body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #dddddf;padding-bottom:8px}
+#toc.toc2{margin-top:0!important;background:#f8f8f7;position:fixed;width:15em;left:0;top:0;border-right:1px solid #e7e7e9;border-top-width:0!important;border-bottom-width:0!important;z-index:1000;padding:1.25em 1em;height:100%;overflow:auto}
+#toc.toc2 #toctitle{margin-top:0;margin-bottom:.8rem;font-size:1.2em}
+#toc.toc2>ul{font-size:.9em;margin-bottom:0}
+#toc.toc2 ul ul{margin-left:0;padding-left:1em}
+#toc.toc2 ul.sectlevel0 ul.sectlevel1{padding-left:0;margin-top:.5em;margin-bottom:.5em}
+body.toc2.toc-right{padding-left:0;padding-right:15em}
+body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #e7e7e9;left:auto;right:0}}
+@media screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
+#toc.toc2{width:20em}
+#toc.toc2 #toctitle{font-size:1.375em}
+#toc.toc2>ul{font-size:.95em}
+#toc.toc2 ul ul{padding-left:1.25em}
+body.toc2.toc-right{padding-left:0;padding-right:20em}}
+#content #toc{border:1px solid #e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;border-radius:4px}
+#content #toc>:first-child{margin-top:0}
+#content #toc>:last-child{margin-bottom:0}
+#footer{max-width:none;background:rgba(0,0,0,.8);padding:1.25em}
+#footer-text{color:hsla(0,0%,100%,.8);line-height:1.44}
+#content{margin-bottom:.625em}
+.sect1{padding-bottom:.625em}
+@media screen and (min-width:768px){#content{margin-bottom:1.25em}
+.sect1{padding-bottom:1.25em}}
+.sect1:last-child{padding-bottom:0}
+.sect1+.sect1{border-top:1px solid #e7e7e9}
+#content h1>a.anchor,h2>a.anchor,h3>a.anchor,#toctitle>a.anchor,.sidebarblock>.content>.title>a.anchor,h4>a.anchor,h5>a.anchor,h6>a.anchor{position:absolute;z-index:1001;width:1.5ex;margin-left:-1.5ex;display:block;text-decoration:none!important;visibility:hidden;text-align:center;font-weight:400}
+#content h1>a.anchor::before,h2>a.anchor::before,h3>a.anchor::before,#toctitle>a.anchor::before,.sidebarblock>.content>.title>a.anchor::before,h4>a.anchor::before,h5>a.anchor::before,h6>a.anchor::before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
+#content h1:hover>a.anchor,#content h1>a.anchor:hover,h2:hover>a.anchor,h2>a.anchor:hover,h3:hover>a.anchor,#toctitle:hover>a.anchor,.sidebarblock>.content>.title:hover>a.anchor,h3>a.anchor:hover,#toctitle>a.anchor:hover,.sidebarblock>.content>.title>a.anchor:hover,h4:hover>a.anchor,h4>a.anchor:hover,h5:hover>a.anchor,h5>a.anchor:hover,h6:hover>a.anchor,h6>a.anchor:hover{visibility:visible}
+#content h1>a.link,h2>a.link,h3>a.link,#toctitle>a.link,.sidebarblock>.content>.title>a.link,h4>a.link,h5>a.link,h6>a.link{color:#ba3925;text-decoration:none}
+#content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
+details,.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
+details{margin-left:1.25rem}
+details>summary{cursor:pointer;display:block;position:relative;line-height:1.6;margin-bottom:.625rem;outline:none;-webkit-tap-highlight-color:transparent}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";border:solid transparent;border-left:solid;border-width:.3em 0 .3em .5em;position:absolute;top:.5em;left:-1.25rem;transform:translateX(15%)}
+details[open]>summary::before{border:solid transparent;border-top:solid;border-width:.5em .3em 0;transform:translateY(15%)}
+details>summary::after{content:"";width:1.25rem;height:1em;position:absolute;top:.3em;left:-1.25rem}
+.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{text-rendering:optimizeLegibility;text-align:left;font-family:"Noto Serif","DejaVu Serif",serif;font-size:1rem;font-style:italic}
+table.tableblock.fit-content>caption.title{white-space:nowrap;width:0}
+.paragraph.lead>p,#preamble>.sectionbody>[class=paragraph]:first-of-type p{font-size:1.21875em;line-height:1.6;color:rgba(0,0,0,.85)}
+.admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
+.admonitionblock>table td.icon{text-align:center;width:80px}
+.admonitionblock>table td.icon img{max-width:none}
+.admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
+.admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #dddddf;color:rgba(0,0,0,.6);word-wrap:anywhere}
+.admonitionblock>table td.content>:last-child>:last-child{margin-bottom:0}
+.exampleblock>.content{border:1px solid #e6e6e6;margin-bottom:1.25em;padding:1.25em;background:#fff;border-radius:4px}
+.sidebarblock{border:1px solid #dbdbd6;margin-bottom:1.25em;padding:1.25em;background:#f3f3f2;border-radius:4px}
+.sidebarblock>.content>.title{color:#7a2518;margin-top:0;text-align:center}
+.exampleblock>.content>:first-child,.sidebarblock>.content>:first-child{margin-top:0}
+.exampleblock>.content>:last-child,.exampleblock>.content>:last-child>:last-child,.exampleblock>.content .olist>ol>li:last-child>:last-child,.exampleblock>.content .ulist>ul>li:last-child>:last-child,.exampleblock>.content .qlist>ol>li:last-child>:last-child,.sidebarblock>.content>:last-child,.sidebarblock>.content>:last-child>:last-child,.sidebarblock>.content .olist>ol>li:last-child>:last-child,.sidebarblock>.content .ulist>ul>li:last-child>:last-child,.sidebarblock>.content .qlist>ol>li:last-child>:last-child{margin-bottom:0}
+.literalblock pre,.listingblock>.content>pre{border-radius:4px;overflow-x:auto;padding:1em;font-size:.8125em}
+@media screen and (min-width:768px){.literalblock pre,.listingblock>.content>pre{font-size:.90625em}}
+@media screen and (min-width:1280px){.literalblock pre,.listingblock>.content>pre{font-size:1em}}
+.literalblock pre,.listingblock>.content>pre:not(.highlight),.listingblock>.content>pre[class=highlight],.listingblock>.content>pre[class^="highlight "]{background:#f7f7f8}
+.literalblock.output pre{color:#f7f7f8;background:rgba(0,0,0,.9)}
+.listingblock>.content{position:relative}
+.listingblock pre>code{display:block}
+.listingblock code[data-lang]::before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:inherit;opacity:.5}
+.listingblock:hover code[data-lang]::before{display:block}
+.listingblock.terminal pre .command::before{content:attr(data-prompt);padding-right:.5em;color:inherit;opacity:.5}
+.listingblock.terminal pre .command:not([data-prompt])::before{content:"$"}
+.listingblock pre.highlightjs{padding:0}
+.listingblock pre.highlightjs>code{padding:1em;border-radius:4px}
+.listingblock pre.prettyprint{border-width:0}
+.prettyprint{background:#f7f7f8}
+pre.prettyprint .linenums{line-height:1.45;margin-left:2em}
+pre.prettyprint li{background:none;list-style-type:inherit;padding-left:0}
+pre.prettyprint li code[data-lang]::before{opacity:1}
+pre.prettyprint li:not(:first-child) code[data-lang]::before{display:none}
+table.linenotable{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-height:inherit;white-space:normal}
+table.linenotable td.code{padding-left:.75em}
+table.linenotable td.linenos,pre.pygments .linenos{border-right:1px solid;opacity:.35;padding-right:.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+pre.pygments span.linenos{display:inline-block;margin-right:.75em}
+.quoteblock{margin:0 1em 1.25em 1.5em;display:table}
+.quoteblock:not(.excerpt)>.title{margin-left:-1.5em;margin-bottom:.75em}
+.quoteblock blockquote,.quoteblock p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
+.quoteblock blockquote{margin:0;padding:0;border:0}
+.quoteblock blockquote::before{content:"\201c";float:left;font-size:2.75em;font-weight:bold;line-height:.6em;margin-left:-.6em;color:#7a2518;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.quoteblock blockquote>.paragraph:last-child p{margin-bottom:0}
+.quoteblock .attribution{margin-top:.75em;margin-right:.5ex;text-align:right}
+.verseblock{margin:0 1em 1.25em}
+.verseblock pre{font-family:"Open Sans","DejaVu Sans",sans-serif;font-size:1.15rem;color:rgba(0,0,0,.85);font-weight:300;text-rendering:optimizeLegibility}
+.verseblock pre strong{font-weight:400}
+.verseblock .attribution{margin-top:1.25rem;margin-left:.5ex}
+.quoteblock .attribution,.verseblock .attribution{font-size:.9375em;line-height:1.45;font-style:italic}
+.quoteblock .attribution br,.verseblock .attribution br{display:none}
+.quoteblock .attribution cite,.verseblock .attribution cite{display:block;letter-spacing:-.025em;color:rgba(0,0,0,.6)}
+.quoteblock.abstract blockquote::before,.quoteblock.excerpt blockquote::before,.quoteblock .quoteblock blockquote::before{display:none}
+.quoteblock.abstract blockquote,.quoteblock.abstract p,.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{line-height:1.6;word-spacing:0}
+.quoteblock.abstract{margin:0 1em 1.25em;display:block}
+.quoteblock.abstract>.title{margin:0 0 .375em;font-size:1.15em;text-align:center}
+.quoteblock.excerpt>blockquote,.quoteblock .quoteblock{padding:0 0 .25em 1em;border-left:.25em solid #dddddf}
+.quoteblock.excerpt,.quoteblock .quoteblock{margin-left:0}
+.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{color:inherit;font-size:1.0625rem}
+.quoteblock.excerpt .attribution,.quoteblock .quoteblock .attribution{color:inherit;font-size:.85rem;text-align:left;margin-right:0}
+p.tableblock:last-child{margin-bottom:0}
+td.tableblock>.content{margin-bottom:1.25em;word-wrap:anywhere}
+td.tableblock>.content>:last-child{margin-bottom:-1.25em}
+table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
+table.grid-all>*>tr>*{border-width:1px}
+table.grid-cols>*>tr>*{border-width:0 1px}
+table.grid-rows>*>tr>*{border-width:1px 0}
+table.frame-all{border-width:1px}
+table.frame-ends{border-width:1px 0}
+table.frame-sides{border-width:0 1px}
+table.frame-none>colgroup+*>:first-child>*,table.frame-sides>colgroup+*>:first-child>*{border-top-width:0}
+table.frame-none>:last-child>:last-child>*,table.frame-sides>:last-child>:last-child>*{border-bottom-width:0}
+table.frame-none>*>tr>:first-child,table.frame-ends>*>tr>:first-child{border-left-width:0}
+table.frame-none>*>tr>:last-child,table.frame-ends>*>tr>:last-child{border-right-width:0}
+table.stripes-all>*>tr,table.stripes-odd>*>tr:nth-of-type(odd),table.stripes-even>*>tr:nth-of-type(even),table.stripes-hover>*>tr:hover{background:#f8f8f7}
+th.halign-left,td.halign-left{text-align:left}
+th.halign-right,td.halign-right{text-align:right}
+th.halign-center,td.halign-center{text-align:center}
+th.valign-top,td.valign-top{vertical-align:top}
+th.valign-bottom,td.valign-bottom{vertical-align:bottom}
+th.valign-middle,td.valign-middle{vertical-align:middle}
+table thead th,table tfoot th{font-weight:bold}
+tbody tr th{background:#f7f8f7}
+tbody tr th,tbody tr th p,tfoot tr th,tfoot tr th p{color:rgba(0,0,0,.8);font-weight:bold}
+p.tableblock>code:only-child{background:none;padding:0}
+p.tableblock{font-size:1em}
+ol{margin-left:1.75em}
+ul li ol{margin-left:1.5em}
+dl dd{margin-left:1.125em}
+dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
+li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
+ul.checklist,ul.none,ol.none,ul.no-bullet,ol.no-bullet,ol.unnumbered,ul.unstyled,ol.unstyled{list-style-type:none}
+ul.no-bullet,ol.no-bullet,ol.unnumbered{margin-left:.625em}
+ul.unstyled,ol.unstyled{margin-left:0}
+li>p:empty:only-child::before{content:"";display:inline-block}
+ul.checklist>li>p:first-child{margin-left:-1em}
+ul.checklist>li>p:first-child>.fa-square-o:first-child,ul.checklist>li>p:first-child>.fa-check-square-o:first-child{width:1.25em;font-size:.8em;position:relative;bottom:.125em}
+ul.checklist>li>p:first-child>input[type=checkbox]:first-child{margin-right:.25em}
+ul.inline{display:flex;flex-flow:row wrap;list-style:none;margin:0 0 .625em -1.25em}
+ul.inline>li{margin-left:1.25em}
+.unstyled dl dt{font-weight:400;font-style:normal}
+ol.arabic{list-style-type:decimal}
+ol.decimal{list-style-type:decimal-leading-zero}
+ol.loweralpha{list-style-type:lower-alpha}
+ol.upperalpha{list-style-type:upper-alpha}
+ol.lowerroman{list-style-type:lower-roman}
+ol.upperroman{list-style-type:upper-roman}
+ol.lowergreek{list-style-type:lower-greek}
+.hdlist>table,.colist>table{border:0;background:none}
+.hdlist>table>tbody>tr,.colist>table>tbody>tr{background:none}
+td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
+td.hdlist1{font-weight:bold;padding-bottom:1.25em}
+td.hdlist2{word-wrap:anywhere}
+.literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
+.colist td:not([class]):first-child{padding:.4em .75em 0;line-height:1;vertical-align:top}
+.colist td:not([class]):first-child img{max-width:none}
+.colist td:not([class]):last-child{padding:.25em 0}
+.thumb,.th{line-height:0;display:inline-block;border:4px solid #fff;box-shadow:0 0 0 1px #ddd}
+.imageblock.left{margin:.25em .625em 1.25em 0}
+.imageblock.right{margin:.25em 0 1.25em .625em}
+.imageblock>.title{margin-bottom:0}
+.imageblock.thumb,.imageblock.th{border-width:6px}
+.imageblock.thumb>.title,.imageblock.th>.title{padding:0 .125em}
+.image.left,.image.right{margin-top:.25em;margin-bottom:.25em;display:inline-block;line-height:0}
+.image.left{margin-right:.625em}
+.image.right{margin-left:.625em}
+a.image{text-decoration:none;display:inline-block}
+a.image object{pointer-events:none}
+sup.footnote,sup.footnoteref{font-size:.875em;position:static;vertical-align:super}
+sup.footnote a,sup.footnoteref a{text-decoration:none}
+sup.footnote a:active,sup.footnoteref a:active,#footnotes .footnote a:first-of-type:active{text-decoration:underline}
+#footnotes{padding-top:.75em;padding-bottom:.75em;margin-bottom:.625em}
+#footnotes hr{width:20%;min-width:6.25em;margin:-.25em 0 .75em;border-width:1px 0 0}
+#footnotes .footnote{padding:0 .375em 0 .225em;line-height:1.3334;font-size:.875em;margin-left:1.2em;margin-bottom:.2em}
+#footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none;margin-left:-1.05em}
+#footnotes .footnote:last-of-type{margin-bottom:0}
+#content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
+div.unbreakable{page-break-inside:avoid}
+.big{font-size:larger}
+.small{font-size:smaller}
+.underline{text-decoration:underline}
+.overline{text-decoration:overline}
+.line-through{text-decoration:line-through}
+.aqua{color:#00bfbf}
+.aqua-background{background:#00fafa}
+.black{color:#000}
+.black-background{background:#000}
+.blue{color:#0000bf}
+.blue-background{background:#0000fa}
+.fuchsia{color:#bf00bf}
+.fuchsia-background{background:#fa00fa}
+.gray{color:#606060}
+.gray-background{background:#7d7d7d}
+.green{color:#006000}
+.green-background{background:#007d00}
+.lime{color:#00bf00}
+.lime-background{background:#00fa00}
+.maroon{color:#600000}
+.maroon-background{background:#7d0000}
+.navy{color:#000060}
+.navy-background{background:#00007d}
+.olive{color:#606000}
+.olive-background{background:#7d7d00}
+.purple{color:#600060}
+.purple-background{background:#7d007d}
+.red{color:#bf0000}
+.red-background{background:#fa0000}
+.silver{color:#909090}
+.silver-background{background:#bcbcbc}
+.teal{color:#006060}
+.teal-background{background:#007d7d}
+.white{color:#bfbfbf}
+.white-background{background:#fafafa}
+.yellow{color:#bfbf00}
+.yellow-background{background:#fafa00}
+span.icon>.fa{cursor:default}
+a span.icon>.fa{cursor:inherit}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note::before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip::before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning::before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution::before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important::before{content:"\f06a";color:#bf0000}
+.conum[data-value]{display:inline-block;color:#fff!important;background:rgba(0,0,0,.8);border-radius:50%;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
+.conum[data-value] *{color:#fff!important}
+.conum[data-value]+b{display:none}
+.conum[data-value]::after{content:attr(data-value)}
+pre .conum[data-value]{position:relative;top:-.125em}
+b.conum *{color:inherit!important}
+.conum:not([data-value]):empty{display:none}
+dt,th.tableblock,td.content,div.footnote{text-rendering:optimizeLegibility}
+h1,h2,p,td.content,span.alt,summary{letter-spacing:-.01em}
+p strong,td.content strong,div.footnote strong{letter-spacing:-.005em}
+p,blockquote,dt,td.content,td.hdlist1,span.alt,summary{font-size:1.0625rem}
+p{margin-bottom:1.25rem}
+.sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
+.exampleblock>.content{background:#fffef7;border-color:#e0e0dc;box-shadow:0 1px 4px #e0e0dc}
+.print-only{display:none!important}
+@page{margin:1.25cm .75cm}
+@media print{*{box-shadow:none!important;text-shadow:none!important}
+html{font-size:80%}
+a{color:inherit!important;text-decoration:underline!important}
+a.bare,a[href^="#"],a[href^="mailto:"]{text-decoration:none!important}
+a[href^="http:"]:not(.bare)::after,a[href^="https:"]:not(.bare)::after{content:"(" attr(href) ")";display:inline-block;font-size:.875em;padding-left:.25em}
+abbr[title]{border-bottom:1px dotted}
+abbr[title]::after{content:" (" attr(title) ")"}
+pre,blockquote,tr,img,object,svg{page-break-inside:avoid}
+thead{display:table-header-group}
+svg{max-width:100%}
+p,blockquote,dt,td.content{font-size:1em;orphans:3;widows:3}
+h2,h3,#toctitle,.sidebarblock>.content>.title{page-break-after:avoid}
+#header,#content,#footnotes,#footer{max-width:none}
+#toc,.sidebarblock,.exampleblock>.content{background:none!important}
+#toc{border-bottom:1px solid #dddddf!important;padding-bottom:0!important}
+body.book #header{text-align:center}
+body.book #header>h1:first-child{border:0!important;margin:2.5em 0 1em}
+body.book #header .details{border:0!important;display:block;padding:0!important}
+body.book #header .details span:first-child{margin-left:0!important}
+body.book #header .details br{display:block}
+body.book #header .details br+span::before{content:none!important}
+body.book #toc{border:0!important;text-align:left!important;padding:0!important;margin:0!important}
+body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-break-before:always}
+.listingblock code[data-lang]::before{display:block}
+#footer{padding:0 .9375em}
+.hide-on-print{display:none!important}
+.print-only{display:block!important}
+.hide-for-print{display:none!important}
+.show-for-print{display:inherit!important}}
+@media amzn-kf8,print{#header>h1:first-child{margin-top:1.25rem}
+.sect1{padding:0!important}
+.sect1+.sect1{border:0}
+#footer{background:none}
+#footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
+@media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/github.min.css">
+<link rel="stylesheet" href="https://cloudflare.com">
+<style>
+  /* --- 1. COULEURS DU THÈME SOMBRE --- */
+  body {
+    background-color: #121417 !important;
+    color: #e1e4e8 !important;
+  }
+
+  /* Titres */
+  h1, h2, h3, h4, h5, h6, #toctitle, .sidebarblock > .content > .title {
+    color: #58a6ff !important;
+  }
+  #header h1 {
+    border-bottom-color: #30363d !important;
+  }
+  #header .details {
+    color: #8b949e !important;
+    border-bottom-color: #30363d !important;
+  }
+
+  /* Sommaire latéral (TOC) et sommaire du haut */
+  #toc.toc2 {
+    background-color: #161b22 !important;
+    border-right: 1px solid #30363d !important;
+    min-width: 20%;
+  }
+  #toc a, #top-toc a {
+    color: #c9d1d9 !important;
+    text-decoration: none !important;
+  }
+  #toc a:hover, #top-toc a:hover {
+    color: #58a6ff !important;
+    text-decoration: none !important;
+  }
+
+  /* Liens, titres cliquables et texte en ligne (sans soulignement) */
+  a, a:hover, a:focus, a:active,
+  h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+    color: #58a6ff !important;
+    text-decoration: none !important;
+    border-bottom: none !important;
+  }
+
+  :not(pre) > code {
+    background-color: #21262d !important;
+    color: #ff7b72 !important;
+    border: 1px solid #30363d !important;
+  }
+
+  /* Blocs de code et terminaux */
+  .listingblock pre, .literalblock pre {
+    background-color: #161b22 !important;
+    color: #e6edf3 !important;
+    border: 1px solid #30363d !important;
+  }
+  .listingblock > .title, .literalblock > .title, .imageblock > .title, .tableblock > .title {
+    color: #8b949e !important;
+  }
+
+  /* Tableaux */
+  table.tableblock, th.tableblock, td.tableblock {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    color: #e1e4e8 !important;
+  }
+  table.tableblock thead th {
+    background-color: #21262d !important;
+    color: #58a6ff !important;
+  }
+
+  /* Encadrés (NOTE, TIP, IMPORTANT, WARNING) */
+  .admonitionblock > table {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+  }
+  .admonitionblock td.content {
+    color: #c9d1d9 !important;
+    border-left-color: #30363d !important;
+  }
+
+  /* Pied de page */
+  #footer {
+    background-color: #0d1117 !important;
+    color: #8b949e !important;
+  }
+
+  /* --- 2. COLORATION SYNTAXIQUE HLJS (DARK MODE) --- */
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    background: #161b22 !important;
+    color: #abb2bf !important;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    color: #7f848e !important;
+    font-style: italic;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-subst {
+    color: #c678dd !important;
+    font-weight: bold;
+  }
+
+  .hljs-string,
+  .hljs-doctag,
+  .hljs-regexp {
+    color: #98c379 !important;
+  }
+
+  .hljs-number,
+  .hljs-literal,
+  .hljs-symbol,
+  .hljs-bullet {
+    color: #d19a66 !important;
+  }
+
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-attr,
+  .hljs-attribute {
+    color: #e06c75 !important;
+  }
+
+  .hljs-title,
+  .hljs-section,
+  .hljs-name,
+  .hljs-selector-id,
+  .hljs-selector-class {
+    color: #61afef !important;
+    font-weight: bold;
+  }
+
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-builtin-name,
+  .hljs-params {
+    color: #e5c07b !important;
+  }
+
+  .hljs-meta,
+  .hljs-meta-keyword {
+    color: #56b6c2 !important;
+  }
+
+  .hljs-addition {
+    color: #98c379 !important;
+    background-color: rgba(46, 160, 67, 0.15) !important;
+  }
+  .hljs-deletion {
+    color: #e06c75 !important;
+    background-color: rgba(248, 81, 73, 0.15) !important;
+  }
+
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  .hljs-strong {
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const sideToc = document.getElementById("toc");
+    const content = document.getElementById("content");
+
+    if (sideToc && content) {
+      const topToc = sideToc.cloneNode(true);
+      topToc.id = "top-toc";
+      topToc.className = "toc";
+      topToc.style.marginBottom = "2em";
+      topToc.style.padding = "1.2em";
+      topToc.style.border = "1px solid #30363d";
+      topToc.style.borderRadius = "6px";
+      topToc.style.backgroundColor = "#161b22";
+
+      content.insertBefore(topToc, content.firstChild);
+    }
+  });
+</script>
+
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Documentation technique : Stage Besttic</h1>
+<div class="details">
+<span id="author" class="author">Melvin</span><br>
+<span id="revnumber">version 1.2,</span>
+<span id="revdate">2026-11-17</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Sommaire</div>
+<ul class="sectlevel1">
+<li><a href="#_mutation_des_scripts_de_laimee_vers_windows">1. Mutation des scripts de LAIMEE vers Windows</a>
+<ul class="sectlevel2">
+<li><a href="#_étapes_réalisées_par_le_script">1.1. Étapes réalisées par le script</a></li>
+<li><a href="#_code_source_complet">1.2. Code source complet</a></li>
+<li><a href="#_mécanisme_dattente_et_détection_du_démarrage_du_backend">1.3. Mécanisme d&#8217;attente et détection du démarrage du backend</a>
+<ul class="sectlevel3">
+<li><a href="#_fonctionnement_détaillé">1.3.1. Fonctionnement détaillé</a></li>
+</ul>
+</li>
+<li><a href="#_résultat_de_lexecution_du_script_dans_le_terminal">1.4. Résultat de l&#8217;execution du script dans le terminal</a>
+<ul class="sectlevel3">
+<li><a href="#_docker_compose">1.4.1. Docker compose</a>
+<ul class="sectlevel4">
+<li><a href="#_docker_compose_yml">docker-compose.yml</a></li>
+<li><a href="#_docker_compose_kafka_yml">docker-compose.kafka.yml</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_interface_web_fonctionnelle">1.5. Interface web fonctionnelle</a></li>
+</ul>
+</li>
+<li><a href="#_mutation_des_scripts_de_la_passerelle_vers_windows">2. Mutation des scripts de la passerelle vers Windows</a>
+<ul class="sectlevel2">
+<li><a href="#_étapes_réalisées_par_le_script_2">2.1. Étapes réalisées par le script</a></li>
+<li><a href="#_code_source_complet_2">2.2. Code source complet</a></li>
+<li><a href="#_résultat_de_lexecution_du_script_dans_le_terminal_2">2.3. Résultat de l&#8217;execution du script dans le terminal</a>
+<ul class="sectlevel3">
+<li><a href="#_docker_compose_2">2.3.1. Docker compose</a>
+<ul class="sectlevel4">
+<li><a href="#_docker_compose_yml_2">docker-compose.yml</a></li>
+</ul>
+</li>
+<li><a href="#_résultat_sur_linterface_web">2.3.2. Résultat sur l&#8217;interface web</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_commandes_docker_utiles">3. Commandes Docker utiles</a>
+<ul class="sectlevel2">
+<li><a href="#_supprimer_tous_les_conteneurs_docker">3.1. Supprimer tous les conteneurs Docker</a></li>
+<li><a href="#_vérifier_que_les_conteneurs_redémarrent_au_démarrage_du_système">3.2. Vérifier que les conteneurs redémarrent au démarrage du système</a>
+<ul class="sectlevel3">
+<li><a href="#_exemple_de_résultat">3.2.1. Exemple de résultat</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_diagrammes_darchitecture_de_laimee">4. Diagrammes d&#8217;architecture de LAIMEE</a>
+<ul class="sectlevel2">
+<li><a href="#_diagramme_des_dépendances">4.1. Diagramme des dépendances</a>
+<ul class="sectlevel3">
+<li><a href="#_code_source">4.1.1. code source</a></li>
+</ul>
+</li>
+<li><a href="#_diagramme_des_requêtes_flux_de_communication">4.2. Diagramme des requêtes (Flux de communication)</a>
+<ul class="sectlevel3">
+<li><a href="#_image">4.2.1. Image</a></li>
+<li><a href="#_code_source_2">4.2.2. Code source</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_erreur_dutilisation_des_commandes_de_chauffage_de_laimee">5. Erreur d&#8217;utilisation des commandes de chauffage de LAIMEE</a>
+<ul class="sectlevel2">
+<li><a href="#_commande_docker_pour_trouver_lemplacement_du_fichier_docker_compose_yml_dun_conteneur_en_fonctionnement">5.1. Commande Docker pour trouver l&#8217;emplacement du fichier <code>docker-compose.yml</code> d&#8217;un conteneur en fonctionnement</a></li>
+</ul>
+</li>
+<li><a href="#_optimisation_des_scripts_bash">6. Optimisation des scripts Bash</a>
+<ul class="sectlevel2">
+<li><a href="#_sécurité_et_gestion_des_erreurs">6.1. Sécurité et gestion des erreurs</a>
+<ul class="sectlevel3">
+<li><a href="#_arrêt_sur_erreur_set_euo_pipefail">6.1.1. Arrêt sur erreur (<code>set -euo pipefail</code>)</a></li>
+<li><a href="#_nettoyage_automatique_et_sécurisé_trap">6.1.2. Nettoyage automatique et sécurisé (<code>trap</code>)</a></li>
+</ul>
+</li>
+<li><a href="#_compression_et_factorisation_de_commandes">6.2. Compression et factorisation de commandes</a>
+<ul class="sectlevel3">
+<li><a href="#_rsync">6.2.1. rsync</a></li>
+<li><a href="#_création_de_répertoires_mkdir_p">6.2.2. Création de répertoires (<code>mkdir -p</code>)</a></li>
+</ul>
+</li>
+<li><a href="#_fiabilité_et_performances_des_commandes">6.3. Fiabilité et performances des commandes</a>
+<ul class="sectlevel3">
+<li><a href="#_écriture_de_fichier_de_configuration_cat_vs_tee">6.3.1. Écriture de fichier de configuration (<code>cat</code> vs <code>tee</code>)</a></li>
+<li><a href="#_copie_en_mode_archive_cp_a">6.3.2. Copie en mode archive (<code>cp -a</code>)</a></li>
+<li><a href="#_extraction_rapide_tar">6.3.3. Extraction rapide (<code>tar</code>)</a></li>
+<li><a href="#_déplacement_de_fichiers_mv">6.3.4. Déplacement de fichiers (<code>mv</code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_mutation_des_scripts_de_laimee_vers_windows">1. Mutation des scripts de LAIMEE vers Windows</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Cette section présente le script Batch (<code>installer-windows.bat</code>) permettant d&#8217;automatiser le déploiement complet de l&#8217;infrastructure <strong>LAIMEE</strong> sous Windows via Docker Desktop.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Assurez-vous que <strong>Docker Desktop</strong> est démarré avant d&#8217;exécuter ce script.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_étapes_réalisées_par_le_script">1.1. Étapes réalisées par le script</h3>
+<div class="paragraph">
+<p>Le script exécute automatiquement les 7 étapes suivantes :</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Création de l&#8217;arborescence locale des dossiers de logs et de configuration.</p>
+</li>
+<li>
+<p>Extraction des configurations depuis les images Docker et conversion au format Unix (<code>LF</code>).</p>
+</li>
+<li>
+<p>Génération dynamique du fichier de routage <code>haproxy.cfg</code>.</p>
+</li>
+<li>
+<p>Création du réseau Docker dédié (<code>laimee_docker_network</code>).</p>
+</li>
+<li>
+<p>Chargement des variables d&#8217;environnement via <code>compose-utils.bat</code>.</p>
+</li>
+<li>
+<p>Initialisation de la base de données PostgreSQL (uniquement au premier lancement).</p>
+</li>
+<li>
+<p>Démarrage des conteneurs et ouverture automatique de l&#8217;interface web.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_code_source_complet">1.2. Code source complet</h3>
+<div class="listingblock">
+<div class="title">laimee/installer-windows.bat</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-dos hljs" data-lang="dos">@echo off
+setlocal enabledelayedexpansion
+
+echo ===================================================
+echo   DEMARRAGE AUTOMATIQUE DE LAIMEE SOUS WINDOWS
+echo ===================================================
+
+REM 1. Creation des dossiers de logs et de configuration
+echo [1/7] Verification des dossiers locaux...
+for %%f in (tb-core1 tb-core2 tb-rule-engine1 tb-rule-engine2) do (
+    if not exist "tb-node\log\%%f" mkdir "tb-node\log\%%f"
+)
+for %%d in (
+    "tb-node\conf"
+    "tb-transports\coap\conf"
+    "tb-transports\coap\log\tb-coap-transport"
+    "tb-transports\http\conf"
+    "tb-transports\http\log\tb-http-transport1"
+    "tb-transports\http\log\tb-http-transport2"
+    "tb-transports\mqtt\conf"
+    "tb-transports\mqtt\log\tb-mqtt-transport1"
+    "tb-transports\mqtt\log\tb-mqtt-transport2"
+    "haproxy\config"
+    "haproxy\letsencrypt"
+    "haproxy\certs.d"
+    "%USERPROFILE%\.tb-gateway"
+    "%USERPROFILE%\.tb-laimee"
+) do (
+    if not exist %%d mkdir %%d
+)
+
+REM 2. Extraction automatique des fichiers conf + correction localhost-&gt;postgres (format Unix LF)
+if not exist "tb-node\conf\laimee.conf" (
+    echo [2/7] Extraction des fichiers de configuration depuis les images Docker...
+    docker create --name temp-node laimee/tb-node:latest &gt;nul
+    docker cp temp-node:/usr/share/laimee/conf/. tb-node\conf\
+    docker rm temp-node &gt;nul
+
+    docker create --name temp-mqtt laimee/tb-mqtt-transport:latest &gt;nul
+    docker cp temp-mqtt:/usr/share/tb-mqtt-transport/conf/. tb-transports\mqtt\conf\
+    docker rm temp-mqtt &gt;nul
+
+    docker create --name temp-http laimee/tb-http-transport:latest &gt;nul
+    docker cp temp-http:/usr/share/tb-http-transport/conf/. tb-transports\http\conf\
+    docker rm temp-http &gt;nul
+
+    docker create --name temp-coap laimee/tb-coap-transport:latest &gt;nul
+    docker cp temp-coap:/usr/share/tb-coap-transport/conf/. tb-transports\coap\conf\
+    docker rm temp-coap &gt;nul
+) else (
+    echo [2/7] Fichiers de configuration deja presents.
+)
+
+REM Nettoyage propre de laimee.conf (format Unix LF sans \r + postgres:5432)
+docker run --rm -v "%CD%\tb-node\conf:/conf" postgres:12 sed -i -e "s/\r//g" -e "s/localhost:5432/postgres:5432/g" /conf/laimee.conf
+
+REM 3. Generation automatique de haproxy.cfg (sans check bloquant)
+echo [3/7] Configuration de HAProxy...
+(
+echo global
+echo     maxconn 4096
+echo.
+echo defaults
+echo     mode http
+echo     timeout connect 5000ms
+echo     timeout client 50000ms
+echo     timeout server 50000ms
+echo.
+echo frontend http-in
+echo     bind *:80
+echo     acl is_api path_beg /api /swagger /webjars /v2/api-docs
+echo     acl is_telemetry path_beg /api/v1
+echo     use_backend tb_http_backend if is_telemetry
+echo     use_backend tb_core_backend if is_api
+echo     default_backend tb_web_ui_backend
+echo.
+echo backend tb_core_backend
+echo     balance roundrobin
+echo     server tb-core1 tb-core1:8080
+echo     server tb-core2 tb-core2:8080
+echo.
+echo backend tb_http_backend
+echo     balance roundrobin
+echo     server tb-http1 tb-http-transport1:8081
+echo     server tb-http2 tb-http-transport2:8081
+echo.
+echo backend tb_web_ui_backend
+echo     balance roundrobin
+echo     server tb-web-ui1 tb-web-ui1:8080
+echo     server tb-web-ui2 tb-web-ui2:8080
+echo.
+echo frontend mqtt-in
+echo     bind *:1883
+echo     mode tcp
+echo     default_backend tb_mqtt_backend
+echo.
+echo backend tb_mqtt_backend
+echo     mode tcp
+echo     balance roundrobin
+echo     server tb-mqtt1 tb-mqtt-transport1:1883
+echo     server tb-mqtt2 tb-mqtt-transport2:1883
+) &gt; "haproxy\config\haproxy.cfg"
+
+REM 4. Creation du reseau Docker si inexistant
+echo [4/7] Verification du reseau Docker laimee_docker_network...
+docker network inspect laimee_docker_network &gt;nul 2&gt;&amp;1
+if errorlevel 1 (
+    docker network create --driver=bridge --subnet=172.23.0.0/24 --gateway=172.23.0.1 laimee_docker_network &gt;nul
+)
+
+REM 5. Lecture des arguments Compose (.env)
+call compose-utils.bat :additionalComposeQueueArgs
+if errorlevel 1 exit /b %errorlevel%
+call compose-utils.bat :additionalComposeArgs
+if errorlevel 1 exit /b %errorlevel%
+call compose-utils.bat :additionalStartupServices
+if errorlevel 1 exit /b %errorlevel%
+
+REM 6. Detection et installation automatique de la base de donnees si vierge
+if not exist "tb-node\postgres\PG_VERSION" (
+    echo [5/7] Base de donnees vierge detectee : installation des tables SQL en cours...
+    docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% up -d redis %ADDITIONAL_STARTUP_SERVICES%
+    timeout /t 5 /nobreak &gt;nul
+    docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% run --no-deps --rm -e INSTALL_TB=true -e LOAD_DEMO=false -e INSTALL_DATA_DIR=/usr/share/laimee/data tb-core1
+    if errorlevel 1 (
+        echo Erreur lors de l'initialisation de la base de donnees.
+        pause
+        exit /b 1
+    )
+) else (
+    echo [5/7] Base de donnees deja initialisee.
+)
+
+
+REM 7. Demarrage complet de tous les services et synchronisation HAProxy
+echo [6/7] Demarrage de tous les conteneurs...
+docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% up -d
+if errorlevel 1 exit /b %errorlevel%
+
+
+echo [7/7] Attente que le serveur backend soit operationnel (cette etape prend environ 3 a 5 minutes)...
+set /a elapsed=0
+:wait_backend
+timeout /t 30 /nobreak &gt;nul
+set /a elapsed+=30
+set /a mins=elapsed / 60
+set /a secs=elapsed %% 60
+if !secs! lss 10 set "secs=0!secs!"
+docker exec laimee-tb-core1-1 bash -c "echo &gt; /dev/tcp/localhost/8080" &gt;nul 2&gt;&amp;1
+if errorlevel 1 (
+    echo   [!mins!m !secs!s] Demarrage des services Java en cours, merci de patienter...
+    goto :wait_backend
+)
+
+echo   Serveur operationnel ! Synchronisation de HAProxy...
+docker restart haproxy-certbot &gt;nul 2&gt;&amp;1
+timeout /t 3 /nobreak &gt;nul
+start http://localhost
+
+echo.
+echo ===================================================
+echo   TOUT EST PRET !
+echo   Interface Web : http://localhost
+echo   Identifiant   : sysadmin@laimee.org
+echo   Mot de passe  : sysadmin
+echo ===================================================
+echo.</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+À la fin de l&#8217;exécution, l&#8217;interface web s&#8217;ouvre automatiquement à l&#8217;adresse <code><a href="http://localhost" class="bare">http://localhost</a></code> avec les identifiants par défaut.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mécanisme_dattente_et_détection_du_démarrage_du_backend">1.3. Mécanisme d&#8217;attente et détection du démarrage du backend</h3>
+<div class="paragraph">
+<p>Le démarrage des microservices Java de ThingsBoard (<code>tb-core1</code>) prend généralement entre <strong>3 et 5 minutes</strong>. Si le navigateur ou HAProxy tente d&#8217;accéder à l&#8217;interface avant la fin de cette initialisation, une erreur <code>503 Service Unavailable</code> s&#8217;affiche.</p>
+</div>
+<div class="paragraph">
+<p>Pour éviter ce problème, l&#8217;étape <code>[7/7]</code> du script met en place une <strong>boucle de surveillance active</strong> :</p>
+</div>
+<div class="listingblock">
+<div class="title">Extrait de la boucle d&#8217;attente (installer-windows.bat)</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-dos hljs" data-lang="dos">echo [7/7] Attente que le serveur backend soit operationnel (cette etape prend environ 3 a 5 minutes)...
+set /a elapsed=0
+:wait_backend
+timeout /t 30 /nobreak &gt;nul
+set /a elapsed+=30
+set /a mins=elapsed / 60
+set /a secs=elapsed %% 60
+if !secs! lss 10 set "secs=0!secs!"
+docker exec laimee-tb-core1-1 bash -c "echo &gt; /dev/tcp/localhost/8080" &gt;nul 2&gt;&amp;1
+if errorlevel 1 (
+    echo   [!mins!m !secs!s] Demarrage des services Java en cours, merci de patienter...
+    goto :wait_backend
+)</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fonctionnement_détaillé">1.3.1. Fonctionnement détaillé</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Temporisation (<code>timeout /t 30 /nobreak</code>)</strong> : Le script marque une pause de 30 secondes à chaque cycle sans pouvoir être interrompu par une touche accidentelle.</p>
+</li>
+<li>
+<p><strong>Chronomètre dynamique (<code>!mins!m !secs!s</code>)</strong> : À chaque tour de boucle, la variable <code>elapsed</code> est incrémentée de 30 secondes. Le script convertit ce total en minutes (<code>elapsed / 60</code>) et secondes (<code>elapsed %% 60</code>), en ajoutant un zéro devant les secondes inférieures à 10 (<code>if !secs! lss 10</code>) pour un affichage propre (ex. <code>01m 30s</code>).</p>
+</li>
+<li>
+<p><strong>Sonde TCP interne (<code>docker exec &#8230;&#8203; /dev/tcp/localhost/8080</code>)</strong> : Le script exécute un test de connexion TCP directement à l&#8217;intérieur du conteneur <code>laimee-tb-core1-1</code> sur le port <code>8080</code>.</p>
+</li>
+<li>
+<p><strong>Condition de sortie (<code>if errorlevel 1</code>)</strong> :</p>
+</li>
+<li>
+<p>Tant que le port <code>8080</code> est fermé, la commande renvoie un code d&#8217;erreur (<code>1</code>), le message de progression s&#8217;affiche et le script reboucle sur l&#8217;étiquette <code>:wait_backend</code>.</p>
+</li>
+<li>
+<p>Dès que le serveur Java ouvre le port <code>8080</code>, la commande réussit (<code>errorlevel 0</code>), ce qui libère le script pour redémarrer <strong>HAProxy</strong> et ouvrir automatiquement <code><a href="http://localhost" class="bare">http://localhost</a></code>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Si l&#8217;image Docker utilisée ne dispose pas de <code>bash</code> (cas des images minimales sous <code>/bin/sh</code>), la sonde <code>/dev/tcp</code> peut être remplacée par une lecture directe de la table réseau du noyau Linux : <code>docker exec laimee-tb-core1-1 grep -qi ":1F90" /proc/net/tcp /proc/net/tcp6</code> (où <code>1F90</code> correspond au port <code>8080</code> en hexadécimal).
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_résultat_de_lexecution_du_script_dans_le_terminal">1.4. Résultat de l&#8217;execution du script dans le terminal</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee&gt; .\installer-windows.bat
+===================================================
+  DEMARRAGE AUTOMATIQUE DE LAIMEE SOUS WINDOWS
+===================================================
+[1/7] Verification des dossiers locaux...
+[2/7] Extraction des fichiers de configuration depuis les images Docker...
+Successfully copied 175kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-node\conf\
+Successfully copied 23.6kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-transports\mqtt\conf\
+Successfully copied 22kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-transports\http\conf\
+Successfully copied 22.5kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-transports\coap\conf\
+[3/7] Configuration de HAProxy...
+[4/7] Verification du reseau Docker laimee_docker_network...
+[5/7] Base de donnees vierge detectee : installation des tables SQL en cours...
+[+] up 2/2
+ ✔ Container laimee-redis-1    Started                       0.5s
+ ✔ Container laimee-postgres-1 Started                       0.8s
+[+] run 1/1
+ ✔ Container laimee-tb-core1-run-63cf0c987e9a Created        0.1s
+TB-NODE
+Starting Laimee installation ...
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+11:21:44,572 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+11:21:44,576 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.groovy]
+11:21:44,582 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/config/logback.xml]
+11:21:44,594 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs multiple times on the classpath.
+11:21:44,594 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/usr/share/laimee/conf/logback.xml]
+11:21:44,594 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/config/logback.xml]
+11:21:45,136 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+11:21:45,204 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Will scan for changes in [file:/config/logback.xml]
+11:21:45,204 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Setting ReconfigureOnChangeTask scanning period to 10 seconds
+11:21:45,223 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+11:21:45,247 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [fileLogAppender]
+11:21:45,307 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - setting totalSizeCap to 3 GB
+11:21:45,323 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - Archive files will be limited to [100 MB] each.
+11:21:45,442 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - No compression will be used
+11:21:45,450 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - Will use the pattern /var/log/laimee/laimee.%d{yyyy-MM-dd}.%i.log for the active file
+11:21:45,457 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@146ba0ac - The date pattern is 'yyyy-MM-dd' from file name pattern '/var/log/laimee/laimee.%d{yyyy-MM-dd}.%i.log'.
+11:21:45,457 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@146ba0ac - Roll-over at midnight.
+11:21:45,474 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@146ba0ac - Setting initial period to Tue Nov 17 11:21:45 CET 2026
+11:21:45,485 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+11:21:45,560 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[fileLogAppender] - Active log file name: /var/log/laimee/laimee.log
+11:21:45,560 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[fileLogAppender] - File property is set to [/var/log/laimee/laimee.log]
+11:21:45,567 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.thingsboard.server] to INFO
+11:21:45,567 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [com.microsoft.azure.servicebus.primitives.CoreMessageReceiver] to OFF
+11:21:45,567 |-INFO in ch.qos.logback.classic.joran.action.RootLoggerAction - Setting level of ROOT logger to INFO
+11:21:45,567 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [fileLogAppender] to Logger[ROOT]
+11:21:45,569 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+11:21:45,571 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@4dfa3a9d - Registering current configuration as safe fallback point
+
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.codehaus.groovy.vmplugin.v7.Java7$1 (jar:file:/usr/share/laimee/bin/laimee.jar!/BOOT-INF/lib/groovy-2.5.7-indy.jar!/) to constructor java.lang.invoke.MethodHandles$Lookup(java.lang.Class,int)
+WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.vmplugin.v7.Java7$1
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+ ===================================================
+ :: Laimee ::       (v3.1.1-SNAPSHOT)
+ ===================================================
+
+Starting Laimee Installation...
+Installing DataBase schema for entities...
+Installing SQL DataBase schema part: schema-entities.sql
+Installing SQL DataBase schema indexes part: schema-entities-idx.sql
+Installing DataBase schema for timeseries...
+Installing SQL DataBase schema part: schema-ts-psql.sql
+Successfully executed query: CREATE TABLE IF NOT EXISTS ts_kv_indefinite PARTITION OF ts_kv DEFAULT;
+Loading system data...
+Installation finished successfully!
+[6/7] Demarrage de tous les conteneurs...
+[+] up 19/19
+ ✔ Container laimee-postgres-1                 Running             0.0s
+ ✔ Container laimee-redis-1                    Running             0.0s
+ ✔ Container laimee-init-permissions-1         Started             3.1s
+ ✔ Container laimee-tb-web-ui2-1               Started             4.3s
+ ✔ Container laimee-zookeeper-1                Started             5.0s
+ ✔ Container laimee-kafka-1                    Started             5.5s
+ ✔ Container laimee-tb-web-ui1-1               Started             3.7s
+ ✔ Container laimee-tb-js-executor-1           Started             5.6s
+ ✔ Container laimee-tb-js-executor-2           Started             6.4s
+ ✔ Container laimee-tb-http-transport1-1       Started             9.3s
+ ✔ Container laimee-tb-http-transport2-1       Started             8.5s
+ ✔ Container laimee-tb-mqtt-transport1-1       Started             7.8s
+ ✔ Container laimee-tb-mqtt-transport2-1       Started             6.9s
+ ✔ Container laimee-tb-coap-transport-1        Started            10.2s
+ ✔ Container laimee-tb-rule-engine1-1          Started            10.7s
+ ✔ Container laimee-tb-rule-engine2-1          Started            11.4s
+ ✔ Container laimee-tb-core2-1                 Started            11.8s
+ ✔ Container laimee-tb-core1-1                 Started            13.7s
+ ✔ Container haproxy-certbot                   Started            17.2s
+[7/7] Attente que le serveur backend soit operationnel (cette etape prend environ 3 a 5 minutes)...
+  [0m 30s] Demarrage des services Java en cours, merci de patienter...
+  [1m 00s] Demarrage des services Java en cours, merci de patienter...
+  [1m 30s] Demarrage des services Java en cours, merci de patienter...
+  [2m 00s] Demarrage des services Java en cours, merci de patienter...
+  [2m 30s] Demarrage des services Java en cours, merci de patienter...
+  [3m 00s] Demarrage des services Java en cours, merci de patienter...
+  [3m 30s] Demarrage des services Java en cours, merci de patienter...
+  [4m 00s] Demarrage des services Java en cours, merci de patienter...
+  Serveur operationnel  Synchronisation de HAProxy...
+
+===================================================
+  TOUT EST PRET
+  Interface Web : http://localhost
+  Identifiant   : sysadmin@laimee.org
+  Mot de passe  : sysadmin
+===================================================</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_docker_compose">1.4.1. Docker compose</h4>
+<div class="sect4">
+<h5 id="_docker_compose_yml">docker-compose.yml</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  # --- NOUVEAU SERVICE À AJOUTER ---
+  init-permissions:
+    image: alpine:latest
+    user: "0:0"
+    volumes:
+      - ../tb-gateway:/thingsboard-gateway:rw
+      - ./tb-node:/tb-node:rw
+      - ./tb-laimee:/laimee:rw
+    command: &gt;
+      sh -c "chown -R 799:799 /thingsboard-gateway /tb-node /laimee &amp;&amp;
+             chmod -R 775 /thingsboard-gateway"
+    restart: "no"
+  # --- SERCIVE PAR DEFAUT ---
+  zookeeper:
+    restart: always
+    image: "zookeeper:3.5"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;zookeeper:2181
+      TZ: "${TIME_ZONE}"
+
+  redis:
+    restart: always
+    image: "redis:4.0"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "6379"
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  tb-js-executor:
+    #restart: always
+    #restart: no
+    restart: on-failure:5
+    image: "${DOCKER_REPO}/${JS_EXECUTOR_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    #nb of containers
+    #scale: 20
+    scale: 2
+    env_file:
+      - tb-js-executor.env
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  tb-core1:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-core1
+      TB_SERVICE_TYPE: tb-core
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+      - ../tb-gateway:/thingsboard-gateway:rw
+      #- ~/.etc-laimee:/etc/laimee
+      - ./tb-laimee:/laimee:rw
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+      - tb-rule-engine1
+      - tb-rule-engine2
+
+  tb-core2:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-core2
+      TB_SERVICE_TYPE: tb-core
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+      - ../tb-gateway:/thingsboard-gateway:rw
+      #- ~/.etc-laimee:/etc/laimee
+      - ./tb-laimee:/laimee:rw
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+      - tb-rule-engine1
+      - tb-rule-engine2
+
+  tb-rule-engine1:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-rule-engine1
+      TB_SERVICE_TYPE: tb-rule-engine
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+
+  tb-rule-engine2:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-rule-engine2
+      TB_SERVICE_TYPE: tb-rule-engine
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+
+  tb-mqtt-transport1:
+    restart: always
+    image: "${DOCKER_REPO}/${MQTT_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "1883"
+    environment:
+      TB_SERVICE_ID: tb-mqtt-transport1
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-mqtt-transport.env
+    volumes:
+      - ./tb-transports/mqtt/conf:/config
+      - ./tb-transports/mqtt/log:/var/log/tb-mqtt-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+
+  tb-mqtt-transport2:
+    restart: always
+    image: "${DOCKER_REPO}/${MQTT_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "1883"
+    environment:
+      TB_SERVICE_ID: tb-mqtt-transport2
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-mqtt-transport.env
+    volumes:
+      - ./tb-transports/mqtt/conf:/config
+      - ./tb-transports/mqtt/log:/var/log/tb-mqtt-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+
+  tb-http-transport1:
+    restart: always
+    image: "${DOCKER_REPO}/${HTTP_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8081"
+    environment:
+      TB_SERVICE_ID: tb-http-transport1
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-http-transport.env
+    volumes:
+      - ./tb-transports/http/conf:/config
+      - ./tb-transports/http/log:/var/log/tb-http-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+
+  tb-http-transport2:
+    restart: always
+    image: "${DOCKER_REPO}/${HTTP_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8081"
+    environment:
+      TB_SERVICE_ID: tb-http-transport2
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-http-transport.env
+    volumes:
+      - ./tb-transports/http/conf:/config
+      - ./tb-transports/http/log:/var/log/tb-http-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+
+  tb-coap-transport:
+    restart: always
+    image: "${DOCKER_REPO}/${COAP_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "5683:5683/udp"
+    environment:
+      TB_SERVICE_ID: tb-coap-transport
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-coap-transport.env
+    volumes:
+      - ./tb-transports/coap/conf:/config
+      - ./tb-transports/coap/log:/var/log/tb-coap-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+
+  tb-web-ui1:
+    restart: always
+    image: "${DOCKER_REPO}/${WEB_UI_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    env_file:
+      - tb-web-ui.env
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  tb-web-ui2:
+    restart: always
+    image: "${DOCKER_REPO}/${WEB_UI_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    env_file:
+      - tb-web-ui.env
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  haproxy:
+    restart: always
+    container_name: "${LOAD_BALANCER_NAME}"
+    image: "xalauc/haproxy-certbot:1.7.9"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    volumes:
+     - ./haproxy/config:/config
+     - ./haproxy/letsencrypt:/etc/letsencrypt
+     - ./haproxy/certs.d:/usr/local/etc/haproxy/certs.d
+    ports:
+     - "80:80"
+     - "443:443"
+     - "1883:1883"
+     - "9999:9999"
+    cap_add:
+     - NET_ADMIN
+    environment:
+      HTTP_PORT: 80
+      HTTPS_PORT: 443
+      MQTT_PORT: 1883
+      FORCE_HTTPS_REDIRECT: "false"
+      TZ: "${TIME_ZONE}"
+    links:
+        - tb-core1
+        - tb-core2
+        - tb-web-ui1
+        - tb-web-ui2
+        - tb-mqtt-transport1
+        - tb-mqtt-transport2
+        - tb-http-transport1
+        - tb-http-transport2
+
+networks:
+  laimee_docker_network:
+    name: laimee_docker_network
+    external: true</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_docker_compose_kafka_yml">docker-compose.kafka.yml</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  kafka:
+    #restart: always
+    restart: always
+    image: "wurstmeister/kafka:2.12-2.3.0"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "9092:9092"
+    env_file:
+      - kafka.env
+
+    # ADD
+
+    # healthcheck: # test du port 2181 de zookeeper
+    #   test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181 | grep imok"]
+    #   interval: 2s
+    #   timeout: 2s
+    #   retries: 10
+
+    # depends_on:
+    #     zookeeper:
+    #       condition: service_healthy # attendre le demarrage complet du docker
+
+    # END
+
+    environment:
+        TZ: "${TIME_ZONE}"
+
+  tb-js-executor:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-core1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-core2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-rule-engine1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-rule-engine2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-mqtt-transport1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-mqtt-transport2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-http-transport1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-http-transport2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-coap-transport:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+
+networks:
+  laimee_docker_network:
+    name: laimee_docker_network
+    external: true</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interface_web_fonctionnelle">1.5. Interface web fonctionnelle</h3>
+<div class="paragraph">
+<p>La capture d&#8217;écran ci-dessous montre l&#8217;affichage complet de l&#8217;interface web de la plateforme. Cela confirme que l&#8217;ensemble des conteneurs Docker fonctionnent et communiquent correctement entre eux. De plus, l&#8217;accès direct via le port <code>80</code> valide le bon routage des requêtes par le répartiteur de charge <strong>HAProxy</strong>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/image.png" alt="Interface web LAIMEE fonctionnelle">
+</div>
+<div class="title">Figure 1. Interface web de la plateforme LAIMEE accessible sur le port 80</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mutation_des_scripts_de_la_passerelle_vers_windows">2. Mutation des scripts de la passerelle vers Windows</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Cette section présente le script Batch (<code>installer-windows.bat</code>) permettant d&#8217;automatiser la construction de l&#8217;image Docker et le démarrage de la passerelle <strong>LAIMEE Gateway</strong> sous Windows.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Ce script doit être exécuté depuis le sous-dossier <code>gateway</code> de votre projet afin de localiser correctement le dossier source <code>thingsboard_gateway</code> et le répertoire parent <code>../tb-gateway</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_étapes_réalisées_par_le_script_2">2.1. Étapes réalisées par le script</h3>
+<div class="paragraph">
+<p>Le script exécute automatiquement les 6 étapes suivantes :</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Recherche automatique du répertoire source <code>thingsboard_gateway</code> dans l&#8217;arborescence parente.</p>
+</li>
+<li>
+<p>Copie du code source Python en local et attribution des permissions Windows complètes (<code>icacls</code>) pour éviter les blocages de lecture dans Docker.</p>
+</li>
+<li>
+<p>Construction de l&#8217;image Docker locale (<code>laimee-gateway:latest</code>) sans cache (<code>--no-cache</code>).</p>
+</li>
+<li>
+<p>Lecture et chargement des variables d&#8217;environnement depuis le fichier <code>.env</code>.</p>
+</li>
+<li>
+<p>Création des dossiers de volumes persistants (<code>config</code>, <code>extensions</code>, <code>logs</code>) dans <code>../tb-gateway</code> avec ouverture des droits d&#8217;accès.</p>
+</li>
+<li>
+<p>Lancement et recréation forcée du conteneur via Docker Compose sous le projet <code>laimee</code>.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_code_source_complet_2">2.2. Code source complet</h3>
+<div class="listingblock">
+<div class="title">gateway/installer-windows.bat</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-dos hljs" data-lang="dos">@echo off
+setlocal enabledelayedexpansion
+
+echo ============================================================================
+echo        DEPLOIEMENT ET DEMARRAGE DE LAIMEE GATEWAY (DOCKER WINDOWS)
+echo ============================================================================
+echo.
+
+REM --- ETAPE 1 : RECHERCHE DU CODE SOURCE ---
+echo [1/6] Recherche du dossier source thingsboard_gateway...
+set "CURR_DIR=%CD%"
+set "SRC_DIR="
+
+pushd ..
+for /f "delims=" %%D in ('dir /s /b /ad thingsboard_gateway 2^&gt;nul') do (
+    if /I not "%%~fD"=="%CURR_DIR%\thingsboard_gateway" (
+        set "SRC_DIR=%%~fD"
+        goto :found_src
+    )
+)
+
+:found_src
+popd
+
+if not "%SRC_DIR%"=="" (
+    echo       Source externe trouvee : "%SRC_DIR%"
+    echo [2/6] Copie du code source Python vers le dossier Docker local...
+    if exist "thingsboard_gateway" (
+        rmdir /s /q "thingsboard_gateway"
+    )
+    xcopy /E /I /Y /Q "%SRC_DIR%" ".\thingsboard_gateway" &gt;nul
+    if !ERRORLEVEL! NEQ 0 (
+        echo [ERREUR] Echec lors de la copie du dossier thingsboard_gateway.
+        pause
+        exit /b !ERRORLEVEL!
+    )
+    echo       Copie terminee avec succes.
+) else if exist ".\thingsboard_gateway" (
+    echo       Dossier thingsboard_gateway deja present sur place.
+    echo [2/6] Copie ignoree.
+) else (
+    echo [ERREUR] Dossier thingsboard_gateway introuvable.
+    pause
+    exit /b 1
+)
+
+echo       Application des droits d'acces Windows...
+icacls ".\thingsboard_gateway" /grant *S-1-1-0:(OI)(CI)F /T /Q &gt;nul
+echo.
+
+REM --- ETAPE 2 : CONSTRUCTION DE L'IMAGE DOCKER ---
+echo [3/6] Construction de l'image Docker (laimee-gateway:latest) sans cache...
+docker build --no-cache -t laimee-gateway:latest .
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERREUR] Echec lors du build de l'image Docker.
+    pause
+    exit /b %ERRORLEVEL%
+)
+echo       Image Docker construite avec succes.
+echo.
+
+REM --- ETAPE 3 : CHARGEMENT DE LA CONFIGURATION (.ENV) ---
+echo [4/6] Chargement des variables d'environnement (.env)...
+if exist .env (
+    for /f "usebackq tokens=1,* delims==" %%a in (".env") do (
+        set "line=%%a"
+        if not "!line:~0,1!"=="#" (
+            set "%%a=%%b"
+            echo       Variable chargee : %%a
+        )
+    )
+) else (
+    echo       Aucun fichier .env trouve, valeurs par defaut utilisees.
+)
+echo.
+
+REM --- ETAPE 4 : PREPARATION DES VOLUMES PERSISTANTS ---
+echo [5/6] Preparation des dossiers dans ../tb-gateway...
+set "TB_DIR=%../tb-gateway"
+if not exist "%TB_DIR%\config" mkdir "%TB_DIR%\config"
+if not exist "%TB_DIR%\extensions" mkdir "%TB_DIR%\extensions"
+if not exist "%TB_DIR%\logs" mkdir "%TB_DIR%\logs"
+icacls "%TB_DIR%" /grant *S-1-1-0:(OI)(CI)F /T /Q &gt;nul
+echo       Dossiers prets.
+echo.
+
+REM --- ETAPE 5 : DEMARRAGE DU CONTENEUR ---
+echo [6/6] Demarrage du conteneur via Docker Compose...
+docker compose -p laimee -f docker-compose.yml up -d --force-recreate
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERREUR] Echec lors du demarrage avec Docker Compose.
+    pause
+    exit /b %ERRORLEVEL%
+)
+
+echo.
+echo ============================================================================
+echo        SUCCES : LAIMEE GATEWAY EST EN COURS D'EXECUTION
+echo ============================================================================
+pause</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+L&#8217;utilisation de la commande <code>icacls &#8230;&#8203; /grant *S-1-1-0:(OI)(CI)F</code> accorde un contrôle total universel (SID <code>Everyone</code>), ce qui résout définitivement les erreurs <code>Permission denied</code> lors du montage des volumes entre Windows et Linux.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_résultat_de_lexecution_du_script_dans_le_terminal_2">2.3. Résultat de l&#8217;execution du script dans le terminal</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">PS C:\Users\Dev-Sta-1\Documents\Melvin\gateway&gt; .\installer.bat
+WARN[0000] Found orphan containers (haproxy-certbot, laimee-tb-core1-1, laimee-tb-core2-1, laimee-tb-rule-engine2-1, laimee-tb-rule-engine1-1, laimee-tb-http-transport2-1, laimee-tb-http-transport1-1, laimee-tb-mqtt-transport2-1, laimee-tb-coap-transport-1, laimee-tb-mqtt-transport1-1, laimee-tb-js-executor-2, laimee-tb-js-executor-1, laimee-postgres-1, laimee-init-permissions-1, laimee-redis-1, laimee-tb-web-ui2-1, laimee-zookeeper-1, laimee-kafka-1, laimee-tb-web-ui1-1) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up.
+[+] up 1/1
+ ✔ Container laimee-tb-gateway-1            Started             1.6s
+Conteneurs laimee demarres avec succes.
+Appuyez sur une touche pour continuer...
+PS C:\Users\Dev-Sta-1\Documents\Melvin\gateway&gt;</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_docker_compose_2">2.3.1. Docker compose</h4>
+<div class="sect4">
+<h5 id="_docker_compose_yml_2">docker-compose.yml</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  tb-gateway:
+    restart: always
+    image: "laimee-gateway:latest"
+    networks:
+      - laimee_default
+    ports:
+      - "1883"        # MQTT
+      - "502:502"     # Modbus
+      - "5020:5020"
+      - "47808:47808" # BACnet
+      - "6021:6021"   # Mbus
+    volumes:
+      - ../tb-gateway/config:/thingsboard_gateway/config
+      - ../tb-gateway/extensions:/thingsboard_gateway/extensions
+      - ../tb-gateway/logs:/thingsboard_gateway/logs
+
+networks:
+  laimee_default:
+    driver: bridge</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_résultat_sur_linterface_web">2.3.2. Résultat sur l&#8217;interface web</h4>
+<div class="paragraph">
+<p>La capture d&#8217;écran ci-dessous confirme que les données de télémétrie remontent correctement jusqu&#8217;au serveur web. Cela valide le bon fonctionnement de la connexion et des échanges entre la plateforme <strong>LAIMEE</strong> et la passerelle (<strong>LAIMEE Gateway</strong>).</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/image-1.png" alt="Télémétrie reçue sur l&#8217;interface web LAIMEE">
+</div>
+<div class="title">Figure 2. Réception des données de télémétrie sur l&#8217;interface web LAIMEE</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_commandes_docker_utiles">3. Commandes Docker utiles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Cette section regroupe les principales commandes PowerShell permettant d&#8217;administrer et de vérifier l&#8217;état des conteneurs de l&#8217;infrastructure <strong>LAIMEE</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_supprimer_tous_les_conteneurs_docker">3.1. Supprimer tous les conteneurs Docker</h3>
+<div class="paragraph">
+<p>La commande suivante permet d&#8217;arrêter et de supprimer de force l&#8217;ensemble des conteneurs présents sur la machine :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker stop $(docker ps -aq); docker rm -f $(docker ps -aq)</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Cette action supprime définitivement tous les conteneurs (actifs ou arrêtés), y compris ceux qui ne font pas partie du projet LAIMEE. Les données stockées dans vos volumes locaux (<code>tb-node</code>, <code>tb-gateway</code>, etc.) restent toutefois conservées.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vérifier_que_les_conteneurs_redémarrent_au_démarrage_du_système">3.2. Vérifier que les conteneurs redémarrent au démarrage du système</h3>
+<div class="paragraph">
+<p>Pour contrôler la politique de redémarrage (<code>RestartPolicy</code>) appliquée à chaque conteneur lors du démarrage de Docker Desktop :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker inspect -f "{{.Name}} : {{.HostConfig.RestartPolicy.Name}}" $(docker ps -aq)</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><code>always</code> / <code>unless-stopped</code></strong> : Le conteneur redémarrera automatiquement après un redémarrage de Windows.</p>
+</li>
+<li>
+<p><strong><code>no</code> / <code>on-failure</code></strong> : Le conteneur restera éteint au démarrage normal du système.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_exemple_de_résultat">3.2.1. Exemple de résultat</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee&gt; docker inspect -f "{{.Name}} : {{.HostConfig.RestartPolicy.Name}}" $(docker ps -aq)
+/laimee-tb-gateway-1 : always
+/haproxy-certbot : always
+/laimee-tb-core2-1 : always
+/laimee-tb-core1-1 : always
+/laimee-tb-rule-engine2-1 : always
+/laimee-tb-rule-engine1-1 : always
+/laimee-tb-http-transport1-1 : always
+/laimee-tb-coap-transport-1 : always
+/laimee-tb-mqtt-transport1-1 : always
+/laimee-tb-http-transport2-1 : always
+/laimee-tb-mqtt-transport2-1 : always
+/laimee-tb-js-executor-1 : on-failure
+/laimee-tb-js-executor-2 : on-failure
+/laimee-postgres-1 : always
+/laimee-init-permissions-1 : no
+/laimee-redis-1 : always
+/laimee-zookeeper-1 : always
+/laimee-kafka-1 : always
+/laimee-tb-web-ui2-1 : always
+/laimee-tb-web-ui1-1 : always</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Dans cet exemple, tous les services principaux sont bien configurés sur <code>always</code>. Seul le conteneur ponctuel <code>laimee-init-permissions-1</code> reste sur <code>no</code> (comportement attendu).
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_diagrammes_darchitecture_de_laimee">4. Diagrammes d&#8217;architecture de LAIMEE</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_diagramme_des_dépendances">4.1. Diagramme des dépendances</h3>
+<div class="paragraph">
+<p>Représentation des directives <code>depends_on</code> définies dans les fichiers <code>docker-compose.yml</code> afin d&#8217;identifier l&#8217;ordre de démarrage des conteneurs ainsi que leurs dépendances techniques (réseaux, bases de données et brokers de messages) :</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/diagram-dependance.png" alt="Diagramme des dépendances LAIMEE">
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_source">4.1.1. code source</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">$cfg = docker compose -f docker-compose.yml -f docker-compose.kafka.yml -f docker-compose.postgres.yml config --format json | ConvertFrom-Json
+
+$lines = @("graph LR")
+
+foreach ($svc in $cfg.services.PSObject.Properties) {
+     $name = $svc.Name
+     $ports = if ($svc.Value.ports) { "&lt;br/&gt;Ports: " + (($svc.Value.ports | ForEach-Object { "$($_.published):$($_.target)" }) -join ", ") } else { "" }
+     $lines += "    $name[`"&lt;b&gt;$name&lt;/b&gt;$ports`"]"
+
+     # Dépendances (depends_on)
+     if ($svc.Value.depends_on) {
+         foreach ($dep in $svc.Value.depends_on.PSObject.Properties) {
+             $lines += "    $name --&gt;|depends_on| $($dep.Name)"
+         }
+     }
+
+     # Réseaux partagés
+     if ($svc.Value.networks) {
+         foreach ($net in $svc.Value.networks.PSObject.Properties) {
+             $lines += "    $name -.-&gt;|net| net_$($net.Name)(($($net.Name)))"
+         }
+     }
+ }
+
+$lines | Out-File -Encoding utf8 diagramme.mmd</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_diagramme_des_requêtes_flux_de_communication">4.2. Diagramme des requêtes (Flux de communication)</h3>
+<div class="sect3">
+<h4 id="_image">4.2.1. Image</h4>
+<div class="paragraph">
+<p>Parcours des requêtes depuis l&#8217;interface web jusqu&#8217;à la passerelle (<code>laimee-tb-gateway-1</code>) et l&#8217;automate de chauffage (<code>Thermozyklus</code>) :</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/mermaid-diagram-2026-11-18-171615.png" alt="Diagramme des flux de communication LAIMEE">
+</div>
+</div>
+<div class="ulist">
+<div class="title">Légende des flux :</div>
+<ul>
+<li>
+<p><strong>Orange</strong> : Chaîne principale de commande du chauffage (<code>Utilisateur</code> &#8594; <code>HAProxy</code> &#8594; <code>Gateway</code> &#8594; <code>Thermozyklus</code>).</p>
+</li>
+<li>
+<p><strong>Bleu</strong> : Routage interne depuis <code>HAProxy</code> vers les services front-end et transports.</p>
+</li>
+<li>
+<p><strong>Violet</strong> : Échanges avec le broker de messages <code>Kafka</code>.</p>
+</li>
+<li>
+<p><strong>Rose / Magenta</strong> : Coordination avec <code>Zookeeper</code>.</p>
+</li>
+<li>
+<p><strong>Vert</strong> : Accès aux bases de données <code>PostgreSQL</code> et au cache <code>Redis</code>.</p>
+</li>
+<li>
+<p><strong>Jaune / Or</strong> : Appels internes vers <code>tb-js-executor</code> et <code>tb-rule-engine</code>.</p>
+</li>
+<li>
+<p><strong>Cyan</strong> : Communications avec les autres équipements terrain GTB.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_source_2">4.2.2. Code source</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-mermaid hljs" data-lang="mermaid">flowchart TB
+    %% --- 1. Acteurs &amp; Équipements Terrain ---
+    User(["🌐 Navigateur Utilisateur&lt;br/&gt;(Interface Web / Planning)"])
+
+    subgraph Terrain ["🌡️ Réseau Terrain / Bâtiment (LAN)"]
+        Auto["&lt;b&gt;Automate Thermozyklus&lt;/b&gt;&lt;br/&gt;IP: 10.20.40.91&lt;br/&gt;(Chauffage)"]
+        Equip["&lt;b&gt;Autres Équipements GTB&lt;/b&gt;&lt;br/&gt;Modbus (502/5020) | BACnet (47808) | M-Bus (6021)"]
+    end
+
+    %% --- 2. Passerelle Gateway ---
+    subgraph Net_GW ["📦 Réseau Docker Gateway : laimee_default (bridge)"]
+        GW["&lt;b&gt;tb-gateway (laimee-tb-gateway-1)&lt;/b&gt;&lt;br/&gt;Image: laimee-gateway:latest | restart: always&lt;br/&gt;Ports: 1883, 502:502, 5020:5020, 47808:47808, 6021:6021&lt;br/&gt;Vol: config, extensions, logs"]
+    end
+
+    %% --- 3. Serveur Central LAIMEE ---
+    subgraph Net_Core ["🔒 Réseau Docker Serveur : laimee_docker_network (external)"]
+        direction TB
+
+        HA["&lt;b&gt;haproxy (Load Balancer)&lt;/b&gt;&lt;br/&gt;Image: xalauc/haproxy-certbot:1.7.9&lt;br/&gt;Ports Hôte: 80 (HTTP), 443 (HTTPS), 1883 (MQTT), 9999 (Stats)&lt;br/&gt;Vol: ./haproxy/config, letsencrypt, certs.d"]
+
+        subgraph Front_Transports ["Front-End &amp; Transports (User 799:799)"]
+            UI["&lt;b&gt;tb-web-ui1 &amp; tb-web-ui2&lt;/b&gt;&lt;br/&gt;Ports: :8080, :443"]
+            MQTT["&lt;b&gt;tb-mqtt-transport1 &amp; 2&lt;/b&gt;&lt;br/&gt;Port: :1883"]
+            HTTP["&lt;b&gt;tb-http-transport1 &amp; 2&lt;/b&gt;&lt;br/&gt;Port: :8081"]
+            COAP["&lt;b&gt;tb-coap-transport&lt;/b&gt;&lt;br/&gt;Port: 5683:5683/udp"]
+        end
+
+        subgraph Core_Layer ["Cœur Applicatif &amp; Moteur de Règles (User 799:799)"]
+            CORE["&lt;b&gt;tb-core1 &amp; tb-core2&lt;/b&gt;&lt;br/&gt;Ports: :8080, :443&lt;br/&gt;Vol: ./tb-node, ../tb-gateway, ./tb-laimee"]
+            RULE["&lt;b&gt;tb-rule-engine1 &amp; 2&lt;/b&gt;&lt;br/&gt;Ports: :8080, :443&lt;br/&gt;Vol: ./tb-node/conf, log"]
+            JS["&lt;b&gt;tb-js-executor&lt;/b&gt; (scale: 2)&lt;br/&gt;restart: on-failure:5"]
+        end
+
+        subgraph Infra_Layer ["Infrastructure, Broker &amp; Bases de Données"]
+            KAFKA["&lt;b&gt;kafka&lt;/b&gt;&lt;br/&gt;wurstmeister/kafka:2.12-2.3.0&lt;br/&gt;Port: 9092:9092"]
+            ZK["&lt;b&gt;zookeeper&lt;/b&gt; (3.5)&lt;br/&gt;Port: :2181"]
+            REDIS["&lt;b&gt;redis&lt;/b&gt; (4.0)&lt;br/&gt;Port: :6379"]
+            PG[("&lt;b&gt;postgres&lt;/b&gt;&lt;br/&gt;Port: 5432:5432")]
+        end
+
+        %% Routage interne HAProxy (Index 0 à 3)
+        HA --&gt;|"HTTP/HTTPS"| UI
+        HA --&gt;|"API REST / WebSocket"| CORE
+        HA --&gt;|"MQTT (:1883)"| MQTT
+        HA --&gt;|"HTTP (:8081)"| HTTP
+
+        %% Dépendances Transports -&gt; Kafka &amp; Zookeeper (Index 4 à 9)
+        MQTT --&gt; KAFKA
+        MQTT --&gt; ZK
+        HTTP --&gt; KAFKA
+        HTTP --&gt; ZK
+        COAP --&gt; KAFKA
+        COAP --&gt; ZK
+
+        %% Dépendances JS Executor -&gt; Kafka (Index 10)
+        JS --&gt; KAFKA
+
+        %% Dépendances Rule Engine (Index 11 à 15)
+        RULE --&gt; KAFKA
+        RULE --&gt; ZK
+        RULE --&gt; REDIS
+        RULE --&gt; JS
+        RULE --&gt; PG
+
+        %% Dépendances Core (Index 16 à 21)
+        CORE --&gt; KAFKA
+        CORE --&gt; ZK
+        CORE --&gt; REDIS
+        CORE --&gt; JS
+        CORE --&gt; RULE
+        CORE --&gt; PG
+    end
+
+    %% --- 4. Conteneur utilitaire (Index 22) ---
+    INIT["⚙️ &lt;b&gt;init-permissions&lt;/b&gt; (alpine:latest)&lt;br/&gt;Réseau: default | restart: no&lt;br/&gt;chown -R 799:799 /thingsboard-gateway /tb-node /laimee"] -.-&gt;|"Initialise droits"| CORE
+
+    %% --- Flux Principaux &amp; Chauffage (Index 23 à 26) ---
+    User &lt;==&gt;|"1. HTTP/HTTPS (80/443)"| HA
+    GW &lt;==&gt;|"2. Tunnel MQTT / RPC (Port 1883 via NAT/Hôte)"| HA
+    GW &lt;==&gt;|"3. Modbus / BACnet / M-Bus / TCP"| Auto
+    GW &lt;--&gt;|"4. Terrain"| Equip
+
+    %% --- Coloration détaillée des flèches ---
+    %% Bleu : Routage HAProxy
+    linkStyle 0,1,2,3 stroke:#0088ff,stroke-width:2px;
+
+    %% Violet : Flux Kafka uniquement
+    linkStyle 4,6,8,10,11,16 stroke:#9b59b6,stroke-width:2px;
+
+    %% Rose / Magenta : Flux Zookeeper uniquement
+    linkStyle 5,7,9,12,17 stroke:#e84393,stroke-width:2px;
+
+    %% Vert : Bases de données (Postgres &amp; Redis)
+    linkStyle 13,15,18,21 stroke:#2ecc71,stroke-width:2px;
+
+    %% Jaune/Or : JS Executor &amp; Rule Engine
+    linkStyle 14,19,20 stroke:#f1c40f,stroke-width:2px;
+
+    %% Gris : Initialisation
+    linkStyle 22 stroke:#95a5a6,stroke-width:2px,stroke-dasharray: 5 5;
+
+    %% Orange : Flux critiques Chauffage &amp; Utilisateur
+    linkStyle 23,24,25 stroke:#ff5500,stroke-width:3px;
+
+    %% Cyan : Autres équipements terrain
+    linkStyle 26 stroke:#1abc9c,stroke-width:2px;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_erreur_dutilisation_des_commandes_de_chauffage_de_laimee">5. Erreur d&#8217;utilisation des commandes de chauffage de LAIMEE</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_commande_docker_pour_trouver_lemplacement_du_fichier_docker_compose_yml_dun_conteneur_en_fonctionnement">5.1. Commande Docker pour trouver l&#8217;emplacement du fichier <code>docker-compose.yml</code> d&#8217;un conteneur en fonctionnement</h3>
+<div class="paragraph">
+<p>Permet d&#8217;afficher le chemin complet du fichier de configuration utilisé pour lancer le conteneur :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' laimee-tb-gateway-1</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Pour lister l&#8217;ensemble des projets Docker Compose actifs sur la machine ainsi que l&#8217;emplacement de leurs fichiers, vous pouvez également utiliser <code>docker compose ls</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_optimisation_des_scripts_bash">6. Optimisation des scripts Bash</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_sécurité_et_gestion_des_erreurs">6.1. Sécurité et gestion des erreurs</h3>
+<div class="sect3">
+<h4 id="_arrêt_sur_erreur_set_euo_pipefail">6.1.1. Arrêt sur erreur (<code>set -euo pipefail</code>)</h4>
+<div class="paragraph">
+<p>Permet d&#8217;éviter que le script continue son exécution et modifie ou supprime des fichiers si une commande précédente échoue.</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+
+echo "Disabling Sleep mode"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+set -euo pipefail</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_nettoyage_automatique_et_sécurisé_trap">6.1.2. Nettoyage automatique et sécurisé (<code>trap</code>)</h4>
+<div class="paragraph">
+<p>Garantit la suppression des fichiers temporaires à la fin du script, même en cas d&#8217;interruption ou d&#8217;erreur.</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cd ..
+rm -rf laimee-docker</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après (sans variable) :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">trap 'rm -rf ~/laimee-docker' EXIT</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après (avec variable sécurisée) :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">PACKAGES_DIR="/var/cache/packs_1"
+
+trap 'rm -rf "${PACKAGES_DIR:?}"' EXIT</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+L&#8217;utilisation de <code>${VAR:?}</code> empêche une suppression accidentelle si la variable devient vide ou n&#8217;est pas définie.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_compression_et_factorisation_de_commandes">6.2. Compression et factorisation de commandes</h3>
+<div class="sect3">
+<h4 id="_rsync">6.2.1. rsync</h4>
+<div class="paragraph">
+<p>Regroupement des transferts de fichiers en une seule exécution pour réduire le temps de traitement.</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">rsync -ah --progress docker-core.tar.gz ~/laimee-docker
+rsync -ah --progress docker-gateway.tar.gz ~/laimee-docker</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">rsync -ah --progress docker-core.tar.gz docker-gateway.tar.gz ~/laimee-docker/</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_création_de_répertoires_mkdir_p">6.2.2. Création de répertoires (<code>mkdir -p</code>)</h4>
+<div class="paragraph">
+<p>Factorisation des créations de dossiers en une seule ligne avec l&#8217;option <code>-p</code> (évite les erreurs si le dossier existe déjà).</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mkdir docker-core
+mkdir -p /opt/docker/scripts/laimee/core</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mkdir -p docker-core /opt/docker/scripts/laimee/core</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_fiabilité_et_performances_des_commandes">6.3. Fiabilité et performances des commandes</h3>
+<div class="sect3">
+<h4 id="_écriture_de_fichier_de_configuration_cat_vs_tee">6.3.1. Écriture de fichier de configuration (<code>cat</code> vs <code>tee</code>)</h4>
+<div class="paragraph">
+<p>Remplacement de <code>tee</code> par <code>cat</code> avec redirection directe (<code>&gt;</code>) pour éviter l&#8217;affichage inutile du contenu dans le terminal. Ajout de la section <code>[Sleep]</code> indispensable pour que <code>systemd</code> valide la configuration.</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">tee /etc/systemd/sleep.conf &lt;&lt;EOF
+AllowSuspend=no
+AllowHibernation=no
+AllowHybridSleep=no
+AllowSuspendThenHibernate=no
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cat &lt;&lt;EOF &gt; /etc/systemd/sleep.conf
+[Sleep]
+AllowSuspend=no
+AllowHibernation=no
+AllowHybridSleep=no
+AllowSuspendThenHibernate=no
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_copie_en_mode_archive_cp_a">6.3.2. Copie en mode archive (<code>cp -a</code>)</h4>
+<div class="paragraph">
+<p>Remplacement de <code>-r</code> par <code>-a</code> pour préserver les droits d&#8217;exécution des scripts, les propriétaires et les liens symboliques.</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cp -r ./. /opt/docker/scripts/laimee/core</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cp -a . /opt/docker/scripts/laimee/core/</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_extraction_rapide_tar">6.3.3. Extraction rapide (<code>tar</code>)</h4>
+<div class="paragraph">
+<p>Suppression de l&#8217;option verbose (<code>-v</code>) pour accélérer la décompression et éviter de surcharger le terminal.</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">tar -xzvf docker-core.tar.gz -C docker-core</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">tar -xzf docker-core.tar.gz -C docker-core</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_déplacement_de_fichiers_mv">6.3.4. Déplacement de fichiers (<code>mv</code>)</h4>
+<div class="paragraph">
+<p>Suppression de l&#8217;option invalide <code>-r</code> (<code>mv</code> gère les répertoires nativement).</p>
+</div>
+<div class="paragraph">
+<p>Avant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mv -r /opt/docker/scripts/laimee/gateway/thingsboard_gateway/config/* /opt/docker/volumes/laimee/gateway/config</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Après :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mv /opt/docker/scripts/laimee/gateway/thingsboard_gateway/config/* /opt/docker/volumes/laimee/gateway/config/</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.2<br>
+Last updated 2026-11-18 17:19:49 +0100
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+<script>
+if (!hljs.initHighlighting.called) {
+  hljs.initHighlighting.called = true
+  ;[].slice.call(document.querySelectorAll('pre.highlight > code[data-lang]')).forEach(function (el) { hljs.highlightBlock(el) })
+}
+</script>
+</body>
+</html>

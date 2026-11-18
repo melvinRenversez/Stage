@@ -1,0 +1,1454 @@
+= Documentation technique : Stage Besttic
+Melvin
+v1.2, 2026-11-17
+:toc: left
+:toc-title: Sommaire
+:docinfo: shared
+:toclevels: 4
+:sectnums:
+:sectnumlevels: 3
+:imagesdir: images
+:icons: font
+:source-highlighter: highlight.js
+:copy-to-clipboard:
+:autofit-option:
+
+== Mutation des scripts de LAIMEE vers Windows
+
+Cette section présente le script Batch (`installer-windows.bat`) permettant d'automatiser le déploiement complet de l'infrastructure **LAIMEE** sous Windows via Docker Desktop.
+
+IMPORTANT: Assurez-vous que **Docker Desktop** est démarré avant d'exécuter ce script.
+
+=== Étapes réalisées par le script
+Le script exécute automatiquement les 7 étapes suivantes :
+
+. Création de l'arborescence locale des dossiers de logs et de configuration.
+. Extraction des configurations depuis les images Docker et conversion au format Unix (`LF`).
+. Génération dynamique du fichier de routage `haproxy.cfg`.
+. Création du réseau Docker dédié (`laimee_docker_network`).
+. Chargement des variables d'environnement via `compose-utils.bat`.
+. Initialisation de la base de données PostgreSQL (uniquement au premier lancement).
+. Démarrage des conteneurs et ouverture automatique de l'interface web.
+
+=== Code source complet
+
+.laimee/installer-windows.bat
+[source, dos]
+----
+@echo off
+setlocal enabledelayedexpansion
+
+echo ===================================================
+echo   DEMARRAGE AUTOMATIQUE DE LAIMEE SOUS WINDOWS
+echo ===================================================
+
+REM 1. Creation des dossiers de logs et de configuration
+echo [1/7] Verification des dossiers locaux...
+for %%f in (tb-core1 tb-core2 tb-rule-engine1 tb-rule-engine2) do (
+    if not exist "tb-node\log\%%f" mkdir "tb-node\log\%%f"
+)
+for %%d in (
+    "tb-node\conf"
+    "tb-transports\coap\conf"
+    "tb-transports\coap\log\tb-coap-transport"
+    "tb-transports\http\conf"
+    "tb-transports\http\log\tb-http-transport1"
+    "tb-transports\http\log\tb-http-transport2"
+    "tb-transports\mqtt\conf"
+    "tb-transports\mqtt\log\tb-mqtt-transport1"
+    "tb-transports\mqtt\log\tb-mqtt-transport2"
+    "haproxy\config"
+    "haproxy\letsencrypt"
+    "haproxy\certs.d"
+    "%USERPROFILE%\.tb-gateway"
+    "%USERPROFILE%\.tb-laimee"
+) do (
+    if not exist %%d mkdir %%d
+)
+
+REM 2. Extraction automatique des fichiers conf + correction localhost->postgres (format Unix LF)
+if not exist "tb-node\conf\laimee.conf" (
+    echo [2/7] Extraction des fichiers de configuration depuis les images Docker...
+    docker create --name temp-node laimee/tb-node:latest >nul
+    docker cp temp-node:/usr/share/laimee/conf/. tb-node\conf\
+    docker rm temp-node >nul
+
+    docker create --name temp-mqtt laimee/tb-mqtt-transport:latest >nul
+    docker cp temp-mqtt:/usr/share/tb-mqtt-transport/conf/. tb-transports\mqtt\conf\
+    docker rm temp-mqtt >nul
+
+    docker create --name temp-http laimee/tb-http-transport:latest >nul
+    docker cp temp-http:/usr/share/tb-http-transport/conf/. tb-transports\http\conf\
+    docker rm temp-http >nul
+
+    docker create --name temp-coap laimee/tb-coap-transport:latest >nul
+    docker cp temp-coap:/usr/share/tb-coap-transport/conf/. tb-transports\coap\conf\
+    docker rm temp-coap >nul
+) else (
+    echo [2/7] Fichiers de configuration deja presents.
+)
+
+REM Nettoyage propre de laimee.conf (format Unix LF sans \r + postgres:5432)
+docker run --rm -v "%CD%\tb-node\conf:/conf" postgres:12 sed -i -e "s/\r//g" -e "s/localhost:5432/postgres:5432/g" /conf/laimee.conf
+
+REM 3. Generation automatique de haproxy.cfg (sans check bloquant)
+echo [3/7] Configuration de HAProxy...
+(
+echo global
+echo     maxconn 4096
+echo.
+echo defaults
+echo     mode http
+echo     timeout connect 5000ms
+echo     timeout client 50000ms
+echo     timeout server 50000ms
+echo.
+echo frontend http-in
+echo     bind *:80
+echo     acl is_api path_beg /api /swagger /webjars /v2/api-docs
+echo     acl is_telemetry path_beg /api/v1
+echo     use_backend tb_http_backend if is_telemetry
+echo     use_backend tb_core_backend if is_api
+echo     default_backend tb_web_ui_backend
+echo.
+echo backend tb_core_backend
+echo     balance roundrobin
+echo     server tb-core1 tb-core1:8080
+echo     server tb-core2 tb-core2:8080
+echo.
+echo backend tb_http_backend
+echo     balance roundrobin
+echo     server tb-http1 tb-http-transport1:8081
+echo     server tb-http2 tb-http-transport2:8081
+echo.
+echo backend tb_web_ui_backend
+echo     balance roundrobin
+echo     server tb-web-ui1 tb-web-ui1:8080
+echo     server tb-web-ui2 tb-web-ui2:8080
+echo.
+echo frontend mqtt-in
+echo     bind *:1883
+echo     mode tcp
+echo     default_backend tb_mqtt_backend
+echo.
+echo backend tb_mqtt_backend
+echo     mode tcp
+echo     balance roundrobin
+echo     server tb-mqtt1 tb-mqtt-transport1:1883
+echo     server tb-mqtt2 tb-mqtt-transport2:1883
+) > "haproxy\config\haproxy.cfg"
+
+REM 4. Creation du reseau Docker si inexistant
+echo [4/7] Verification du reseau Docker laimee_docker_network...
+docker network inspect laimee_docker_network >nul 2>&1
+if errorlevel 1 (
+    docker network create --driver=bridge --subnet=172.23.0.0/24 --gateway=172.23.0.1 laimee_docker_network >nul
+)
+
+REM 5. Lecture des arguments Compose (.env)
+call compose-utils.bat :additionalComposeQueueArgs
+if errorlevel 1 exit /b %errorlevel%
+call compose-utils.bat :additionalComposeArgs
+if errorlevel 1 exit /b %errorlevel%
+call compose-utils.bat :additionalStartupServices
+if errorlevel 1 exit /b %errorlevel%
+
+REM 6. Detection et installation automatique de la base de donnees si vierge
+if not exist "tb-node\postgres\PG_VERSION" (
+    echo [5/7] Base de donnees vierge detectee : installation des tables SQL en cours...
+    docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% up -d redis %ADDITIONAL_STARTUP_SERVICES%
+    timeout /t 5 /nobreak >nul
+    docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% run --no-deps --rm -e INSTALL_TB=true -e LOAD_DEMO=false -e INSTALL_DATA_DIR=/usr/share/laimee/data tb-core1
+    if errorlevel 1 (
+        echo Erreur lors de l'initialisation de la base de donnees.
+        pause
+        exit /b 1
+    )
+) else (
+    echo [5/7] Base de donnees deja initialisee.
+)
+
+
+REM 7. Demarrage complet de tous les services et synchronisation HAProxy
+echo [6/7] Demarrage de tous les conteneurs...
+docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% up -d
+if errorlevel 1 exit /b %errorlevel%
+
+
+echo [7/7] Attente que le serveur backend soit operationnel (cette etape prend environ 3 a 5 minutes)...
+set /a elapsed=0
+:wait_backend
+timeout /t 30 /nobreak >nul
+set /a elapsed+=30
+set /a mins=elapsed / 60
+set /a secs=elapsed %% 60
+if !secs! lss 10 set "secs=0!secs!"
+docker exec laimee-tb-core1-1 bash -c "echo > /dev/tcp/localhost/8080" >nul 2>&1
+if errorlevel 1 (
+    echo   [!mins!m !secs!s] Demarrage des services Java en cours, merci de patienter...
+    goto :wait_backend
+)
+
+echo   Serveur operationnel ! Synchronisation de HAProxy...
+docker restart haproxy-certbot >nul 2>&1
+timeout /t 3 /nobreak >nul
+start http://localhost
+
+echo.
+echo ===================================================
+echo   TOUT EST PRET !
+echo   Interface Web : http://localhost
+echo   Identifiant   : sysadmin@laimee.org
+echo   Mot de passe  : sysadmin
+echo ===================================================
+echo.
+----
+
+TIP: À la fin de l'exécution, l'interface web s'ouvre automatiquement à l'adresse `http://localhost` avec les identifiants par défaut.
+
+=== Mécanisme d'attente et détection du démarrage du backend
+
+Le démarrage des microservices Java de ThingsBoard (`tb-core1`) prend généralement entre **3 et 5 minutes**. Si le navigateur ou HAProxy tente d'accéder à l'interface avant la fin de cette initialisation, une erreur `503 Service Unavailable` s'affiche.
+
+Pour éviter ce problème, l'étape `[7/7]` du script met en place une **boucle de surveillance active** :
+
+.Extrait de la boucle d'attente (installer-windows.bat)
+[source, dos]
+----
+echo [7/7] Attente que le serveur backend soit operationnel (cette etape prend environ 3 a 5 minutes)...
+set /a elapsed=0
+:wait_backend
+timeout /t 30 /nobreak >nul
+set /a elapsed+=30
+set /a mins=elapsed / 60
+set /a secs=elapsed %% 60
+if !secs! lss 10 set "secs=0!secs!"
+docker exec laimee-tb-core1-1 bash -c "echo > /dev/tcp/localhost/8080" >nul 2>&1
+if errorlevel 1 (
+    echo   [!mins!m !secs!s] Demarrage des services Java en cours, merci de patienter...
+    goto :wait_backend
+)
+----
+
+==== Fonctionnement détaillé
+
+* **Temporisation (`timeout /t 30 /nobreak`)** : Le script marque une pause de 30 secondes à chaque cycle sans pouvoir être interrompu par une touche accidentelle.
+* **Chronomètre dynamique (`!mins!m !secs!s`)** : À chaque tour de boucle, la variable `elapsed` est incrémentée de 30 secondes. Le script convertit ce total en minutes (`elapsed / 60`) et secondes (`elapsed %% 60`), en ajoutant un zéro devant les secondes inférieures à 10 (`if !secs! lss 10`) pour un affichage propre (ex. `01m 30s`).
+* **Sonde TCP interne (`docker exec ... /dev/tcp/localhost/8080`)** : Le script exécute un test de connexion TCP directement à l'intérieur du conteneur `laimee-tb-core1-1` sur le port `8080`.
+* **Condition de sortie (`if errorlevel 1`)** :
+  * Tant que le port `8080` est fermé, la commande renvoie un code d'erreur (`1`), le message de progression s'affiche et le script reboucle sur l'étiquette `:wait_backend`.
+  * Dès que le serveur Java ouvre le port `8080`, la commande réussit (`errorlevel 0`), ce qui libère le script pour redémarrer **HAProxy** et ouvrir automatiquement `http://localhost`.
+
+TIP: Si l'image Docker utilisée ne dispose pas de `bash` (cas des images minimales sous `/bin/sh`), la sonde `/dev/tcp` peut être remplacée par une lecture directe de la table réseau du noyau Linux : `docker exec laimee-tb-core1-1 grep -qi ":1F90" /proc/net/tcp /proc/net/tcp6` (où `1F90` correspond au port `8080` en hexadécimal).
+
+
+=== Résultat de l'execution du script dans le terminal
+
+[source, powershell]
+----
+PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee> .\installer-windows.bat
+===================================================
+  DEMARRAGE AUTOMATIQUE DE LAIMEE SOUS WINDOWS
+===================================================
+[1/7] Verification des dossiers locaux...
+[2/7] Extraction des fichiers de configuration depuis les images Docker...
+Successfully copied 175kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-node\conf\
+Successfully copied 23.6kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-transports\mqtt\conf\
+Successfully copied 22kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-transports\http\conf\
+Successfully copied 22.5kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-transports\coap\conf\
+[3/7] Configuration de HAProxy...
+[4/7] Verification du reseau Docker laimee_docker_network...
+[5/7] Base de donnees vierge detectee : installation des tables SQL en cours...
+[+] up 2/2
+ ✔ Container laimee-redis-1    Started                       0.5s
+ ✔ Container laimee-postgres-1 Started                       0.8s
+[+] run 1/1
+ ✔ Container laimee-tb-core1-run-63cf0c987e9a Created        0.1s
+TB-NODE
+Starting Laimee installation ...
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+11:21:44,572 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+11:21:44,576 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.groovy]
+11:21:44,582 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/config/logback.xml]
+11:21:44,594 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs multiple times on the classpath.
+11:21:44,594 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/usr/share/laimee/conf/logback.xml]
+11:21:44,594 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/config/logback.xml]
+11:21:45,136 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+11:21:45,204 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Will scan for changes in [file:/config/logback.xml]
+11:21:45,204 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Setting ReconfigureOnChangeTask scanning period to 10 seconds
+11:21:45,223 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+11:21:45,247 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [fileLogAppender]
+11:21:45,307 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - setting totalSizeCap to 3 GB
+11:21:45,323 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - Archive files will be limited to [100 MB] each.
+11:21:45,442 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - No compression will be used
+11:21:45,450 |-INFO in c.q.l.core.rolling.SizeAndTimeBasedRollingPolicy@1967892594 - Will use the pattern /var/log/laimee/laimee.%d{yyyy-MM-dd}.%i.log for the active file
+11:21:45,457 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@146ba0ac - The date pattern is 'yyyy-MM-dd' from file name pattern '/var/log/laimee/laimee.%d{yyyy-MM-dd}.%i.log'.
+11:21:45,457 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@146ba0ac - Roll-over at midnight.
+11:21:45,474 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@146ba0ac - Setting initial period to Tue Nov 17 11:21:45 CET 2026
+11:21:45,485 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+11:21:45,560 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[fileLogAppender] - Active log file name: /var/log/laimee/laimee.log
+11:21:45,560 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[fileLogAppender] - File property is set to [/var/log/laimee/laimee.log]
+11:21:45,567 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.thingsboard.server] to INFO
+11:21:45,567 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [com.microsoft.azure.servicebus.primitives.CoreMessageReceiver] to OFF
+11:21:45,567 |-INFO in ch.qos.logback.classic.joran.action.RootLoggerAction - Setting level of ROOT logger to INFO
+11:21:45,567 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [fileLogAppender] to Logger[ROOT]
+11:21:45,569 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+11:21:45,571 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@4dfa3a9d - Registering current configuration as safe fallback point
+
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.codehaus.groovy.vmplugin.v7.Java7$1 (jar:file:/usr/share/laimee/bin/laimee.jar!/BOOT-INF/lib/groovy-2.5.7-indy.jar!/) to constructor java.lang.invoke.MethodHandles$Lookup(java.lang.Class,int)
+WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.vmplugin.v7.Java7$1
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+ ===================================================
+ :: Laimee ::       (v3.1.1-SNAPSHOT)
+ ===================================================
+
+Starting Laimee Installation...
+Installing DataBase schema for entities...
+Installing SQL DataBase schema part: schema-entities.sql
+Installing SQL DataBase schema indexes part: schema-entities-idx.sql
+Installing DataBase schema for timeseries...
+Installing SQL DataBase schema part: schema-ts-psql.sql
+Successfully executed query: CREATE TABLE IF NOT EXISTS ts_kv_indefinite PARTITION OF ts_kv DEFAULT;
+Loading system data...
+Installation finished successfully!
+[6/7] Demarrage de tous les conteneurs...
+[+] up 19/19
+ ✔ Container laimee-postgres-1                 Running             0.0s
+ ✔ Container laimee-redis-1                    Running             0.0s
+ ✔ Container laimee-init-permissions-1         Started             3.1s
+ ✔ Container laimee-tb-web-ui2-1               Started             4.3s
+ ✔ Container laimee-zookeeper-1                Started             5.0s
+ ✔ Container laimee-kafka-1                    Started             5.5s
+ ✔ Container laimee-tb-web-ui1-1               Started             3.7s
+ ✔ Container laimee-tb-js-executor-1           Started             5.6s
+ ✔ Container laimee-tb-js-executor-2           Started             6.4s
+ ✔ Container laimee-tb-http-transport1-1       Started             9.3s
+ ✔ Container laimee-tb-http-transport2-1       Started             8.5s
+ ✔ Container laimee-tb-mqtt-transport1-1       Started             7.8s
+ ✔ Container laimee-tb-mqtt-transport2-1       Started             6.9s
+ ✔ Container laimee-tb-coap-transport-1        Started            10.2s
+ ✔ Container laimee-tb-rule-engine1-1          Started            10.7s
+ ✔ Container laimee-tb-rule-engine2-1          Started            11.4s
+ ✔ Container laimee-tb-core2-1                 Started            11.8s
+ ✔ Container laimee-tb-core1-1                 Started            13.7s
+ ✔ Container haproxy-certbot                   Started            17.2s
+[7/7] Attente que le serveur backend soit operationnel (cette etape prend environ 3 a 5 minutes)...
+  [0m 30s] Demarrage des services Java en cours, merci de patienter...
+  [1m 00s] Demarrage des services Java en cours, merci de patienter...
+  [1m 30s] Demarrage des services Java en cours, merci de patienter...
+  [2m 00s] Demarrage des services Java en cours, merci de patienter...
+  [2m 30s] Demarrage des services Java en cours, merci de patienter...
+  [3m 00s] Demarrage des services Java en cours, merci de patienter...
+  [3m 30s] Demarrage des services Java en cours, merci de patienter...
+  [4m 00s] Demarrage des services Java en cours, merci de patienter...
+  Serveur operationnel  Synchronisation de HAProxy...
+
+===================================================
+  TOUT EST PRET
+  Interface Web : http://localhost
+  Identifiant   : sysadmin@laimee.org
+  Mot de passe  : sysadmin
+===================================================
+----
+
+==== Docker compose 
+
+===== docker-compose.yml
+[source, yaml]
+----
+services:
+  # --- NOUVEAU SERVICE À AJOUTER ---
+  init-permissions:
+    image: alpine:latest
+    user: "0:0"
+    volumes:
+      - ../tb-gateway:/thingsboard-gateway:rw
+      - ./tb-node:/tb-node:rw
+      - ./tb-laimee:/laimee:rw
+    command: >
+      sh -c "chown -R 799:799 /thingsboard-gateway /tb-node /laimee &&
+             chmod -R 775 /thingsboard-gateway"
+    restart: "no"  
+  # --- SERCIVE PAR DEFAUT ---
+  zookeeper:
+    restart: always
+    image: "zookeeper:3.5"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;zookeeper:2181
+      TZ: "${TIME_ZONE}"
+
+  redis:
+    restart: always
+    image: "redis:4.0"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "6379"
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  tb-js-executor:
+    #restart: always
+    #restart: no
+    restart: on-failure:5
+    image: "${DOCKER_REPO}/${JS_EXECUTOR_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    #nb of containers
+    #scale: 20
+    scale: 2
+    env_file:
+      - tb-js-executor.env
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  tb-core1:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-core1
+      TB_SERVICE_TYPE: tb-core
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+      - ../tb-gateway:/thingsboard-gateway:rw
+      #- ~/.etc-laimee:/etc/laimee
+      - ./tb-laimee:/laimee:rw
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+      - tb-rule-engine1
+      - tb-rule-engine2
+
+  tb-core2:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-core2
+      TB_SERVICE_TYPE: tb-core
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+      - ../tb-gateway:/thingsboard-gateway:rw
+      #- ~/.etc-laimee:/etc/laimee
+      - ./tb-laimee:/laimee:rw
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+      - tb-rule-engine1
+      - tb-rule-engine2
+  
+  tb-rule-engine1:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-rule-engine1
+      TB_SERVICE_TYPE: tb-rule-engine
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+  
+  tb-rule-engine2:
+    restart: always
+    image: "${DOCKER_REPO}/${TB_NODE_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "30"
+    environment:
+      TB_SERVICE_ID: tb-rule-engine2
+      TB_SERVICE_TYPE: tb-rule-engine
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-node.env
+    volumes:
+      - ./tb-node/conf:/config
+      - ./tb-node/log:/var/log/laimee
+    user: "799:799"
+    depends_on:
+      - zookeeper
+      - redis
+      - tb-js-executor
+  
+  tb-mqtt-transport1:
+    restart: always
+    image: "${DOCKER_REPO}/${MQTT_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "1883"
+    environment:
+      TB_SERVICE_ID: tb-mqtt-transport1
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-mqtt-transport.env
+    volumes:
+      - ./tb-transports/mqtt/conf:/config
+      - ./tb-transports/mqtt/log:/var/log/tb-mqtt-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+  
+  tb-mqtt-transport2:
+    restart: always
+    image: "${DOCKER_REPO}/${MQTT_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "1883"
+    environment:
+      TB_SERVICE_ID: tb-mqtt-transport2
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-mqtt-transport.env
+    volumes:
+      - ./tb-transports/mqtt/conf:/config
+      - ./tb-transports/mqtt/log:/var/log/tb-mqtt-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+  
+  tb-http-transport1:
+    restart: always
+    image: "${DOCKER_REPO}/${HTTP_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8081"
+    environment:
+      TB_SERVICE_ID: tb-http-transport1
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-http-transport.env
+    volumes:
+      - ./tb-transports/http/conf:/config
+      - ./tb-transports/http/log:/var/log/tb-http-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+  
+  tb-http-transport2:
+    restart: always
+    image: "${DOCKER_REPO}/${HTTP_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8081"
+    environment:
+      TB_SERVICE_ID: tb-http-transport2
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-http-transport.env
+    volumes:
+      - ./tb-transports/http/conf:/config
+      - ./tb-transports/http/log:/var/log/tb-http-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+  
+  tb-coap-transport:
+    restart: always
+    image: "${DOCKER_REPO}/${COAP_TRANSPORT_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "5683:5683/udp"
+    environment:
+      TB_SERVICE_ID: tb-coap-transport
+      TZ: "${TIME_ZONE}"
+    env_file:
+      - tb-coap-transport.env
+    volumes:
+      - ./tb-transports/coap/conf:/config
+      - ./tb-transports/coap/log:/var/log/tb-coap-transport
+    user: "799:799"
+    depends_on:
+      - zookeeper
+ 
+  tb-web-ui1:
+    restart: always
+    image: "${DOCKER_REPO}/${WEB_UI_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    env_file:
+      - tb-web-ui.env
+    environment:
+      TZ: "${TIME_ZONE}"
+ 
+  tb-web-ui2:
+    restart: always
+    image: "${DOCKER_REPO}/${WEB_UI_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "8080"
+      - "443"
+    env_file:
+      - tb-web-ui.env
+    environment:
+      TZ: "${TIME_ZONE}"
+
+  haproxy:
+    restart: always
+    container_name: "${LOAD_BALANCER_NAME}"
+    image: "xalauc/haproxy-certbot:1.7.9"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    volumes:
+     - ./haproxy/config:/config
+     - ./haproxy/letsencrypt:/etc/letsencrypt
+     - ./haproxy/certs.d:/usr/local/etc/haproxy/certs.d
+    ports:
+     - "80:80"
+     - "443:443"
+     - "1883:1883"
+     - "9999:9999"
+    cap_add:
+     - NET_ADMIN
+    environment:
+      HTTP_PORT: 80
+      HTTPS_PORT: 443
+      MQTT_PORT: 1883
+      FORCE_HTTPS_REDIRECT: "false"
+      TZ: "${TIME_ZONE}"
+    links:
+        - tb-core1
+        - tb-core2
+        - tb-web-ui1
+        - tb-web-ui2
+        - tb-mqtt-transport1
+        - tb-mqtt-transport2
+        - tb-http-transport1
+        - tb-http-transport2
+
+networks:
+  laimee_docker_network:
+    name: laimee_docker_network
+    external: true
+
+----
+
+
+===== docker-compose.kafka.yml
+[source, yaml]
+----
+services:
+  kafka:
+    #restart: always
+    restart: always
+    image: "wurstmeister/kafka:2.12-2.3.0"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "9092:9092"
+    env_file:
+      - kafka.env
+
+    # ADD
+
+    # healthcheck: # test du port 2181 de zookeeper
+    #   test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181 | grep imok"]
+    #   interval: 2s
+    #   timeout: 2s
+    #   retries: 10
+    
+    # depends_on:
+    #     zookeeper:
+    #       condition: service_healthy # attendre le demarrage complet du docker
+      
+    # END
+
+    environment:
+        TZ: "${TIME_ZONE}"
+
+  tb-js-executor:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-core1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-core2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-rule-engine1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-rule-engine2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+      - redis
+  tb-mqtt-transport1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-mqtt-transport2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-http-transport1:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-http-transport2:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+  tb-coap-transport:
+    env_file:
+      - queue-kafka.env
+    depends_on:
+      - kafka
+
+networks:
+  laimee_docker_network:
+    name: laimee_docker_network
+    external: true
+----
+
+=== Interface web fonctionnelle
+
+La capture d'écran ci-dessous montre l'affichage complet de l'interface web de la plateforme. Cela confirme que l'ensemble des conteneurs Docker fonctionnent et communiquent correctement entre eux. De plus, l'accès direct via le port `80` valide le bon routage des requêtes par le répartiteur de charge **HAProxy**.
+
+.Interface web de la plateforme LAIMEE accessible sur le port 80
+image::image.png[Interface web LAIMEE fonctionnelle, align="center"]
+
+
+== Mutation des scripts de la passerelle vers Windows
+
+Cette section présente le script Batch (`installer-windows.bat`) permettant d'automatiser la construction de l'image Docker et le démarrage de la passerelle **LAIMEE Gateway** sous Windows.
+
+IMPORTANT: Ce script doit être exécuté depuis le sous-dossier `gateway` de votre projet afin de localiser correctement le dossier source `thingsboard_gateway` et le répertoire parent `../tb-gateway`.
+
+=== Étapes réalisées par le script
+
+Le script exécute automatiquement les 6 étapes suivantes :
+
+. Recherche automatique du répertoire source `thingsboard_gateway` dans l'arborescence parente.
+. Copie du code source Python en local et attribution des permissions Windows complètes (`icacls`) pour éviter les blocages de lecture dans Docker.
+. Construction de l'image Docker locale (`laimee-gateway:latest`) sans cache (`--no-cache`).
+. Lecture et chargement des variables d'environnement depuis le fichier `.env`.
+. Création des dossiers de volumes persistants (`config`, `extensions`, `logs`) dans `../tb-gateway` avec ouverture des droits d'accès.
+. Lancement et recréation forcée du conteneur via Docker Compose sous le projet `laimee`.
+
+=== Code source complet
+
+.gateway/installer-windows.bat
+[source, dos]
+----
+@echo off
+setlocal enabledelayedexpansion
+
+echo ============================================================================
+echo        DEPLOIEMENT ET DEMARRAGE DE LAIMEE GATEWAY (DOCKER WINDOWS)
+echo ============================================================================
+echo.
+
+REM --- ETAPE 1 : RECHERCHE DU CODE SOURCE ---
+echo [1/6] Recherche du dossier source thingsboard_gateway...
+set "CURR_DIR=%CD%"
+set "SRC_DIR="
+
+pushd ..
+for /f "delims=" %%D in ('dir /s /b /ad thingsboard_gateway 2^>nul') do (
+    if /I not "%%~fD"=="%CURR_DIR%\thingsboard_gateway" (
+        set "SRC_DIR=%%~fD"
+        goto :found_src
+    )
+)
+
+:found_src
+popd
+
+if not "%SRC_DIR%"=="" (
+    echo       Source externe trouvee : "%SRC_DIR%"
+    echo [2/6] Copie du code source Python vers le dossier Docker local...
+    if exist "thingsboard_gateway" (
+        rmdir /s /q "thingsboard_gateway"
+    )
+    xcopy /E /I /Y /Q "%SRC_DIR%" ".\thingsboard_gateway" >nul
+    if !ERRORLEVEL! NEQ 0 (
+        echo [ERREUR] Echec lors de la copie du dossier thingsboard_gateway.
+        pause
+        exit /b !ERRORLEVEL!
+    )
+    echo       Copie terminee avec succes.
+) else if exist ".\thingsboard_gateway" (
+    echo       Dossier thingsboard_gateway deja present sur place.
+    echo [2/6] Copie ignoree.
+) else (
+    echo [ERREUR] Dossier thingsboard_gateway introuvable.
+    pause
+    exit /b 1
+)
+
+echo       Application des droits d'acces Windows...
+icacls ".\thingsboard_gateway" /grant *S-1-1-0:(OI)(CI)F /T /Q >nul
+echo.
+
+REM --- ETAPE 2 : CONSTRUCTION DE L'IMAGE DOCKER ---
+echo [3/6] Construction de l'image Docker (laimee-gateway:latest) sans cache...
+docker build --no-cache -t laimee-gateway:latest .
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERREUR] Echec lors du build de l'image Docker.
+    pause
+    exit /b %ERRORLEVEL%
+)
+echo       Image Docker construite avec succes.
+echo.
+
+REM --- ETAPE 3 : CHARGEMENT DE LA CONFIGURATION (.ENV) ---
+echo [4/6] Chargement des variables d'environnement (.env)...
+if exist .env (
+    for /f "usebackq tokens=1,* delims==" %%a in (".env") do (
+        set "line=%%a"
+        if not "!line:~0,1!"=="#" (
+            set "%%a=%%b"
+            echo       Variable chargee : %%a
+        )
+    )
+) else (
+    echo       Aucun fichier .env trouve, valeurs par defaut utilisees.
+)
+echo.
+
+REM --- ETAPE 4 : PREPARATION DES VOLUMES PERSISTANTS ---
+echo [5/6] Preparation des dossiers dans ../tb-gateway...
+set "TB_DIR=%../tb-gateway"
+if not exist "%TB_DIR%\config" mkdir "%TB_DIR%\config"
+if not exist "%TB_DIR%\extensions" mkdir "%TB_DIR%\extensions"
+if not exist "%TB_DIR%\logs" mkdir "%TB_DIR%\logs"
+icacls "%TB_DIR%" /grant *S-1-1-0:(OI)(CI)F /T /Q >nul
+echo       Dossiers prets.
+echo.
+
+REM --- ETAPE 5 : DEMARRAGE DU CONTENEUR ---
+echo [6/6] Demarrage du conteneur via Docker Compose...
+docker compose -p laimee -f docker-compose.yml up -d --force-recreate
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERREUR] Echec lors du demarrage avec Docker Compose.
+    pause
+    exit /b %ERRORLEVEL%
+)
+
+echo.
+echo ============================================================================
+echo        SUCCES : LAIMEE GATEWAY EST EN COURS D'EXECUTION
+echo ============================================================================
+pause
+----
+
+NOTE: L'utilisation de la commande `icacls ... /grant *S-1-1-0:(OI)(CI)F` accorde un contrôle total universel (SID `Everyone`), ce qui résout définitivement les erreurs `Permission denied` lors du montage des volumes entre Windows et Linux.
+
+=== Résultat de l'execution du script dans le terminal
+[source, powershell]
+----
+PS C:\Users\Dev-Sta-1\Documents\Melvin\gateway> .\installer.bat
+WARN[0000] Found orphan containers (haproxy-certbot, laimee-tb-core1-1, laimee-tb-core2-1, laimee-tb-rule-engine2-1, laimee-tb-rule-engine1-1, laimee-tb-http-transport2-1, laimee-tb-http-transport1-1, laimee-tb-mqtt-transport2-1, laimee-tb-coap-transport-1, laimee-tb-mqtt-transport1-1, laimee-tb-js-executor-2, laimee-tb-js-executor-1, laimee-postgres-1, laimee-init-permissions-1, laimee-redis-1, laimee-tb-web-ui2-1, laimee-zookeeper-1, laimee-kafka-1, laimee-tb-web-ui1-1) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up.
+[+] up 1/1
+ ✔ Container laimee-tb-gateway-1            Started             1.6s
+Conteneurs laimee demarres avec succes.
+Appuyez sur une touche pour continuer...
+PS C:\Users\Dev-Sta-1\Documents\Melvin\gateway>
+----
+
+==== Docker compose
+
+===== docker-compose.yml
+
+[source, yaml]
+----
+services:
+  tb-gateway:
+    restart: always
+    image: "laimee-gateway:latest"
+    networks:
+      - laimee_default
+    ports:
+      - "1883"        # MQTT
+      - "502:502"     # Modbus
+      - "5020:5020"
+      - "47808:47808" # BACnet
+      - "6021:6021"   # Mbus
+    volumes:
+      - ../tb-gateway/config:/thingsboard_gateway/config
+      - ../tb-gateway/extensions:/thingsboard_gateway/extensions
+      - ../tb-gateway/logs:/thingsboard_gateway/logs
+
+networks:
+  laimee_default:
+    driver: bridge
+----
+
+==== Résultat sur l'interface web
+
+La capture d'écran ci-dessous confirme que les données de télémétrie remontent correctement jusqu'au serveur web. Cela valide le bon fonctionnement de la connexion et des échanges entre la plateforme **LAIMEE** et la passerelle (**LAIMEE Gateway**).
+
+.Réception des données de télémétrie sur l'interface web LAIMEE
+image::image-1.png[Télémétrie reçue sur l'interface web LAIMEE, align="center"]
+
+== Commandes Docker utiles
+
+Cette section regroupe les principales commandes PowerShell permettant d'administrer et de vérifier l'état des conteneurs de l'infrastructure **LAIMEE**.
+
+=== Supprimer tous les conteneurs Docker
+
+La commande suivante permet d'arrêter et de supprimer de force l'ensemble des conteneurs présents sur la machine :
+
+[source, powershell]
+----
+docker stop $(docker ps -aq); docker rm -f $(docker ps -aq)
+----
+
+WARNING: Cette action supprime définitivement tous les conteneurs (actifs ou arrêtés), y compris ceux qui ne font pas partie du projet LAIMEE. Les données stockées dans vos volumes locaux (`tb-node`, `tb-gateway`, etc.) restent toutefois conservées.
+
+=== Vérifier que les conteneurs redémarrent au démarrage du système
+
+Pour contrôler la politique de redémarrage (`RestartPolicy`) appliquée à chaque conteneur lors du démarrage de Docker Desktop :
+
+[source, powershell]
+----
+docker inspect -f "{{.Name}} : {{.HostConfig.RestartPolicy.Name}}" $(docker ps -aq)
+----
+
+* **`always` / `unless-stopped`** : Le conteneur redémarrera automatiquement après un redémarrage de Windows.
+* **`no` / `on-failure`** : Le conteneur restera éteint au démarrage normal du système.
+
+==== Exemple de résultat
+
+[source, console]
+----
+PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee> docker inspect -f "{{.Name}} : {{.HostConfig.RestartPolicy.Name}}" $(docker ps -aq)
+/laimee-tb-gateway-1 : always
+/haproxy-certbot : always
+/laimee-tb-core2-1 : always
+/laimee-tb-core1-1 : always
+/laimee-tb-rule-engine2-1 : always
+/laimee-tb-rule-engine1-1 : always
+/laimee-tb-http-transport1-1 : always
+/laimee-tb-coap-transport-1 : always
+/laimee-tb-mqtt-transport1-1 : always
+/laimee-tb-http-transport2-1 : always
+/laimee-tb-mqtt-transport2-1 : always
+/laimee-tb-js-executor-1 : on-failure
+/laimee-tb-js-executor-2 : on-failure
+/laimee-postgres-1 : always
+/laimee-init-permissions-1 : no
+/laimee-redis-1 : always
+/laimee-zookeeper-1 : always
+/laimee-kafka-1 : always
+/laimee-tb-web-ui2-1 : always
+/laimee-tb-web-ui1-1 : always
+----
+
+NOTE: Dans cet exemple, tous les services principaux sont bien configurés sur `always`. Seul le conteneur ponctuel `laimee-init-permissions-1` reste sur `no` (comportement attendu).
+
+
+
+
+
+== Diagrammes d'architecture de LAIMEE
+
+=== Diagramme des dépendances
+
+Représentation des directives `depends_on` définies dans les fichiers `docker-compose.yml` afin d'identifier l'ordre de démarrage des conteneurs ainsi que leurs dépendances techniques (réseaux, bases de données et brokers de messages) :
+
+image::diagram-dependance.png[Diagramme des dépendances LAIMEE, align="center"]
+
+==== code source
+
+[source, powershell]
+----
+$cfg = docker compose -f docker-compose.yml -f docker-compose.kafka.yml -f docker-compose.postgres.yml config --format json | ConvertFrom-Json
+
+$lines = @("graph LR")
+
+foreach ($svc in $cfg.services.PSObject.Properties) {
+     $name = $svc.Name
+     $ports = if ($svc.Value.ports) { "<br/>Ports: " + (($svc.Value.ports | ForEach-Object { "$($_.published):$($_.target)" }) -join ", ") } else { "" }
+     $lines += "    $name[`"<b>$name</b>$ports`"]"
+
+     # Dépendances (depends_on)
+     if ($svc.Value.depends_on) {
+         foreach ($dep in $svc.Value.depends_on.PSObject.Properties) {
+             $lines += "    $name -->|depends_on| $($dep.Name)"
+         }
+     }
+
+     # Réseaux partagés
+     if ($svc.Value.networks) {
+         foreach ($net in $svc.Value.networks.PSObject.Properties) {
+             $lines += "    $name -.->|net| net_$($net.Name)(($($net.Name)))"
+         }
+     }
+ }
+
+$lines | Out-File -Encoding utf8 diagramme.mmd
+
+----
+
+=== Diagramme des requêtes (Flux de communication)
+
+==== Image
+
+Parcours des requêtes depuis l'interface web jusqu'à la passerelle (`laimee-tb-gateway-1`) et l'automate de chauffage (`Thermozyklus`) :
+
+image::mermaid-diagram-2026-11-18-171615.png[Diagramme des flux de communication LAIMEE, align="center"]
+
+.Légende des flux :
+* *Orange* : Chaîne principale de commande du chauffage (`Utilisateur` -> `HAProxy` -> `Gateway` -> `Thermozyklus`).
+* *Bleu* : Routage interne depuis `HAProxy` vers les services front-end et transports.
+* *Violet* : Échanges avec le broker de messages `Kafka`.
+* *Rose / Magenta* : Coordination avec `Zookeeper`.
+* *Vert* : Accès aux bases de données `PostgreSQL` et au cache `Redis`.
+* *Jaune / Or* : Appels internes vers `tb-js-executor` et `tb-rule-engine`.
+* *Cyan* : Communications avec les autres équipements terrain GTB.
+
+==== Code source
+
+[source, mermaid]
+----
+flowchart TB
+    %% --- 1. Acteurs & Équipements Terrain ---
+    User(["🌐 Navigateur Utilisateur<br/>(Interface Web / Planning)"])
+
+    subgraph Terrain ["🌡️ Réseau Terrain / Bâtiment (LAN)"]
+        Auto["<b>Automate Thermozyklus</b><br/>IP: 10.20.40.91<br/>(Chauffage)"]
+        Equip["<b>Autres Équipements GTB</b><br/>Modbus (502/5020) | BACnet (47808) | M-Bus (6021)"]
+    end
+
+    %% --- 2. Passerelle Gateway ---
+    subgraph Net_GW ["📦 Réseau Docker Gateway : laimee_default (bridge)"]
+        GW["<b>tb-gateway (laimee-tb-gateway-1)</b><br/>Image: laimee-gateway:latest | restart: always<br/>Ports: 1883, 502:502, 5020:5020, 47808:47808, 6021:6021<br/>Vol: config, extensions, logs"]
+    end
+
+    %% --- 3. Serveur Central LAIMEE ---
+    subgraph Net_Core ["🔒 Réseau Docker Serveur : laimee_docker_network (external)"]
+        direction TB
+
+        HA["<b>haproxy (Load Balancer)</b><br/>Image: xalauc/haproxy-certbot:1.7.9<br/>Ports Hôte: 80 (HTTP), 443 (HTTPS), 1883 (MQTT), 9999 (Stats)<br/>Vol: ./haproxy/config, letsencrypt, certs.d"]
+
+        subgraph Front_Transports ["Front-End & Transports (User 799:799)"]
+            UI["<b>tb-web-ui1 & tb-web-ui2</b><br/>Ports: :8080, :443"]
+            MQTT["<b>tb-mqtt-transport1 & 2</b><br/>Port: :1883"]
+            HTTP["<b>tb-http-transport1 & 2</b><br/>Port: :8081"]
+            COAP["<b>tb-coap-transport</b><br/>Port: 5683:5683/udp"]
+        end
+
+        subgraph Core_Layer ["Cœur Applicatif & Moteur de Règles (User 799:799)"]
+            CORE["<b>tb-core1 & tb-core2</b><br/>Ports: :8080, :443<br/>Vol: ./tb-node, ../tb-gateway, ./tb-laimee"]
+            RULE["<b>tb-rule-engine1 & 2</b><br/>Ports: :8080, :443<br/>Vol: ./tb-node/conf, log"]
+            JS["<b>tb-js-executor</b> (scale: 2)<br/>restart: on-failure:5"]
+        end
+
+        subgraph Infra_Layer ["Infrastructure, Broker & Bases de Données"]
+            KAFKA["<b>kafka</b><br/>wurstmeister/kafka:2.12-2.3.0<br/>Port: 9092:9092"]
+            ZK["<b>zookeeper</b> (3.5)<br/>Port: :2181"]
+            REDIS["<b>redis</b> (4.0)<br/>Port: :6379"]
+            PG[("<b>postgres</b><br/>Port: 5432:5432")]
+        end
+
+        %% Routage interne HAProxy (Index 0 à 3)
+        HA -->|"HTTP/HTTPS"| UI
+        HA -->|"API REST / WebSocket"| CORE
+        HA -->|"MQTT (:1883)"| MQTT
+        HA -->|"HTTP (:8081)"| HTTP
+
+        %% Dépendances Transports -> Kafka & Zookeeper (Index 4 à 9)
+        MQTT --> KAFKA
+        MQTT --> ZK
+        HTTP --> KAFKA
+        HTTP --> ZK
+        COAP --> KAFKA
+        COAP --> ZK
+
+        %% Dépendances JS Executor -> Kafka (Index 10)
+        JS --> KAFKA
+
+        %% Dépendances Rule Engine (Index 11 à 15)
+        RULE --> KAFKA
+        RULE --> ZK
+        RULE --> REDIS
+        RULE --> JS
+        RULE --> PG
+
+        %% Dépendances Core (Index 16 à 21)
+        CORE --> KAFKA
+        CORE --> ZK
+        CORE --> REDIS
+        CORE --> JS
+        CORE --> RULE
+        CORE --> PG
+    end
+
+    %% --- 4. Conteneur utilitaire (Index 22) ---
+    INIT["⚙️ <b>init-permissions</b> (alpine:latest)<br/>Réseau: default | restart: no<br/>chown -R 799:799 /thingsboard-gateway /tb-node /laimee"] -.->|"Initialise droits"| CORE
+
+    %% --- Flux Principaux & Chauffage (Index 23 à 26) ---
+    User <==>|"1. HTTP/HTTPS (80/443)"| HA
+    GW <==>|"2. Tunnel MQTT / RPC (Port 1883 via NAT/Hôte)"| HA
+    GW <==>|"3. Modbus / BACnet / M-Bus / TCP"| Auto
+    GW <-->|"4. Terrain"| Equip
+
+    %% --- Coloration détaillée des flèches ---
+    %% Bleu : Routage HAProxy
+    linkStyle 0,1,2,3 stroke:#0088ff,stroke-width:2px;
+
+    %% Violet : Flux Kafka uniquement
+    linkStyle 4,6,8,10,11,16 stroke:#9b59b6,stroke-width:2px;
+
+    %% Rose / Magenta : Flux Zookeeper uniquement
+    linkStyle 5,7,9,12,17 stroke:#e84393,stroke-width:2px;
+
+    %% Vert : Bases de données (Postgres & Redis)
+    linkStyle 13,15,18,21 stroke:#2ecc71,stroke-width:2px;
+
+    %% Jaune/Or : JS Executor & Rule Engine
+    linkStyle 14,19,20 stroke:#f1c40f,stroke-width:2px;
+
+    %% Gris : Initialisation
+    linkStyle 22 stroke:#95a5a6,stroke-width:2px,stroke-dasharray: 5 5;
+
+    %% Orange : Flux critiques Chauffage & Utilisateur
+    linkStyle 23,24,25 stroke:#ff5500,stroke-width:3px;
+
+    %% Cyan : Autres équipements terrain
+    linkStyle 26 stroke:#1abc9c,stroke-width:2px;
+
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+== Erreur d'utilisation des commandes de chauffage de LAIMEE
+
+=== Commande Docker pour trouver l'emplacement du fichier `docker-compose.yml` d'un conteneur en fonctionnement
+
+Permet d'afficher le chemin complet du fichier de configuration utilisé pour lancer le conteneur :
+
+[source, bash]
+----
+docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' laimee-tb-gateway-1
+----
+
+TIP: Pour lister l'ensemble des projets Docker Compose actifs sur la machine ainsi que l'emplacement de leurs fichiers, vous pouvez également utiliser `docker compose ls`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+== Optimisation des scripts Bash
+
+=== Sécurité et gestion des erreurs
+
+==== Arrêt sur erreur (`set -euo pipefail`)
+
+Permet d'éviter que le script continue son exécution et modifie ou supprime des fichiers si une commande précédente échoue.
+
+Avant :
+[source, bash]
+----
+#!/bin/bash
+
+echo "Disabling Sleep mode"
+----
+
+Après :
+[source, bash]
+----
+#!/bin/bash
+set -euo pipefail
+----
+
+==== Nettoyage automatique et sécurisé (`trap`)
+
+Garantit la suppression des fichiers temporaires à la fin du script, même en cas d'interruption ou d'erreur.
+
+Avant :
+[source, bash]
+----
+cd ..
+rm -rf laimee-docker
+----
+
+Après (sans variable) :
+[source, bash]
+----
+trap 'rm -rf ~/laimee-docker' EXIT
+----
+
+Après (avec variable sécurisée) :
+[source, bash]
+----
+PACKAGES_DIR="/var/cache/packs_1"
+
+trap 'rm -rf "${PACKAGES_DIR:?}"' EXIT
+----
+
+NOTE: L'utilisation de `${VAR:?}` empêche une suppression accidentelle si la variable devient vide ou n'est pas définie.
+
+=== Compression et factorisation de commandes
+
+==== rsync
+
+Regroupement des transferts de fichiers en une seule exécution pour réduire le temps de traitement.
+
+Avant :
+[source, bash]
+----
+rsync -ah --progress docker-core.tar.gz ~/laimee-docker
+rsync -ah --progress docker-gateway.tar.gz ~/laimee-docker
+----
+
+Après :
+[source, bash]
+----
+rsync -ah --progress docker-core.tar.gz docker-gateway.tar.gz ~/laimee-docker/
+----
+
+==== Création de répertoires (`mkdir -p`)
+
+Factorisation des créations de dossiers en une seule ligne avec l'option `-p` (évite les erreurs si le dossier existe déjà).
+
+Avant :
+[source, bash]
+----
+mkdir docker-core
+mkdir -p /opt/docker/scripts/laimee/core
+----
+
+Après :
+[source, bash]
+----
+mkdir -p docker-core /opt/docker/scripts/laimee/core
+----
+
+=== Fiabilité et performances des commandes
+
+==== Écriture de fichier de configuration (`cat` vs `tee`)
+
+Remplacement de `tee` par `cat` avec redirection directe (`>`) pour éviter l'affichage inutile du contenu dans le terminal. Ajout de la section `[Sleep]` indispensable pour que `systemd` valide la configuration.
+
+Avant :
+[source, bash]
+----
+tee /etc/systemd/sleep.conf <<EOF
+AllowSuspend=no
+AllowHibernation=no
+AllowHybridSleep=no
+AllowSuspendThenHibernate=no
+EOF
+----
+
+Après :
+[source, bash]
+----
+cat <<EOF > /etc/systemd/sleep.conf
+[Sleep]
+AllowSuspend=no
+AllowHibernation=no
+AllowHybridSleep=no
+AllowSuspendThenHibernate=no
+EOF
+----
+
+==== Copie en mode archive (`cp -a`)
+
+Remplacement de `-r` par `-a` pour préserver les droits d'exécution des scripts, les propriétaires et les liens symboliques.
+
+Avant :
+[source, bash]
+----
+cp -r ./. /opt/docker/scripts/laimee/core
+----
+
+Après :
+[source, bash]
+----
+cp -a . /opt/docker/scripts/laimee/core/
+----
+
+==== Extraction rapide (`tar`)
+
+Suppression de l'option verbose (`-v`) pour accélérer la décompression et éviter de surcharger le terminal.
+
+Avant :
+[source, bash]
+----
+tar -xzvf docker-core.tar.gz -C docker-core
+----
+
+Après :
+[source, bash]
+----
+tar -xzf docker-core.tar.gz -C docker-core
+----
+
+==== Déplacement de fichiers (`mv`)
+
+Suppression de l'option invalide `-r` (`mv` gère les répertoires nativement).
+
+Avant :
+[source, bash]
+----
+mv -r /opt/docker/scripts/laimee/gateway/thingsboard_gateway/config/* /opt/docker/volumes/laimee/gateway/config
+----
+
+Après :
+[source, bash]
+----
+mv /opt/docker/scripts/laimee/gateway/thingsboard_gateway/config/* /opt/docker/volumes/laimee/gateway/config/
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
