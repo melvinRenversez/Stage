@@ -219,6 +219,58 @@
   .hljs-deletion { color: #e06c75 !important; background-color: rgba(248, 81, 73, 0.15) !important; }
   .hljs-emphasis { font-style: italic; }
   .hljs-strong { font-weight: bold; }
+
+  @media screen and (max-width: 768px) {
+  /* Transforme la structure du tableau en blocs empilés */
+  table.tableblock,
+  table.tableblock thead,
+  table.tableblock tbody,
+  table.tableblock tr,
+  table.tableblock th,
+  table.tableblock td {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Masque l'en-tête horizontal original (Avant | Après) */
+  table.tableblock thead {
+    display: none !important;
+  }
+
+  /* Espace et bordure entre les blocs empilés */
+  table.tableblock td.tableblock {
+    border-bottom: 1px solid var(--border-default) !important;
+    padding: 0.6em !important;
+  }
+
+  /* Ajoute un bandeau titre "Avant" au-dessus du premier bloc */
+  table.tableblock tr td.tableblock:first-child::before {
+    content: "Avant";
+    display: block;
+    font-weight: bold;
+    color: var(--accent-primary);
+    background-color: var(--bg-elevated);
+    padding: 0.4em 0.6em;
+    margin-bottom: 0.6em;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  /* Ajoute un bandeau titre "Après" au-dessus du second bloc */
+  table.tableblock tr td.tableblock:nth-child(2)::before {
+    content: "Après";
+    display: block;
+    font-weight: bold;
+    color: var(--accent-primary);
+    background-color: var(--bg-elevated);
+    padding: 0.4em 0.6em;
+    margin-bottom: 0.6em;
+    border-radius: 4px;
+    text-align: center;
+  }
+}
+
 </style>
 
 <script>
