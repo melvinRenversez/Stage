@@ -657,6 +657,58 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   .hljs-deletion { color: #e06c75 !important; background-color: rgba(248, 81, 73, 0.15) !important; }
   .hljs-emphasis { font-style: italic; }
   .hljs-strong { font-weight: bold; }
+
+  @media screen and (max-width: 768px) {
+  /* Transforme la structure du tableau en blocs empilés */
+  table.tableblock,
+  table.tableblock thead,
+  table.tableblock tbody,
+  table.tableblock tr,
+  table.tableblock th,
+  table.tableblock td {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Masque l'en-tête horizontal original (Avant | Après) */
+  table.tableblock thead {
+    display: none !important;
+  }
+
+  /* Espace et bordure entre les blocs empilés */
+  table.tableblock td.tableblock {
+    border-bottom: 1px solid var(--border-default) !important;
+    padding: 0.6em !important;
+  }
+
+  /* Ajoute un bandeau titre "Avant" au-dessus du premier bloc */
+  table.tableblock tr td.tableblock:first-child::before {
+    content: "Avant";
+    display: block;
+    font-weight: bold;
+    color: var(--accent-primary);
+    background-color: var(--bg-elevated);
+    padding: 0.4em 0.6em;
+    margin-bottom: 0.6em;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  /* Ajoute un bandeau titre "Après" au-dessus du second bloc */
+  table.tableblock tr td.tableblock:nth-child(2)::before {
+    content: "Après";
+    display: block;
+    font-weight: bold;
+    color: var(--accent-primary);
+    background-color: var(--bg-elevated);
+    padding: 0.4em 0.6em;
+    margin-bottom: 0.6em;
+    border-radius: 4px;
+    text-align: center;
+  }
+}
+
 </style>
 
 <script>
@@ -785,14 +837,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_diagrammes_darchitecture_de_laimee">4. Diagrammes d&#8217;architecture de LAIMEE</a>
 <ul class="sectlevel2">
-<li><a href="#_diagramme_des_dépendances">4.1. Diagramme des dépendances</a>
+<li><a href="#_architecture_et_ordre_de_démarrage_des_services_docker">4.1. Architecture et ordre de démarrage des services Docker</a>
 <ul class="sectlevel3">
-<li><a href="#_code_source">4.1.1. code source</a></li>
+<li><a href="#_graphe">4.1.1. Graphe</a></li>
+<li><a href="#_code_source">4.1.2. code source</a></li>
 </ul>
 </li>
 <li><a href="#_diagramme_des_requêtes_flux_de_communication">4.2. Diagramme des requêtes (Flux de communication)</a>
 <ul class="sectlevel3">
-<li><a href="#_image">4.2.1. Image</a></li>
+<li><a href="#_graphe_2">4.2.1. Graphe</a></li>
 <li><a href="#_code_source_2">4.2.2. Code source</a></li>
 </ul>
 </li>
@@ -833,6 +886,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_résultat_du_script_3_install_services_sh">Résultat du script <code>3-install-services.sh</code></a></li>
 <li><a href="#_résultat_du_script_opt1_update_core_services_sh">Résultat du script <code>opt1-update-core-services.sh</code></a></li>
 <li><a href="#_résultat_du_script_opt2_update_gateway_services_sh">Résultat du script <code>opt2-update-gateway-services.sh</code></a></li>
+</ul>
+</li>
+<li><a href="#_résultat_des_scripts_bash_online_optimisés">6.3.9. Résultat des scripts bash <em>Online</em> optimisés</a>
+<ul class="sectlevel4">
+<li><a href="#_résultat_du_script_1_install_dependances_sh_2">Résultat du script <code>1-install-dependances.sh</code></a></li>
+<li><a href="#_résultat_du_script_2_install_docker_sh_2">Résultat du script <code>2-install-docker.sh</code></a></li>
+<li><a href="#_résultat_du_script_3_install_services_sh_2">Résultat du script <code>3-install-services.sh</code></a></li>
+<li><a href="#_résultat_du_script_opt1_update_core_services_sh_2">Résultat du script <code>opt1-update-core-services.sh</code></a></li>
 </ul>
 </li>
 </ul>
@@ -2042,17 +2103,20 @@ Dans cet exemple, tous les services principaux sont bien configurés sur <code>a
 <h2 id="_diagrammes_darchitecture_de_laimee">4. Diagrammes d&#8217;architecture de LAIMEE</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_diagramme_des_dépendances">4.1. Diagramme des dépendances</h3>
+<h3 id="_architecture_et_ordre_de_démarrage_des_services_docker">4.1. Architecture et ordre de démarrage des services Docker</h3>
 <div class="paragraph">
 <p>Représentation des directives <code>depends_on</code> définies dans les fichiers <code>docker-compose.yml</code> afin d&#8217;identifier l&#8217;ordre de démarrage des conteneurs ainsi que leurs dépendances techniques (réseaux, bases de données et brokers de messages) :</p>
 </div>
+<div class="sect3">
+<h4 id="_graphe">4.1.1. Graphe</h4>
 <div class="imageblock text-center">
 <div class="content">
 <img src="images/diagram-dependance.png" alt="Diagramme des dépendances LAIMEE">
 </div>
 </div>
+</div>
 <div class="sect3">
-<h4 id="_code_source">4.1.1. code source</h4>
+<h4 id="_code_source">4.1.2. code source</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">$cfg = docker compose -f docker-compose.yml -f docker-compose.kafka.yml -f docker-compose.postgres.yml config --format json | ConvertFrom-Json
@@ -2082,12 +2146,24 @@ foreach ($svc in $cfg.services.PSObject.Properties) {
 $lines | Out-File -Encoding utf8 diagramme.mmd</code></pre>
 </div>
 </div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Ce code s&#8217;ecxecute dans un terminal powershell
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_diagramme_des_requêtes_flux_de_communication">4.2. Diagramme des requêtes (Flux de communication)</h3>
 <div class="sect3">
-<h4 id="_image">4.2.1. Image</h4>
+<h4 id="_graphe_2">4.2.1. Graphe</h4>
 <div class="paragraph">
 <p>Parcours des requêtes depuis l&#8217;interface web jusqu&#8217;à la passerelle (<code>laimee-tb-gateway-1</code>) et l&#8217;automate de chauffage (<code>Thermozyklus</code>) :</p>
 </div>
@@ -2234,6 +2310,18 @@ $lines | Out-File -Encoding utf8 diagramme.mmd</code></pre>
     %% Cyan : Autres équipements terrain
     linkStyle 26 stroke:#1abc9c,stroke-width:2px;</code></pre>
 </div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Ce bloc contient le code source <strong>Mermaid</strong> (<code>.mmd</code>) du diagramme. L&#8217;utilisation de <a href="https://mermaid.live/edit#pako:eNqVWNtu28wRfpUBCxsSQFI86EQ2vwFZURw5J1VW_gCJimBFjqStqaWyu4ztHB6gQIEW_XvT3vRwUfy-70Xvhb5IX6B9hHZJkaJkOm51QZC7O9_MfLMzO6vPWhCHqPnaPIqvgiXhEianUz5lAABHR2AYBtgm9AKJCRdwDJtffkjoGlfIpIAJck4oU6tymdcCee3dVPv3H3_1G3hJPtIFUaLwWtKIivT90Yw3TmpDJpHPSYDwBmfQgFFEGKNsUZ9qP68rtBxRJLMFJ-tloS1D<em>O</em>v5rGG9uBZKkmGrA6eYvkirroPa891KB5Tjq10tk_G6qPZqdqLcVkQiTJfJV_OnmMkrEo8bsJLVuOPLBtkzHMpuW6dmZxf0lSeZzssBD1IGipIDlKPZZOpucFsAv4nCWCKi1LKfRshyrDl_gtNdnKKHW7HStrhp4YZyqNW3LscuqkIVlXrbRcUwYESGQYxQhnBGJV-SmHJGCv5co35-9yej74a8Fd4_j4BJ5IelDROgK8X2Ic5JEEmozTsO7Tp-9yTyWM2OxFa1lksZuyLDrO05XZIE5er7Aj4hEIeELcBSScOkDia7IjUhFRjGXwge723V1aFmO37Kc9MVSb5YOKWV&#8212;&#8203;tRB8eWrRyr7fRz5EMRsThc64LVEJmjMhA5RvBAPsuqacIH8o9q5fWSSkwie94YvBoN7me3HHDNuf_fbQ25zqB236fh7hvIq5pdQU_ZxRqJDkkPKMZA0ZtusLM897WUBWJI1j69voPY8JiGckoiwAPkd3q9JRJKgsV1tBMjlLJa-bXZMb0c2PN38TaIPXQtqTyeTUV2HZtPN3i_qehoKqL342WRS18HzPA9qF5JIUd9xbuY6Gjn7EUqBLOA3a6mDUizMcOto2aGCzic8ZvL9hBMm1qlR76ZaOmYMWAjHUJqpqXoDHc_zO553yF5aj4bFNr3CmZFQG46h-HAKlrZbze9aXUsHv9l0K8CU3wXc6oOUhsxNUbD7aD74iq0KGEVmAbOUcv0ATNfq2hUw_Ve9HUwQkxLMAUKr3XV99Wgk4foA6WD_7wVC7en3z8kNchWC_j9-SDj01uuIBkTSORzDizgt7iHCePPjIsL_ISD9V-NByWqO24Co12-Fo7zB5MxgcYg6mOn7tpbo2UyWYhWax6-f7zTzJEID2YIyvMv5g5rTrZ2Wkgo95xeFll8IA68xSGTMlQKoiYBE6IOT5UtR82JmzAmNEo5-6_-Iz5DNOdkFKP0UkieBTDjqcMpjVX2O4ZQIFCpKj2PGNrcoKqx-1nvybFtRLsn8khSEXCVcyBVSIZE30infMW3HcEzXtEqbzLM8x1ePCvC3zzLkT3F8ibjGLRuu2aqXN7pjV2708eDxcMspx5CKTLhpWnvCbbfjVQiPzt7VUtF1LOSCozjMjabr-Oox1eoPEX90BOM4kWSBQFX7whCe9kZZ9R2yEK_Bgs2fwK3v12kwjJMvU02lfSMtpFPtC7weVi7qjYYwHlxMoKH6ogt1Tki1XKVNpYCqSVBLS01dLVTf96qHWlpM0oXqu8LBx5vbNbJQHSKiXGmNE3imgg_H8DaPYu51U3nt7XmdmmUoIbWvKmfePtuzU5lXKVDM7Auo8lctUMxkAt9y8PwCBtsE3Xm49cq29jw6v9jX9i3YcRIhDNLqUqDZiiS7tYepSlK1D8XMvtPFcJoTlTPn1cOjs4eMTjuY3Nq2slb1n3u8jgf3MT4eVIZofI-1xcx59bAyu3Iic-P-xq1pQj9mEpk6lxJ16ZCE7vxynHq5gxu-HKoD_Z9_-L26TTyanVBGpbFGvqIibRezUkOiNWW47VWzorPt8HzI2-RSB8vidEmwjK8YGOP8NISGXFK2ELOY8LBomvMjBRrFwQWGmWbskFFJSUQFQshjKkW5EBz4_SRKrmHEKQvomiTX_72pFdeVwnc3jWm7fnhfg0fffaf02SbsahTUulaj2cyKytMi2mdv8tWOCZOEMYyyjG7AeNSHmiqqWZf4kRJ42Zs00o7yXhTXhO2dqJFfhBrbC1ADJv2RklN3tbJkVs-aZn7tU2vSO1gFL_04ijlJW-hwcysJjaLNLUKIAubR5sdgiaJMx9ERnEaYgF8U-m2BzxdElF1eyJsIwdJt3dFdEFIds_5PLKvbnc_17NO4oqFc-s76-qcHRn1P4wgl-FnEsoKTMPohSW-Ld9U09bbe1W1Lt23dbhfavFnLm7Uf1DaOBSpCyQKZJLnWXQH_luaW3tE93XZ0u1OoxW7T9dyHnUSuXCz6jnDbd6j9kZ3CcAxjdZbX7-q1Xd1u6XZXd-xCr4NB0LEf1HtOEoaNV-qmVa7sx-WCXKGwqdue7liFtrkdNK2HQ3nGqQAfijRNt9ldeMfZRa1FWuRu1PKBkIgl4Zzc-NCC1qG6V5ywBeYxDDiVKnailOjH5b9ZKgxxdaepO62dn_NWy7L2zXHv-tm_IQx8yP_buC39tyG3GXhX126r2mQWeMFdNjVdW3Aaar7kCeraCvmKqE_tswKbanKJK5xqPkw1jmFybYSEXxqBSuipNmVfNV1bE_Y2jlc5BI-TxVLz5yQSqGvJOiQSH1Oy4GS3BFmIvB8nTGq-lyJo_mftWvPtjmN6drvdsTstx3O8jq7daH67a9qu1-10XNtz3ZbX_Kprn1KVltnttCzLspxu03GctvP1P4123Qs" target="_blank" rel="noopener">Mermaid Live Editor</a> a permis de générer cette image.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -2597,16 +2685,20 @@ fi</code></pre>
 <h4 id="_résultat_des_scripts_bash_offline_optimisés">6.3.8. Résultat des scripts bash <em>Offline</em> optimisés</h4>
 <div class="sect4">
 <h5 id="_résultat_du_script_1_install_dependances_sh">Résultat du script <code>1-install-dependances.sh</code></h5>
-<div class="paragraph">
-<p>¦===</p>
-</div>
-<div class="paragraph">
-<p>¦ Avant ¦ Après</p>
-</div>
-<div class="paragraph">
-<p>a¦</p>
-</div>
-<div class="listingblock border-less">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Avant</th>
+<th class="tableblock halign-left valign-top">Après</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
 set -e
@@ -2700,11 +2792,8 @@ netfilter-persistent reload
 rm -rf "$PACKAGES_DIR"
 echo "[*] Installation complete."</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>a|</p>
-</div>
-<div class="listingblock border-less">
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
 set -euo pipefail
@@ -2811,10 +2900,10 @@ netfilter-persistent reload
 
 echo "[*] Installation complete."</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>¦===</p>
-</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect4">
 <h5 id="_résultat_du_script_2_install_docker_sh">Résultat du script <code>2-install-docker.sh</code></h5>
@@ -3329,6 +3418,345 @@ echo "Update complete, LAIMEE Gateway is now updated with the new images."</code
 </table>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_résultat_des_scripts_bash_online_optimisés">6.3.9. Résultat des scripts bash <em>Online</em> optimisés</h4>
+<div class="sect4">
+<h5 id="_résultat_du_script_1_install_dependances_sh_2">Résultat du script <code>1-install-dependances.sh</code></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Avant</th>
+<th class="tableblock halign-left valign-top">Après</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+tee /etc/apt/apt.conf.d/99snapshot &lt;&lt;EOF
+Acquire::Check-Valid-Until "false";
+Acquire::http::Timeout "60";
+Acquire::Retries "3";
+EOF
+
+tee /etc/apt/sources.list &lt;&lt;EOF
+#deb https://snapshot.debian.org/archive/debian/20260110T000000Z trixie main contrib non-free non-free-firmware
+#deb https://snapshot.debian.org/archive/debian-security/20260110T000000Z trixie-security main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian/20260503T033240Z trixie main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian-security/20260503T033240Z trixie-security main contrib non-free non-free-firmware
+EOF
+
+apt update
+apt remove -y apache2
+apt install -y sudo iptables openssh-server openvpn rsync
+
+systemctl enable ssh --now
+
+
+echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+DEBIAN_FRONTEND=noninteractive apt install -y iptables-persistent
+
+netfilter-persistent flush
+iptables -t nat -A OUTPUT -o lo -p tcp --dport 443 -j REDIRECT --to-port 8080
+
+interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -E '^enp|wlp')
+for iface in $interfaces; do
+	iptables -A INPUT -p tcp --dport 8080 -j ACCEPT -i $iface
+	iptables -A INPUT -p tcp --dport 443 -j ACCEPT -i $iface
+	iptables -A PREROUTING -t nat -p tcp --dport 443 -j REDIRECT --to-port 8080 -i $iface
+done
+netfilter-persistent save
+netfilter-persistent reload
+
+debconf-set-selections &lt;&lt;&lt; "postfix postfix/main_mailer_type select Internet Site"
+debconf-set-selections &lt;&lt;&lt; "postfix postfix/mailname string laimee.mail.com"
+DEBIAN_FRONTEND=noninteractive apt install -y postfix
+
+exit
+
+#test if still needed
+: '
+tee /etc/sudoers.d/laimee &lt;&lt;EOF
+laimee            ALL=(ALL:ALL)  NOPASSWD:ALL
+laimee_gateway    ALL=(ALL:ALL)  NOPASSWD:ALL
+laimee-gateway    ALL=(ALL:ALL)  NOPASSWD:ALL
+EOF
+'</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+set -euo pipefail
+
+# ─────── Check Root Privilege ───────────────────────────────────────────────────────
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+# ──────── Configure APT snapshot repositories ──────────────────────────────────────
+
+cat &lt;&lt;EOF &gt; /etc/apt/apt.conf.d/99snapshot
+Acquire::Check-Valid-Until "false";
+Acquire::http::Timeout "60";
+Acquire::Retries "3";
+EOF
+
+cat &lt;&lt;EOF &gt; /etc/apt/sources.list
+#deb https://snapshot.debian.org/archive/debian/20260110T000000Z trixie main contrib non-free non-free-firmware
+#deb https://snapshot.debian.org/archive/debian-security/20260110T000000Z trixie-security main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian/20260503T033240Z trixie main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian-security/20260503T033240Z trixie-security main contrib non-free non-free-firmware
+EOF
+
+# ──────── Remove apache2 and install packages ──────────────────────────────────────
+
+apt-get update
+apt-get remove -y apache2
+apt-get install -y sudo iptables openssh-server openvpn rsync
+
+systemctl enable ssh --now
+
+debconf-set-selections &lt;&lt;&lt; "iptables-persistent iptables-persistent/autosave_v4 boolean true"
+debconf-set-selections &lt;&lt;&lt; "iptables-persistent iptables-persistent/autosave_v6 boolean true"
+
+DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent
+
+netfilter-persistent flush
+
+# ──────── iptables rules ────────────────────────────────────────────────────────────
+
+echo "[*] Applying iptables rules..."
+
+iptables -t nat -A OUTPUT -o lo -p tcp --dport 443 -j REDIRECT --to-port 8080
+
+mapfile -t interfaces &lt; &lt;(ip -o link show | awk -F': ' '{print $2}' | grep -E '^(enp|wlp)' || true)
+
+if [[ ${#interfaces[@]} -eq 0 ]]; then
+    echo "[WARN] No enp* or wlp* network interfaces found. Skipping interface rules."
+else
+    for iface in "${interfaces[@]}"; do
+        iptables -A INPUT -i "$iface" -p tcp --dport 8080 -j ACCEPT
+        iptables -A INPUT -i "$iface" -p tcp --dport 443 -j ACCEPT
+        iptables -t nat -A PREROUTING -i "$iface" -p tcp --dport 443 -j REDIRECT --to-port 8080
+    done
+fi
+
+netfilter-persistent save
+netfilter-persistent reload
+
+
+# ────── Pre-configure &amp; install Postfix ────────────────────────────────────────
+
+debconf-set-selections &lt;&lt;&lt; "postfix postfix/main_mailer_type select Internet Site"
+debconf-set-selections &lt;&lt;&lt; "postfix postfix/mailname string laimee.mail.com"
+DEBIAN_FRONTEND=noninteractive apt-get install -y postfix
+
+echo "[*] Installation complete."</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_résultat_du_script_2_install_docker_sh_2">Résultat du script <code>2-install-docker.sh</code></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Avant</th>
+<th class="tableblock halign-left valign-top">Après</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+apt update
+apt install -y ca-certificates curl
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+tee /etc/apt/sources.list.d/docker.sources &lt;&lt;EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+apt update
+
+apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+set -euo pipefail
+
+# ─────── Check Root Privilege ───────────────────────────────────────────────────────
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root." &gt;&amp;2
+    exit 1
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+
+# ─────── Remove conflicting packages ────────────────────────────────────────────────
+echo "[*] Removing conflicting packages if present..."
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do
+    apt-get remove -y "$pkg" &gt;/dev/null 2&gt;&amp;1 || true
+done
+
+# ─────── Install prerequisites &amp; Docker GPG key ─────────────────────────────────────
+echo "[*] Installing prerequisites and Docker GPG key..."
+apt-get update
+apt-get install -y ca-certificates curl
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+
+# ─────── Add Docker APT repository (DEB822 format) ──────────────────────────────────
+echo "[*] Configuring Docker APT repository..."
+cat &lt;&lt;EOF &gt; /etc/apt/sources.list.d/docker.sources
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+# ─────── Install Docker Engine &amp; plugins ────────────────────────────────────────────
+echo "[*] Installing Docker Engine..."
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+systemctl enable docker --now
+
+echo "✅ Docker installation complete."</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_résultat_du_script_3_install_services_sh_2">Résultat du script <code>3-install-services.sh</code></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Avant</th>
+<th class="tableblock halign-left valign-top">Après</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+
+bash ../offline/3-install-services.sh</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &amp;&amp; pwd)"
+TARGET_SCRIPT="$(realpath "${SCRIPT_DIR}/../offline/3-install-services.sh")"
+
+if [[ ! -f "$TARGET_SCRIPT" ]]; then
+    echo "❌ Target script not found: $TARGET_SCRIPT" &gt;&amp;2
+    exit 1
+fi
+
+bash "$TARGET_SCRIPT"</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_résultat_du_script_opt1_update_core_services_sh_2">Résultat du script <code>opt1-update-core-services.sh</code></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Avant</th>
+<th class="tableblock halign-left valign-top">Après</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+
+bash ../offline/opt1-update-core-services.sh</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock border-less">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &amp;&amp; pwd)"
+TARGET_SCRIPT="$(realpath "${SCRIPT_DIR}/../offline/opt-1-update-core-services.sh")"
+
+if [[ ! -f "$TARGET_SCRIPT" ]]; then
+    echo "❌ Target script not found: $TARGET_SCRIPT" &gt;&amp;2
+    exit 1
+fi
+
+bash ../offline/opt1-update-core-services.sh</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -3358,7 +3786,7 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 <div id="footer">
 <div id="footer-text">
 Version 1.4<br>
-Last updated 2026-11-19 14:28:53 +0100
+Last updated 2026-11-19 15:34:41 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
