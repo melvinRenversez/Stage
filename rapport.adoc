@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
 Melvin
-v1.2, 2026-11-17
+v1.4, 2026-11-17
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
@@ -1243,32 +1243,6 @@ docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.con
 
 TIP: Pour lister l'ensemble des projets Docker Compose actifs sur la machine ainsi que l'emplacement de leurs fichiers, vous pouvez également utiliser `docker compose ls`.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 == Optimisation des scripts Bash
 
 === Sécurité et gestion des erreurs
@@ -1292,32 +1266,41 @@ Après :
 set -euo pipefail
 ----
 
-==== Nettoyage automatique et sécurisé (`trap`)
+==== Répertoires temporaires et nettoyage automatique (`mktemp` et `trap`)
 
-Garantit la suppression des fichiers temporaires à la fin du script, même en cas d'interruption ou d'erreur.
+Remplacement des chemins statiques et des suppressions manuelles en fin de script par un répertoire temporaire généré dynamiquement via `mktemp -d`, couplé à un `trap ... EXIT`.
+
+* `mktemp -d` : Crée un répertoire unique avec un suffixe aléatoire (`XXXXXX`) et des permissions restreintes (`700`), évitant les conflits entre exécutions simultanées ou les échecs si le dossier existe déjà.
+* `trap ... EXIT` : Garantit la suppression systématique du répertoire temporaire à la sortie du script, qu'il se termine normalement ou s'interrompe suite à une erreur ou un `Ctrl+C`.
 
 Avant :
 [source, bash]
 ----
+mkdir ~/laimee-docker
+# ... opérations ...
 cd ..
 rm -rf laimee-docker
 ----
 
-Après (sans variable) :
-[source, bash]
-----
-trap 'rm -rf ~/laimee-docker' EXIT
-----
-
-Après (avec variable sécurisée) :
+Après (avec chemin fixe) :
 [source, bash]
 ----
 PACKAGES_DIR="/var/cache/packs_1"
+mkdir -p "$PACKAGES_DIR"
 
 trap 'rm -rf "${PACKAGES_DIR:?}"' EXIT
 ----
 
-NOTE: L'utilisation de `${VAR:?}` empêche une suppression accidentelle si la variable devient vide ou n'est pas définie.
+Après (avec dossier temporaire aléatoire — recommandé) :
+[source, bash]
+----
+WORK_DIR="$(mktemp -d /tmp/laimee-docker.XXXXXX)"
+
+trap 'rm -rf "${WORK_DIR:?}"' EXIT
+----
+
+NOTE: L'utilisation de `${VAR:?}` empêche une suppression accidentelle de la racine ou du dossier courant (`rm -rf ""`) si la variable devient vide ou n'est pas définie.
+
 
 === Compression et factorisation de commandes
 
@@ -1432,23 +1415,788 @@ Après :
 mv /opt/docker/scripts/laimee/gateway/thingsboard_gateway/config/* /opt/docker/volumes/laimee/gateway/config/
 ----
 
+==== Installation d'un paquet `.deb` local
+
+Remplacement de `dpkg -i` suivi de `apt-get install -f` par `apt-get install` directement sur les fichiers locaux. Cela permet de résoudre l'ordre des dépendances en une seule passe et d'éviter de masquer d'éventuelles erreurs avec `|| true`. L'option `--no-download` garantit un échec immédiat et propre si un paquet manque en mode hors-ligne.
+
+Avant :
+[source, bash]
+----
+DEBIAN_FRONTEND=noninteractive dpkg -i \
+    "$PACKAGES_DIR"/*.deb || true
+
+apt-get install -f -y
+----
+
+Après :
+[source, bash]
+----
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-download "$PACKAGES_DIR"/*.deb
+----
 
 
 
+==== Lecture de l'entrée utilisateur (`read -r`)
+
+Ajout de l'option `-r` (*raw*) à la commande `read` afin d'empêcher Bash d'interpréter les antislashs (`\`) comme des caractères d'échappement. Cela garantit que la saisie utilisateur est lue telle quelle et évite des comportements inattendus lors d'une pause interactive.
+
+Avant :
+[source, bash]
+----
+read
+----
+
+Après :
+[source, bash]
+----
+read -r
+----
+
+==== Vérification de fichier et tests conditionnels (`[[ ! -f ... ]]`)
+
+Remplacement des simples crochets `[ ... ]` par les doubles crochets Bash `[[ ... ]]` et utilisation de l'opérateur `-f` au lieu de `-e`.
+
+* `[[ ... ]]` : Syntaxe moderne en Bash qui protège automatiquement contre les espaces dans les chemins, les variables vides et le découpage de mots (*word splitting*).
+* `-f` (*regular file*) : Vérifie non seulement que le chemin existe, mais aussi qu'il s'agit bien d'un fichier standard (contrairement à `-e` qui validerait à tort un répertoire du même nom).
+
+Avant :
+[source, bash]
+----
+if [ ! -e "$TARGET_PATH/packs_1.tar.gz" ]; then
+    echo "[ERROR] No .tar.gz files found in $TARGET_PATH"
+    exit 1
+fi
+----
+
+Après :
+[source, bash]
+----
+if [[ ! -f "$ARCHIVE_FILE" ]]; then
+    echo "[ERROR] Archive not found: $ARCHIVE_FILE" >&2
+    exit 1
+fi
+----
 
 
+==== Résultat des scripts bash _Offline_ optimisés
+
+===== Résultat du script `1-install-dependances.sh`
+
+[cols="1,1", width="100%", options="header", valign="top", separator=¦]
+¦===
+
+¦ Avant ¦ Après
+
+a¦
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+set -e
+
+# ── Check Debian version ────────────────────────────────────────────────────────────
+TARGET_VERSION="13.3"
+CURRENT_VERSION=$(. /etc/os-release && echo "$DEBIAN_VERSION_FULL")
+
+if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+    echo "[WARN] This machine is Debian $CURRENT_VERSION but target is $TARGET_VERSION"
+    echo "       Packages may be incompatible. Press Ctrl+C to abort, or Enter to continue."
+    read
+fi
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+tee /etc/apt/apt.conf.d/99snapshot <<EOF
+Acquire::Check-Valid-Until "false";
+Acquire::http::Timeout "60";
+Acquire::Retries "3";
+EOF
+
+tee /etc/apt/sources.list <<EOF
+#deb https://snapshot.debian.org/archive/debian/20260110T000000Z trixie main contrib non-free non-free-firmware
+#deb https://snapshot.debian.org/archive/debian-security/20260110T000000Z trixie-security main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian/20260503T033240Z trixie main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian-security/20260503T033240Z trixie-security main contrib non-free non-free-firmware
+EOF
 
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_PATH="$SCRIPT_DIR/__packages"
 
 
+# ── Sanity check ────────────────────────────────────────────────────────────
+if [ ! -e "$TARGET_PATH/packs_1.tar.gz" ]; then
+    echo "[ERROR] No .tar.gz files found in $TARGET_PATH"
+    echo "        Run download_packages.sh on an online machine first."
+    exit 1
+fi
+
+echo "[*] Removing apache2..."
+apt-get remove -y apache2 \|\| true
+
+PACKAGES_DIR="/var/cache/packs_1"
+mkdir -p $PACKAGES_DIR
+tar -xzvf $TARGET_PATH/packs_1.tar.gz -C $PACKAGES_DIR
+
+# ── Step 1: base packages (no special order needed) ───────────────────────────
+echo "[*] Installing base packages..."
+
+debconf-set-selections \<<< "postfix postfix/main_mailer_type select Internet Site"
+debconf-set-selections \<<< "postfix postfix/mailname string laimee.mail.com"
+
+DEBIAN_FRONTEND=noninteractive dpkg -i \
+    "$PACKAGES_DIR"/*.deb \|\| true
+
+apt-get install -f -y
+systemctl enable ssh --now
+
+# ── Step 2: configure iptables BEFORE iptables-persistent ────────────────────
+echo "[*] Installing iptables-persistent..."
+
+echo iptables-persistent iptables-persistent/autosave_v4 boolean true \| debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v6 boolean true \| debconf-set-selections
+
+DEBIAN_FRONTEND=noninteractive dpkg -i "$PACKAGES_DIR"/iptables_pers/*.deb \|\| true
+apt-get install -f -y
 
 
+# ── iptables rules ────────────────────────────────────────────────────────────
+echo "[*] Applying iptables rules..."
+netfilter-persistent flush
+
+iptables -t nat -A OUTPUT -o lo -p tcp --dport 443 -j REDIRECT --to-port 8080
+
+interfaces=$(ip -o link show \| awk -F': ' '{print $2}' \| grep -E '^enp\|wlp')
+for iface in $interfaces; do
+	iptables -A INPUT -p tcp --dport 8080 -j ACCEPT -i $iface
+	iptables -A INPUT -p tcp --dport 443 -j ACCEPT -i $iface
+	iptables -A PREROUTING -t nat -p tcp --dport 443 -j REDIRECT --to-port 8080 -i $iface
+done
+
+netfilter-persistent save
+netfilter-persistent reload
+
+# ── Cleanup ───────────────────────────────────────────────────────────────────
+rm -rf "$PACKAGES_DIR"
+echo "[*] Installation complete."
+----
+
+a|
+[.border-less]
+[source, bash]
+----
+
+#!/bin/bash
+set -euo pipefail
+
+# ─────── Check Root Privilege ───────────────────────────────────────────────────────
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+# ─────── Check Debian version ───────────────────────────────────────────────────────
+
+TARGET_VERSION="13.3"
+CURRENT_VERSION=$(cat /etc/debian_version 2>/dev/null \|\| echo "unknow")
+
+if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+    echo "[WARN] This machine is Debian $CURRENT_VERSION but target is $TARGET_VERSION"
+    echo "       Packages may be incompatible. Press Ctrl+C to abort, or Enter to continue."
+    read -r
+fi
 
 
+# ──────── Sanity check ──────────────────────────────────────────────────────────────
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_PATH="$SCRIPT_DIR/__packages"
+ARCHIVE_FILE="$TARGET_PATH/packs_1.tar.gz"
 
 
+if [ ! -f "$ARCHIVE_FILE" ]; then
+    echo "[ERROR] No .tar.gz files found in $TARGET_PATH"
+    echo "        Run download_packages.sh on an online machine first."
+    exit 1
+fi
+
+# ──────── Configure APT snapshot repositories ──────────────────────────────────────
+
+cat <<EOF > /etc/apt/apt.conf.d/99snapshot
+Acquire::Check-Valid-Until "false";
+Acquire::http::Timeout "60";
+Acquire::Retries "3";
+EOF
+
+cat <<EOF > /etc/apt/sources.list
+#deb https://snapshot.debian.org/archive/debian/20260110T000000Z trixie main contrib non-free non-free-firmware
+#deb https://snapshot.debian.org/archive/debian-security/20260110T000000Z trixie-security main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian/20260503T033240Z trixie main contrib non-free non-free-firmware
+deb https://snapshot.debian.org/archive/debian-security/20260503T033240Z trixie-security main contrib non-free non-free-firmware
+EOF
 
 
+# ──────── Prepare extraction & automatic cleanup ─────────────────────────────────────
 
+PACKAGES_DIR="$(mktemp -d /var/cache/packs_1.XXXXXX)"
+trap 'rm -rf "$PACKAGES_DIR"' EXIT
+
+echo "[*] Extracting packages..."
+tar -xzf "$ARCHIVE_FILE" -C "$PACKAGES_DIR"
+
+echo "[*] Removing apache2..."
+DEBIAN_FRONTEND=noninteractive apt-get remove apache2 >/dev/null 2>&1 \|\| true
+
+# ── Step 1: base packages (no special order needed) ───────────────────────────
+echo "[*] Installing base packages..."
+debconf-set-selections \<<< "postfix postfix/main_mailer_type select Internet Site"
+debconf-set-selections \<<< "postfix postfix/mailname string laimee.mail.com"
+
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-download "$PACKAGE_DIR"/*.deb
+
+systemctl enable ssh --now
+
+# ── Step 2: configure iptables BEFORE iptables-persistent ────────────────────
+
+echo "[*] Installing iptables-persistent..."
+
+debconf-set-selections \<<< "iptables-persistent iptables-persistent/autosave_v4 boolean true"
+debconf-set-selections \<<< "iptables-persistent iptables-persistent/autosave_v6 boolean true"
+
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-download "$PACKAGE_DIR"/iptables_pers/*.deb
+
+# ── iptables rules ────────────────────────────────────────────────────────────
+
+echo "[*] Applying iptables rules..."
+netfilter-persistent flush
+
+iptables -t nat -A OUTPUT -o lo -p tcp --dport 443 -j REDIRECT --to-port 8080
+
+mapfile -t interfaces < <(ip -o link show \| awk -F': ' '{print $2}' \| grep -E '^(enp|wlp)' \|\| true)
+
+if [[ ${#interfaces[@]} -eq 0 ]]; then
+    echo "[WARN] No enp* or wlp* network interfaces found. Skipping interface rules."
+else
+    for iface in "${interfaces[@]}"; do
+        iptables -A INPUT -i "$iface" -p tcp --dport 8080 -j ACCEPT
+        iptables -A INPUT -i "$iface" -p tcp --dport 443 -j ACCEPT
+        iptables -t nat -A PREROUTING -i "$iface" -p tcp --dport 443 -j REDIRECT --to-port 8080
+    done
+fi
+
+netfilter-persistent save
+netfilter-persistent reload
+
+
+echo "[*] Installation complete."
+
+----
+¦===
+
+===== Résultat du script `2-install-docker.sh`
+
+[cols="1,1", width="100%", options="header", valign="top"]
+|===
+
+| Avant | Après
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+set -e
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+# ── Check Debian version ────────────────────────────────────────────────────────────
+TARGET_VERSION="13.3"
+CURRENT_VERSION=$(. /etc/os-release && echo "$DEBIAN_VERSION_FULL")
+
+if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+    echo "[WARN] This machine is Debian $CURRENT_VERSION but target is $TARGET_VERSION"
+    echo "       Packages may be incompatible. Press Ctrl+C to abort, or Enter to continue."
+    read
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_PATH="$SCRIPT_DIR/__packages"
+
+
+# ── Sanity check ────────────────────────────────────────────────────────────
+if [ ! -e "$TARGET_PATH/packs_2.tar.gz" ]; then
+    echo "[ERROR] No .tar.gz files found in $TARGET_PATH"
+    echo "        Run download_packages.sh on an online machine first."
+    exit 1
+fi
+
+
+PACKAGES_DIR="/var/cache/packs_2"
+mkdir -p $PACKAGES_DIR
+tar -xzvf $TARGET_PATH/packs_2.tar.gz -C $PACKAGES_DIR
+
+DEBIAN_FRONTEND=noninteractive dpkg -i \
+    "$PACKAGES_DIR"/*.deb \|\| true
+
+apt-get install -f -y
+
+rm -rf "$PACKAGES_DIR"
+echo "[*] Docker installation complete."
+docker --version
+
+----
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+set -euo pipefail
+
+# ─────── Check Root Privilege ───────────────────────────────────────────────────────
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+
+# ─────── Check Debian version ───────────────────────────────────────────────────────
+
+TARGET_VERSION="13.3"
+CURRENT_VERSION=$(cat /etc/debian_version 2>/dev/null \|\| echo "unknow")
+
+if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+    echo "[WARN] This machine is Debian $CURRENT_VERSION but target is $TARGET_VERSION"
+    echo "       Packages may be incompatible. Press Ctrl+C to abort, or Enter to continue."
+    read -r
+fi
+
+# ──────── Sanity check ──────────────────────────────────────────────────────────────
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_PATH="$SCRIPT_DIR/__packages"
+ARCHIVE_FILE="$TARGET_PATH/packs_2.tar.gz"
+
+
+if [ ! -f "$ARCHIVE_FILE" ]; then
+    echo "[ERROR] No .tar.gz files found in $TARGET_PATH"
+    echo "        Run download_packages.sh on an online machine first."
+    exit 1
+fi
+
+# ──────── Prepare extraction & automatic cleanup ─────────────────────────────────────
+
+PACKAGE_DIR="$(mktemp -d /var/cache/packs_2.XXXXXX)"
+trap 'rm -rf "$PACKAGES_DIR"' EXIT
+
+echo "[*] Extracting packages..."
+tar -xzf "$ARCHIVE_FILE" -C "$PACKAGES_DIR"
+
+DEBIAN_FRONTEND=noninteractive apt-get isntall -f ---no-donwlaod "$PACKAGES_DIR"/*.deb
+
+echo "[*] Docker installation complete."
+docker --version
+
+----
+|===
+
+===== Résultat du script `3-install-services.sh`
+
+[cols="1,1", width="100%", options="header", valign="top"]
+|===
+
+| Avant | Après
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+
+echo "Disabling Sleep mode"
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+tee /etc/systemd/sleep.conf <<EOF
+AllowSuspend=no
+AllowHibernation=no
+AllowHybridSleep=no
+AllowSuspendThenHibernate=no
+EOF
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+
+echo "Creating and copying Docker files to Computer."
+
+# import des .tar.gz
+cd ../laimee
+mkdir ~/laimee-docker
+rsync -ah --progress docker-core.tar.gz ~/laimee-docker
+rsync -ah --progress docker-gateway.tar.gz ~/laimee-docker
+
+cd ~/laimee-docker
+
+echo "Installing core service as Docker."
+
+mkdir docker-core
+tar -xzvf docker-core.tar.gz -C docker-core
+cd docker-core/docker
+bash ./dockerbuild-load-images.sh
+bash ./docker-create-log-folders.sh
+
+rm -rf docker-images
+mkdir -p /opt/docker/scripts/laimee/core
+cp -r ./. /opt/docker/scripts/laimee/core
+
+bash ./docker-install-tb.sh
+bash ./docker-start-services.sh 
+cd ../..
+rm -rf docker-core.tar.gz docker-core
+
+echo "Installing gateway service as Docker."
+
+mkdir docker-gateway
+tar -xzvf docker-gateway.tar.gz -C docker-gateway
+cd docker-gateway
+bash ./dockerbuild-load-images.sh
+
+rm -rf docker-images
+mkdir -p /opt/docker/scripts/laimee/gateway
+cp -r ./. /opt/docker/scripts/laimee/gateway 
+
+mkdir -p /opt/docker/volumes/laimee/gateway/config
+mv -r /opt/docker/scripts/laimee/gateway/thingsboard_gateway/config/* /opt/docker/volumes/laimee/gateway/config
+
+bash ./docker-install.sh
+cd ..
+rm -rf docker-gateway.tar.gz docker-gateway
+
+cd ..
+rm -rf laimee-docker
+
+echo "Installation complete, LAIMEE is now accessible on this computer."
+----
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+set -euo pipefail
+
+# ─────── Check Root Privilege ───────────────────────────────────────────────────────
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+
+# ──────── Resolve and verify source archives ─────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LAIMEE_DIR="$(realpath "${SCRIPT_DIR}/../laimee")"
+
+CORE_ARCHIVE="$LAIMEE_DIR/docker-core.tar.gz"
+GATEWAY_ARCHIVE="$LAIMEE_DIR/docker-gateway.tar.gz"
+
+CORE_TARGET="/opt/docker/scripts/laimee/core"
+GATEWAY_TARGET="/opt/docker/scripts/laimee/gateway"
+GATEWAY_VOL_CONFIG="/opt/docker/volumes/laimee/gateway/config"
+
+for archive in "$CORE_ARCHIVE" "$GATEWAY_ARCHIVE"; do
+    if [[ ! -f "$archive" ]]; then
+        echo "❌ Archive not found: $archive" >&2
+        exit 1
+    fi
+done
+
+
+# ──────── Disable sleep mode ─────────────────────────────────────────────────────
+echo "Disabling Sleep mode"
+
+cat <<EOF > /etc/systemd/sleep.conf
+AllowSuspend=no
+AllowHibernation=no
+AllowHybridSleep=no
+AllowSuspendThenHibernate=no
+EOF
+
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+# ──────── Prepare temporary workspace with automatic cleanup ─────────────────────
+
+WORK_DIR="$(mktemp -d /tmp/laimee-docker.XXXXXX)"
+trap 'rm -rf "${WORK_DIR:?}"' EXIT
+
+echo "Creating and copying Docker files to Computer."
+
+# ──────── Install LAIMEE Core ────────────────────────────────────────────────────
+echo "Installing core service as Docker."
+
+mkdir -p "$WORK_DIR/core"
+tar -xzf "$CORE_ARCHIVE" -C "$WORK_DIR/core"
+cd "$WORK_DIR/core/docker"
+
+bash ./dockerbuild-load-images.sh
+bash ./docker-create-log-folders.sh
+
+rm -rf docker-images
+mkdir -p "$CORE_TARGET"
+cp -a . "$CORE_TARGET/"
+
+bash ./docker-install-tb.sh
+bash ./docker-start-services.sh
+
+
+# ──────── Install LAIMEE Gateway ─────────────────────────────────────────────────
+
+echo "Installing gateway services as Docker."
+
+GATEWAY_WORK_DIR="$WORK_DIR/gateway" 
+
+mkdir -p "$GATEWAY_WORK_DIR"
+tar -xzf "$GATEWAY_ARCHIVE" -C "$GATEWAY_WORK_DIR"
+cd "$GATEWAY_WORK_DIR"
+
+bash ./dockerbuild-load-images.sh
+
+rm -rf docker-images
+
+mkdir -p "$GATEWAY_TARGET"
+cp -a . "$GATEWAY_TARGET/"
+
+mkdir -p "$GATEWAY_VOL_CONFIG"
+mv "$GATEWAY_TARGET"/thingsboard_gateway/config/* "$GATEWAY_VOL_CONFIG/"
+
+bash ./docker-install.sh
+
+echo "Installation complete, LAIMEE is now accessible on this computer."
+
+----
+|===
+
+
+===== Résultat du script `opt1-update-core-services.sh`
+
+[cols="1,1", width="100%", options="header", valign="top"]
+|===
+
+| Avant | Après
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+cd ../laimee
+mkdir ~/laimee-docker
+rsync -ah --progress docker-core.tar.gz ~/laimee-docker
+
+cd ~/laimee-docker
+
+echo "Installing core service as Docker."
+
+mkdir docker-core
+tar -xzvf docker-core.tar.gz -C docker-core
+cd docker-core/docker
+bash ./dockerbuild-load-images.sh
+
+#bash ./docker-create-log-folders.sh
+
+rm -rf docker-images
+cp -r ./. /opt/docker/scripts/laimee/core
+
+bash ./docker-stop-services.sh
+bash ./docker-upgrade-tb.sh
+bash ./docker-start-services.sh
+cd ../..
+rm -rf docker-core.tar.gz docker-core
+
+cd ..
+rm -rf laimee-docker
+
+echo "Update complete, LAIMEE Core is now updated with the new images."
+----
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+set -euo pipefail
+
+# ────── Check root privileges ────────────────────────
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root." >&2
+    exit 1
+fi
+
+# ────── Reliable source file resolution ────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE}")" && pwd)"
+ARCHIVE_PATH="$(realpath "${SCRIPT_DIR}/../laimee/docker-core.tar.gz")"
+TARGET_DIR="/opt/docker/scripts/laimee/core"
+
+if [[ ! -f "$ARCHIVE_PATH" ]]; then
+    echo "❌ Archive not found: $ARCHIVE_PATH" >&2
+    exit 1
+fi
+
+# ────── Create a secure temporary directory with automatic cleanup ────────────────────────
+WORK_DIR="$(mktemp -d /tmp/laimee-docker.XXXXXX)"
+trap 'rm -rf "$WORK_DIR"' EXIT
+
+echo "Installing core service as Docker..."
+
+# ────── Direct extraction without intermediate copy ────────────────────────
+tar -xzf "$ARCHIVE_PATH" -C "$WORK_DIR"
+cd "$WORK_DIR/docker"
+
+# ────── Load Docker images
+bash ./dockerbuild-load-images.sh
+
+# ────── Deploy scripts to target directory ────────────────────────
+rm -rf docker-images
+mkdir -p "$TARGET_DIR"
+cp -a . "$TARGET_DIR/"
+
+# ────── Upgrade and restart services from target directory ────────────────────────
+cd "$TARGET_DIR"
+bash ./docker-stop-services.sh
+bash ./docker-upgrade-tb.sh
+bash ./docker-start-services.sh
+
+echo "Update complete, LAIMEE Core is now updated with the new images."
+
+----
+
+|===
+
+===== Résultat du script `opt2-update-gateway-services.sh`
+
+[cols="1,1", width="100%", options="header", valign="top"]
+|===
+
+| Avant | Après
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root"
+    exit 1
+fi
+
+cd ../laimee
+mkdir ~/laimee-docker
+rsync -ah --progress docker-gateway.tar.gz ~/laimee-docker
+
+cd ~/laimee-docker
+
+echo "Installing gateway service as Docker."
+
+mkdir docker-gateway
+tar -xzvf docker-gateway.tar.gz -C docker-gateway
+cd docker-gateway
+bash ./dockerbuild-load-images.sh
+
+#bash ./docker-create-log-folders.sh
+
+rm -rf docker-images
+cp -r ./. /opt/docker/scripts/laimee/gateway
+
+bash ./docker-stop-services.sh
+bash ./docker-update-service.sh
+bash ./docker-start-services.sh
+cd ../..
+rm -rf docker-core.tar.gz docker-core
+
+cd ..
+rm -rf laimee-docker
+
+echo "Update complete, LAIMEE Gateway is now updated with the new images."
+----
+
+a|
+[.border-less]
+[source, bash]
+----
+#!/bin/bash
+set -euo pipefail
+
+# ────── Check root privileges ────────────────────────────
+if [[ $EUID -ne 0 ]]; then
+    echo "❌ This script must be run as root." >&2
+    exit 1
+fi
+
+# ────── Reliable source file resolution ────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ARCHIVE_PATH="$(realpath "${SCRIPT_DIR}/../laimee/docker-gateway.tar.gz")"
+TARGET_DIR="/opt/docker/scripts/laimee/gateway"
+
+if [[ ! -f "$ARCHIVE_PATH" ]]; then
+    echo "❌ Archive not found: $ARCHIVE_PATH" >&2
+    exit 1
+fi
+
+# ────── Create a secure temporary directory with automatic cleanup ────────────────────────────
+WORK_DIR="$(mktemp -d /tmp/laimee-gateway.XXXXXX)"
+trap 'rm -rf "$WORK_DIR"' EXIT
+
+echo "Installing gateway service as Docker."
+
+# ────── Direct extraction without intermediate copy ────────────────────────────
+tar -xzf "$ARCHIVE_PATH" -C "$WORK_DIR"
+cd "$WORK_DIR"
+
+# ────── Load Docker images
+bash ./dockerbuild-load-images.sh
+
+# 6. Deploy scripts to target directory ────────────────────────────
+rm -rf docker-images
+mkdir -p "$TARGET_DIR"
+cp -a . "$TARGET_DIR/"
+
+# ────── Update and restart services from target directory ────────────────────────────
+cd "$TARGET_DIR"
+bash ./docker-stop-services.sh
+bash ./docker-update-service.sh
+bash ./docker-start-services.sh
+
+echo "Update complete, LAIMEE Gateway is now updated with the new images."
+
+----
+
+|===
+
+
+== Generer mon .Adoc en live server 
+
+[source, powershell]
+----
+while ($true) { asciidoctor -o index.html rapport.adoc; Write-Host "[$(Get-Date -Format 'HH:mm:ss')] index.html mis a jour" -ForegroundColor Green; Start-Sleep -Seconds 5 }
+----
+
+NOTE: Ici, l'utilisation de l'option `-o index.html` permet de nommer le fichier de sortie HTML en `index.html`.
 
 
