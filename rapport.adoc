@@ -998,6 +998,31 @@ docker stop $(docker ps -aq); docker rm -f $(docker ps -aq)
 
 WARNING: Cette action supprime définitivement tous les conteneurs (actifs ou arrêtés), y compris ceux qui ne font pas partie du projet LAIMEE. Les données stockées dans vos volumes locaux (`tb-node`, `tb-gateway`, etc.) restent toutefois conservées.
 
+
+[[list-docker-project]]
+=== Lister tous les projets Docker en cours
+
+*Commande Docker :*
+
+[source,bash]
+----
+docker compose ls
+----
+
+*Résultat :*
+
+[source,console]
+----
+laimee@laimee-dev-v1:~$ docker compose ls
+NAME                STATUS              CONFIG FILES
+laimee              running(19)         /home/laimee/Documents/docker-target/docker/docker-compose.yml,/home/laimee/Documents/docker-target/docker/docker-compose.postgres.yml,/home/laimee/Documents/docker-target/docker/docker-compose.kafka.yml,/home/laimee/Documents/docker-target-gateway/docker/docker-compose.yml
+laimee@laimee-dev-v1:~$
+----
+
+* La colonne `NAME` indique le nom du projet (ex. `laimee`, utilisable avec l'option `-p`).
+* La colonne `STATUS` affiche l'état du projet (`running`, `exited`, etc.) ainsi que le nombre de conteneurs concernés.
+* La colonne `CONFIG FILES` affiche les chemins absolus des fichiers `docker-compose.yml` associés à ce projet.
+
 === Vérifier que les conteneurs redémarrent au démarrage du système
 
 Pour contrôler la politique de redémarrage (`RestartPolicy`) appliquée à chaque conteneur lors du démarrage de Docker Desktop :
@@ -1039,29 +1064,16 @@ PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee> docker inspect -f "{{.Name}} : {{
 
 NOTE: Dans cet exemple, tous les services principaux sont bien configurés sur `always`. Seul le conteneur ponctuel `laimee-init-permissions-1` reste sur `no` (comportement attendu).
 
-[[list-docker-project]]
-=== Lister tous les projets Docker en cours
+=== Commande Docker pour trouver l'emplacement du fichier `docker-compose.yml` d'un conteneur en fonctionnement
 
-[source,bash]
-----
-docker compose ls
-----
+Permet d'afficher le chemin complet du fichier de configuration utilisé pour lancer le conteneur :
 
-*Résultat :*
-
-[source,console]
+[source, bash]
 ----
-laimee@laimee-dev-v1:~$ docker compose ls
-NAME                STATUS              CONFIG FILES
-laimee              running(19)         /home/laimee/Documents/docker-target/docker/docker-compose.yml,/home/laimee/Documents/docker-target/docker/docker-compose.postgres.yml,/home/laimee/Documents/docker-target/docker/docker-compose.kafka.yml,/home/laimee/Documents/docker-target-gateway/docker/docker-compose.yml
-laimee@laimee-dev-v1:~$
+docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' laimee-tb-gateway-1
 ----
 
-* La colonne `NAME` indique le nom du projet (ex. `laimee`, utilisable avec l'option `-p`).
-* La colonne `STATUS` affiche l'état du projet (`running`, `exited`, etc.) ainsi que le nombre de conteneurs concernés.
-* La colonne `CONFIG FILES` affiche les chemins absolus des fichiers `docker-compose.yml` associés à ce projet.
-
-
+TIP: Pour lister l'ensemble des projets Docker Compose actifs sur la machine ainsi que l'emplacement de leurs fichiers, vous pouvez également utiliser `docker compose ls` (<<list-docker-project, voir la documentation>>).
 
 
 == Diagrammes d'architecture de LAIMEE
@@ -1240,19 +1252,6 @@ flowchart TB
 
 IMPORTANT: Ce bloc contient le code source *Mermaid* (`.mmd`) du diagramme. L'utilisation de https://mermaid.live/edit#pako:eNqVWN1u28oRfpUBCxsSQFL8ESWSzTEgK44tJ05UWTkBEhXBihxJrKmlsruM7fw8QIECLXp6097056I4vu9F74W-SF-gfYR2SZGiZDpudSGQuzvfzHyzMzvLz0qQhKj4yixOroMFYQLGxxM2oQAABwegaRqYOvQCgSnjcAjrX35IoxUukQoOY2SMRFSuKmRec2SNdxPl33_81W_gJfkYzYkUhdciiiOePT-ZstZRY0AFshkJEN7gFFowjAmlEZ03J8rPmxKtQOTpdM7IalFqy9H__K-__xpG6zuOJC2nWnC8_ouIpHXQeNF7KcEKHPnrpSJ5N1GeTI_k05IIhPEC2TL5dHsVp_xJa3qUWTcY-mAaumXobUP3zNzi_oKksxmZ4z7qiaSkhGXId1k6HR-XwBdJOE05NBzDajmGZTThCxz3-hQFNNpd13DlwIV2LNd0DMusqkIaVnnZRMfSYUg4R4ZxjHBKBF6T22pESv5eonh_-ian74e_ltw9TYIrZKWkDzGJlojvQ5yRNBbQmLIovO_06ZvcYzHV5hvRRi6pbYc0s7nldEnmWKAXC_yYCOQCvgBDLggTPpD4mtzyTGSYMMF9MF3XVsExLN8xrOzBkE-GChllfvavguTLl3-Z7PdJ7EOQ0Fk0VwFvBFIeJZSrECdz_iirtg6XyD7KndtHKhiJ4UVvcHFy8iCz_YRhzu3vfrvPbQG15TYbf09RXCfsChrSPkZJvE9yGDEMRJTQTVZW5856eQAWZMWSm1tovEhICMckJjRAdo_3GxKTNGhtVmsBMjFNhG_qXd3bkg1n678J9ME1oHE2Hg-bKrTbdv582VSzUEDj4mfjcVMFz_M8aFwKInhzy7le6GgV7McoONKA3a6EClIx18ONo1WHSjqfsYSK92NGKF9lRr2bKNmYdkJDOITKTEPWG-h6nt_1vH32sno0KLfpNU61NDLhEMoXq2Rps9V813ANFfx2264Bk36XcMsPQmiiMEXC7qL54Eu2amAkmSXMQojVIzCu4Zo1MP1XvS1MkJAKzB6C03FtX_610nC1h7S3_3cCIff0-xfkFpkMQf8fP6QMeqtVHAVERDM4hIskK-4hwmj94zzG_yEg_Vejk4rVDDcBkY_fCkd1g4mpRpMQVdCz500tUfOZPMVqNI9ev9hqZmmMGtJ5RPE-549qzrZ2Vkpq9Jxfllp-wTW8wSAVCZMKoMEDEqMPVp4vZc1LqDYjUZwy9J3_Iz4DOmNkG6DslQuWBiJlqMIxS2T1OYRjwpHLKD1NKF3fIa-x-nnv2fNNRbkisytSEnKdMi6WGHGBrJVN-ZZuWpql27pR2WSe4Vm-_KsBf_s8R_6UJFeIK9ywYetOs7rRLbN2o49Ong42nDIMI54Lt3VjR7hjd70a4eHpu0Ymukq4mDPk-7nRti1f_k2U5mPEHxzAKEkFmSNEsn2hCGe9YV59BzTEGzBg_Sewm7t1GjTt6MtEkWnfygrpRPkCrwe1i3rDAYxOLsfQkn3RpTwnhFwu06ZWQNYkaGSlpikXyvcH1UMjKybZQvle4-DT9d0KaSgPEV6ttNoRPJfBh0N4W0Sx8LotvfZ2vM7M0qSQ3Fe1M2-f79gpzasVKGd2BWT5qxcoZ3KBbzl4fgknmwTderjxyjR2PDq_3NX2LdhRGiOcZNWlRDMlSaazgylLUr0P5cyu0-VwlhO1M-f1w8PTx4zOOpjC2o60VvafO7yOTh5ifHRSG6LRA9aWM-f1w9Ls2oncjYcbt7YO_YQKpPJcSuWlQ5Bo65dlNasd3ODlQB7o__zD7-Vt4sn0KKKR0FbIlhHP2sW81JB4FVHc9Kp50dl0eD4UbXKlg6VJtiRYJNcUtFFxGkJLLCI659OEsLBsmosjBVrlwQWanmXsgEYiInHEEUKWRIJXC8Ge38_i9AaGLKJBtCLpzX9vauV1pfTdzmLaae7f1-DJd99JfaYO2xoFDddotdt5UTkro336plht6TBOKcU4z-gWjIZ9aMiimneJHyMCL3vjVtZRPohi67C5E7WKi1BrcwFqwbg_lHLyrlaVzOtZWy-ufXJNdger4aWfxAkjWQsdru8EieJ4fYcQIodZvP4xWCCv0nFwAMcxpuCXhX5T4IsFcUSvLsVtjGCopmqpNnAhj1n_J4bhurOZmr9q11EoFr61uvnpnlHfR0mMAvw8YnnBSWn0Ic1ui_fVtNWO6qqmoZqmanZKbd7U8aadR7WNEo6SUDJHKkihdVvAv6XZUbuqp5qWanZLtei2bc9-3Elk0sWy7wg3fYfcH_kpDIcwkmd5875e01ZNRzVd1TJLvRYGQdd8VO85SSm2XsmbVrWyH1YLco3Ctmp6qmWU2mZm0DYeD-Upizj4UKZpts3uw1vWNmoOccj9qBUDIeELwhi59cEBZ1_dK0boHIsYBiwSMna8kuiH1c8sNYbYqtVWLWfr58xxDGPXHPu-n_1bQsGH4tvGXeXbhthk4H1d261qkmngBffZVFRlzqJQ8QVLUVWWyJZEviqfJdhEEQtc4kTxYaIwDNMbLSTsSgtkQk-UCf2qqMqK0LdJsiwgWJLOF4o_IzFHVUlXIRH4NCJzRrZLkIbI-klKheKbTgah-J-VG8W3TUM3HcM1u27XNDy766jKreKbhqcbnY7tWG67bdmu5X5VlU-ZVkN3TK_rdtqe23Vdt2t0VAXDSCTsIv-qln1c-_ofjz7kdA[Mermaid Live Editor^] a permis de générer cette image.
 
-
-== Erreur d'utilisation des commandes de chauffage de LAIMEE
-
-=== Commande Docker pour trouver l'emplacement du fichier `docker-compose.yml` d'un conteneur en fonctionnement
-
-Permet d'afficher le chemin complet du fichier de configuration utilisé pour lancer le conteneur :
-
-[source, bash]
-----
-docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' laimee-tb-gateway-1
-----
-
-TIP: Pour lister l'ensemble des projets Docker Compose actifs sur la machine ainsi que l'emplacement de leurs fichiers, vous pouvez également utiliser `docker compose ls`.
 
 == Optimisation des scripts Bash
 
@@ -2565,6 +2564,8 @@ Sous Linux et les systèmes Unix, la planification automatique de tâches repose
 | Édite la crontab d'un autre utilisateur spécifique.
 |===
 
+
+[[syntaxe-crontab]]
 ==== Syntaxe d'une ligne `crontab`
 
 Chaque ligne d'un fichier `crontab` suit une structure composée de **5 champs temporels** suivis de la **commande à exécuter** :
@@ -2579,6 +2580,102 @@ Chaque ligne d'un fichier `crontab` suit une structure composée de **5 champs t
 │ │ │ │ │
 * * * * * /chemin/absolu/vers/la/commande
 ----
+
+==== Détail des 5 champs temporels
+
+[cols="1,2,2,3", options="header"]
+|===
+
+| Position | Champ | Valeurs autorisées | Détails et exemples
+
+| **1**
+| Minute
+| `0` à `59`
+| Minute précise à laquelle la commande se lance (`0` pour l'heure pile, `30` pour la demi-heure).
+
+| **2**
+| Heure
+| `0` à `23`
+| Heure au format 24h (`0` = minuit, `4` = 4h du matin, `14` = 14h).
+
+| **3**
+| Jour du mois
+| `1` à `31`
+| Numéro du jour dans le mois (`1` = le 1er du mois, `15` = le 15).
+
+| **4**
+| Mois
+| `1` à `12` (ou `jan` à `dec`)
+| Numéro ou abréviation anglaise du mois (`1` ou `jan` = janvier, `6` ou `jun` = juin).
+
+| **5**
+| Jour de la semaine
+| `0` à `7` (ou `sun` à `sat`)
+| `0` et `7` = dimanche, `1` = lundi, `2` = mardi, `3` = mercredi, `4` = jeudi, `5` = vendredi, `6` = samedi.
+|===
+
+==== Caractères spéciaux (opérateurs)
+
+Il est possible de combiner des opérateurs dans chaque champ pour créer des planifications complexes :
+
+[cols="1,2,3", options="header"]
+|===
+
+| Symbole | Signification | Exemple concret
+
+| `*`
+| **Toutes les valeurs** (chaque occurrence)
+| `*` dans le champ _heure_ = toutes les heures.
+
+| `,`
+| **Liste de valeurs** (séparateur)
+| `1,3,5` dans le champ _jour de la semaine_ = lundi, mercredi et vendredi.
+
+| `-`
+| **Plage continue** (de X à Y inclus)
+| `9-17` dans le champ _heure_ = toutes les heures de 9h à 17h.
+
+| `/`
+| **Intervalle ou pas** (tous les N)
+| `*/15` dans le champ _minute_ = toutes les 15 minutes (`0, 15, 30, 45`).
+|===
+
+==== Raccourcis prédéfinis (mots-clés)
+
+À la place des 5 étoiles, `cron` accepte des mots-clés spéciaux pour les fréquences les plus courantes :
+
+[cols="1,2,2", options="header"]
+|===
+
+| Raccourci | Équivalent `cron` | Description
+
+| `@reboot`
+| _Aucun_
+| Exécute la commande une seule fois au démarrage du serveur.
+
+| `@hourly`
+| `0 * * * *`
+| Une fois par heure (à la minute 0).
+
+| `@daily`
+| `0 0 * * *`
+| Une fois par jour (à minuit).
+
+| `@weekly`
+| `0 0 * * 0`
+| Une fois par semaine (le dimanche à minuit).
+
+| `@monthly`
+| `0 0 1 * *`
+| Une fois par mois (le 1er du mois à minuit).
+|===
+
+NOTE: Si le **jour du mois** (champ 3) et le **jour de la semaine** (champ 5) sont tous les deux renseignés (différents de `*`), `cron` exécute la tâche dès que **l'une ou l'autre** des deux conditions est vraie (opérateur logique *OU*).
+
+
+
+
+
 
 ===== Caractères spéciaux
 
@@ -2656,7 +2753,11 @@ Mon projet s'appelle **laimee**.
 0 0 * * 1 /usr/bin/docker compose -p laimee restart >> /var/log/docker-laimee-auto-restart.log 2>&1
 ----
 
+
+* `0 0 * * 1` permet de redémarrer le projet **laimee** tous les lundis à 00h00 (voir la <<syntaxe-crontab,documentation>>).
+
 IMPORTANT: Ici, on journalise le résultat de la tâche `cron` dans le fichier `docker-laimee-auto-restart.log` afin de pouvoir diagnostiquer de potentielles erreurs par la suite.
+
 
 
 == Generer mon `.adoc` en live server 
