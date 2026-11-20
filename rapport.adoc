@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
 Melvin
-v1.4, 2026-11-17
+v1.5, 2026-11-17
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
@@ -1039,6 +1039,27 @@ PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee> docker inspect -f "{{.Name}} : {{
 
 NOTE: Dans cet exemple, tous les services principaux sont bien configurés sur `always`. Seul le conteneur ponctuel `laimee-init-permissions-1` reste sur `no` (comportement attendu).
 
+[[list-docker-project]]
+=== Lister tous les projets Docker en cours
+
+[source,bash]
+----
+docker compose ls
+----
+
+*Résultat :*
+
+[source,console]
+----
+laimee@laimee-dev-v1:~$ docker compose ls
+NAME                STATUS              CONFIG FILES
+laimee              running(19)         /home/laimee/Documents/docker-target/docker/docker-compose.yml,/home/laimee/Documents/docker-target/docker/docker-compose.postgres.yml,/home/laimee/Documents/docker-target/docker/docker-compose.kafka.yml,/home/laimee/Documents/docker-target-gateway/docker/docker-compose.yml
+laimee@laimee-dev-v1:~$
+----
+
+* La colonne `NAME` indique le nom du projet (ex. `laimee`, utilisable avec l'option `-p`).
+* La colonne `STATUS` affiche l'état du projet (`running`, `exited`, etc.) ainsi que le nombre de conteneurs concernés.
+* La colonne `CONFIG FILES` affiche les chemins absolus des fichiers `docker-compose.yml` associés à ce projet.
 
 
 
@@ -1217,7 +1238,7 @@ flowchart TB
 
 ----
 
-IMPORTANT: Ce bloc contient le code source *Mermaid* (`.mmd`) du diagramme. L'utilisation de https://mermaid.live/edit#pako:eNqVWNtu28wRfpUBCxsSQFI86EQ2vwFZURw5J1VW_gCJimBFjqStqaWyu4ztHB6gQIEW_XvT3vRwUfy-70Xvhb5IX6B9hHZJkaJkOm51QZC7O9_MfLMzO6vPWhCHqPnaPIqvgiXhEianUz5lAABHR2AYBtgm9AKJCRdwDJtffkjoGlfIpIAJck4oU6tymdcCee3dVPv3H3_1G3hJPtIFUaLwWtKIivT90Yw3TmpDJpHPSYDwBmfQgFFEGKNsUZ9qP68rtBxRJLMFJ-tloS1D__O__v5rGG9uBZKkmGrA6eYvkirroPa891KB5Tjq10tk_G6qPZqdqLcVkQiTJfJV_OnmMkrEo8bsJLVuOPLBtkzHMpuW6dmZxf0lSeZzssBD1IGipIDlKPZZOpucFsAv4nCWCKi1LKfRshyrDl_gtNdnKKHW7HStrhp4YZyqNW3LscuqkIVlXrbRcUwYESGQYxQhnBGJV-SmHJGCv5co35-9yej74a8Fd4_j4BJ5IelDROgK8X2Ic5JEEmozTsO7Tp-9yTyWM2OxFa1lksZuyLDrO05XZIE5er7Aj4hEIeELcBSScOkDia7IjUhFRjGXwge723V1aFmO37Kc9MVSb5YOKWV--tRB8eWrRyr7fRz5EMRsThc64LVEJmjMhA5RvBAPsuqacIH8o9q5fWSSkwie94YvBoN7me3HHDNuf_fbQ25zqB236fh7hvIq5pdQU_ZxRqJDkkPKMZA0ZtusLM897WUBWJI1j69voPY8JiGckoiwAPkd3q9JRJKgsV1tBMjlLJa-bXZMb0c2PN38TaIPXQtqTyeTUV2HZtPN3i_qehoKqL342WRS18HzPA9qF5JIUd9xbuY6Gjn7EUqBLOA3a6mDUizMcOto2aGCzic8ZvL9hBMm1qlR76ZaOmYMWAjHUJqpqXoDHc_zO553yF5aj4bFNr3CmZFQG46h-HAKlrZbze9aXUsHv9l0K8CU3wXc6oOUhsxNUbD7aD74iq0KGEVmAbOUcv0ATNfq2hUw_Ve9HUwQkxLMAUKr3XV99Wgk4foA6WD_7wVC7en3z8kNchWC_j9-SDj01uuIBkTSORzDizgt7iHCePPjIsL_ISD9V-NByWqO24Co12-Fo7zB5MxgcYg6mOn7tpbo2UyWYhWax6-f7zTzJEID2YIyvMv5g5rTrZ2Wkgo95xeFll8IA68xSGTMlQKoiYBE6IOT5UtR82JmzAmNEo5-6_-Iz5DNOdkFKP0UkieBTDjqcMpjVX2O4ZQIFCpKj2PGNrcoKqx-1nvybFtRLsn8khSEXCVcyBVSIZE30infMW3HcEzXtEqbzLM8x1ePCvC3zzLkT3F8ibjGLRuu2aqXN7pjV2708eDxcMspx5CKTLhpWnvCbbfjVQiPzt7VUtF1LOSCozjMjabr-Oox1eoPEX90BOM4kWSBQFX7whCe9kZZ9R2yEK_Bgs2fwK3v12kwjJMvU02lfSMtpFPtC7weVi7qjYYwHlxMoKH6ogt1Tki1XKVNpYCqSVBLS01dLVTf96qHWlpM0oXqu8LBx5vbNbJQHSKiXGmNE3imgg_H8DaPYu51U3nt7XmdmmUoIbWvKmfePtuzU5lXKVDM7Auo8lctUMxkAt9y8PwCBtsE3Xm49cq29jw6v9jX9i3YcRIhDNLqUqDZiiS7tYepSlK1D8XMvtPFcJoTlTPn1cOjs4eMTjuY3Nq2slb1n3u8jgf3MT4eVIZofI-1xcx59bAyu3Iic-P-xq1pQj9mEpk6lxJ16ZCE7vxynHq5gxu-HKoD_Z9_-L26TTyanVBGpbFGvqIibRezUkOiNWW47VWzorPt8HzI2-RSB8vidEmwjK8YGOP8NISGXFK2ELOY8LBomvMjBRrFwQWGmWbskFFJSUQFQshjKkW5EBz4_SRKrmHEKQvomiTX_72pFdeVwnc3jWm7fnhfg0fffaf02SbsahTUulaj2cyKytMi2mdv8tWOCZOEMYyyjG7AeNSHmiqqWZf4kRJ42Zs00o7yXhTXhO2dqJFfhBrbC1ADJv2RklN3tbJkVs-aZn7tU2vSO1gFL_04ijlJW-hwcysJjaLNLUKIAubR5sdgiaJMx9ERnEaYgF8U-m2BzxdElF1eyJsIwdJt3dFdEFIds_5PLKvbnc_17NO4oqFc-s76-qcHRn1P4wgl-FnEsoKTMPohSW-Ld9U09bbe1W1Lt23dbhfavFnLm7Uf1DaOBSpCyQKZJLnWXQH_luaW3tE93XZ0u1OoxW7T9dyHnUSuXCz6jnDbd6j9kZ3CcAxjdZbX7-q1Xd1u6XZXd-xCr4NB0LEf1HtOEoaNV-qmVa7sx-WCXKGwqdue7liFtrkdNK2HQ3nGqQAfijRNt9ldeMfZRa1FWuRu1PKBkIgl4Zzc-NCC1qG6V5ywBeYxDDiVKnailOjH5b9ZKgxxdaepO62dn_NWy7L2zXHv-tm_IQx8yP_buC39tyG3GXhX126r2mQWeMFdNjVdW3Aaar7kCeraCvmKqE_tswKbanKJK5xqPkw1jmFybYSEXxqBSuipNmVfNV1bE_Y2jlc5BI-TxVLz5yQSqGvJOiQSH1Oy4GS3BFmIvB8nTGq-lyJo_mftWvPtjmN6drvdsTstx3O8jq7daH67a9qu1-10XNtz3ZbX_Kprn1KVltnttCzLspxu03GctvP1P4123Qs[Mermaid Live Editor^] a permis de générer cette image.
+IMPORTANT: Ce bloc contient le code source *Mermaid* (`.mmd`) du diagramme. L'utilisation de https://mermaid.live/edit#pako:eNqVWN1u28oRfpUBCxsSQFL8ESWSzTEgK44tJ05UWTkBEhXBihxJrKmlsruM7fw8QIECLXp6097056I4vu9F74W-SF-gfYR2SZGiZDpudSGQuzvfzHyzMzvLz0qQhKj4yixOroMFYQLGxxM2oQAABwegaRqYOvQCgSnjcAjrX35IoxUukQoOY2SMRFSuKmRec2SNdxPl33_81W_gJfkYzYkUhdciiiOePT-ZstZRY0AFshkJEN7gFFowjAmlEZ03J8rPmxKtQOTpdM7IalFqy9H__K-__xpG6zuOJC2nWnC8_ouIpHXQeNF7KcEKHPnrpSJ5N1GeTI_k05IIhPEC2TL5dHsVp_xJa3qUWTcY-mAaumXobUP3zNzi_oKksxmZ4z7qiaSkhGXId1k6HR-XwBdJOE05NBzDajmGZTThCxz3-hQFNNpd13DlwIV2LNd0DMusqkIaVnnZRMfSYUg4R4ZxjHBKBF6T22pESv5eonh_-ian74e_ltw9TYIrZKWkDzGJlojvQ5yRNBbQmLIovO_06ZvcYzHV5hvRRi6pbYc0s7nldEnmWKAXC_yYCOQCvgBDLggTPpD4mtzyTGSYMMF9MF3XVsExLN8xrOzBkE-GChllfvavguTLl3-Z7PdJ7EOQ0Fk0VwFvBFIeJZSrECdz_iirtg6XyD7KndtHKhiJ4UVvcHFy8iCz_YRhzu3vfrvPbQG15TYbf09RXCfsChrSPkZJvE9yGDEMRJTQTVZW5856eQAWZMWSm1tovEhICMckJjRAdo_3GxKTNGhtVmsBMjFNhG_qXd3bkg1n678J9ME1oHE2Hg-bKrTbdv582VSzUEDj4mfjcVMFz_M8aFwKInhzy7le6GgV7McoONKA3a6EClIx18ONo1WHSjqfsYSK92NGKF9lRr2bKNmYdkJDOITKTEPWG-h6nt_1vH32sno0KLfpNU61NDLhEMoXq2Rps9V813ANFfx2264Bk36XcMsPQmiiMEXC7qL54Eu2amAkmSXMQojVIzCu4Zo1MP1XvS1MkJAKzB6C03FtX_610nC1h7S3_3cCIff0-xfkFpkMQf8fP6QMeqtVHAVERDM4hIskK-4hwmj94zzG_yEg_Vejk4rVDDcBkY_fCkd1g4mpRpMQVdCz500tUfOZPMVqNI9ev9hqZmmMGtJ5RPE-549qzrZ2Vkpq9Jxfllp-wTW8wSAVCZMKoMEDEqMPVp4vZc1LqDYjUZwy9J3_Iz4DOmNkG6DslQuWBiJlqMIxS2T1OYRjwpHLKD1NKF3fIa-x-nnv2fNNRbkisytSEnKdMi6WGHGBrJVN-ZZuWpql27pR2WSe4Vm-_KsBf_s8R_6UJFeIK9ywYetOs7rRLbN2o49Ong42nDIMI54Lt3VjR7hjd70a4eHpu0Ymukq4mDPk-7nRti1f_k2U5mPEHxzAKEkFmSNEsn2hCGe9YV59BzTEGzBg_Sewm7t1GjTt6MtEkWnfygrpRPkCrwe1i3rDAYxOLsfQkn3RpTwnhFwu06ZWQNYkaGSlpikXyvcH1UMjKybZQvle4-DT9d0KaSgPEV6ttNoRPJfBh0N4W0Sx8LotvfZ2vM7M0qSQ3Fe1M2-f79gpzasVKGd2BWT5qxcoZ3KBbzl4fgknmwTderjxyjR2PDq_3NX2LdhRGiOcZNWlRDMlSaazgylLUr0P5cyu0-VwlhO1M-f1w8PTx4zOOpjC2o60VvafO7yOTh5ifHRSG6LRA9aWM-f1w9Ls2oncjYcbt7YO_YQKpPJcSuWlQ5Bo65dlNasd3ODlQB7o__zD7-Vt4sn0KKKR0FbIlhHP2sW81JB4FVHc9Kp50dl0eD4UbXKlg6VJtiRYJNcUtFFxGkJLLCI659OEsLBsmosjBVrlwQWanmXsgEYiInHEEUKWRIJXC8Ge38_i9AaGLKJBtCLpzX9vauV1pfTdzmLaae7f1-DJd99JfaYO2xoFDddotdt5UTkro336plht6TBOKcU4z-gWjIZ9aMiimneJHyMCL3vjVtZRPohi67C5E7WKi1BrcwFqwbg_lHLyrlaVzOtZWy-ufXJNdger4aWfxAkjWQsdru8EieJ4fYcQIodZvP4xWCCv0nFwAMcxpuCXhX5T4IsFcUSvLsVtjGCopmqpNnAhj1n_J4bhurOZmr9q11EoFr61uvnpnlHfR0mMAvw8YnnBSWn0Ic1ui_fVtNWO6qqmoZqmanZKbd7U8aadR7WNEo6SUDJHKkihdVvAv6XZUbuqp5qWanZLtei2bc9-3Elk0sWy7wg3fYfcH_kpDIcwkmd5875e01ZNRzVd1TJLvRYGQdd8VO85SSm2XsmbVrWyH1YLco3Ctmp6qmWU2mZm0DYeD-Upizj4UKZpts3uw1vWNmoOccj9qBUDIeELwhi59cEBZ1_dK0boHIsYBiwSMna8kuiH1c8sNYbYqtVWLWfr58xxDGPXHPu-n_1bQsGH4tvGXeXbhthk4H1d261qkmngBffZVFRlzqJQ8QVLUVWWyJZEviqfJdhEEQtc4kTxYaIwDNMbLSTsSgtkQk-UCf2qqMqK0LdJsiwgWJLOF4o_IzFHVUlXIRH4NCJzRrZLkIbI-klKheKbTgah-J-VG8W3TUM3HcM1u27XNDy766jKreKbhqcbnY7tWG67bdmu5X5VlU-ZVkN3TK_rdtqe23Vdt2t0VAXDSCTsIv-qln1c-_ofjz7kdA[Mermaid Live Editor^] a permis de générer cette image.
 
 
 == Erreur d'utilisation des commandes de chauffage de LAIMEE
@@ -2513,26 +2534,132 @@ bash ../offline/opt1-update-core-services.sh
 
 |===
 
+== Redémarage hebdomadaire des dockers
+
+=== Documentation de `cron` et `crontab`
+
+==== Présentation
+
+Sous Linux et les systèmes Unix, la planification automatique de tâches repose sur deux éléments complémentaires :
+
+* **`cron`** : le démon (service d'arrière-plan) qui tourne en continu, vérifie l'horloge chaque minute et exécute les commandes programmées.
+* **`crontab`** (_cron table_) : l'utilitaire en ligne de commande permettant d'éditer, lister ou supprimer le fichier de configuration contenant la liste des tâches planifiées pour un utilisateur.
+
+==== Commandes principales de `crontab`
+
+[cols="1,2", options="header"]
+|===
+
+| Commande | Description
+
+| `crontab -e`
+| Ouvre le fichier crontab de l'utilisateur courant dans l'éditeur par défaut pour ajouter ou modifier des tâches.
+
+| `crontab -l`
+| Affiche la liste des tâches actuellement programmées pour l'utilisateur courant.
+
+| `crontab -r`
+| Supprime intégralement le fichier crontab de l'utilisateur courant (à utiliser avec précaution).
+
+| `sudo crontab -u <utilisateur> -e`
+| Édite la crontab d'un autre utilisateur spécifique.
+|===
+
+==== Syntaxe d'une ligne `crontab`
+
+Chaque ligne d'un fichier `crontab` suit une structure composée de **5 champs temporels** suivis de la **commande à exécuter** :
+
+[source,text]
+----
+┌───────────── minute (0 - 59)
+│ ┌───────────── heure (0 - 23)
+│ │ ┌───────────── jour du mois (1 - 31)
+│ │ │ ┌───────────── mois (1 - 12)
+│ │ │ │ ┌───────────── jour de la semaine (0 - 7, dimanche = 0 ou 7)
+│ │ │ │ │
+* * * * * /chemin/absolu/vers/la/commande
+----
+
+===== Caractères spéciaux
+
+* `*` : toutes les valeurs possibles (ex. chaque minute, chaque heure).
+* `,` : liste de valeurs séparées par des virgules (ex. `1,3,5` pour lundi, mercredi et vendredi).
+* `-` : plage de valeurs (ex. `1-5` du lundi au vendredi).
+* `/` : intervalle ou pas (ex. `*/15` toutes les 15 minutes).
+
+==== Exemples concrets
+
+===== Redémarrer un projet Docker Compose tous les lundis à 4h00
+
+[source,cron]
+----
+0 4 * * 1 /usr/bin/docker compose -p mon-projet restart
+----
+
+===== Autres exemples courants
+
+[cols="1,2", options="header"]
+|===
+
+| Planification | Expression `crontab`
+
+| Tous les jours à minuit
+| `0 0 * * * /chemin/script.sh`
+
+| Toutes les 30 minutes
+| `*/30 * * * * /chemin/script.sh`
+
+| Le 1er de chaque mois à 2h30
+| `30 2 1 * * /chemin/script.sh`
+
+| Du lundi au vendredi à 18h00
+| `0 18 * * 1-5 /chemin/script.sh`
+|===
+
+==== Bonnes pratiques et dépannage
+
+* **Utiliser des chemins absolus :** `cron` s'exécute avec un environnement minimal (`PATH` très restreint). Indiquez toujours le chemin complet des binaires (ex. `/usr/bin/docker` au lieu de `docker`), identifiable via la commande `which <commande>`.
+* **Gérer les journaux (logs) :** par défaut, `cron` n'affiche rien à l'écran. Redirigez la sortie standard et les erreurs vers un fichier pour faciliter le suivi :
++
+[source,cron]
+----
+0 4 * * 1 /usr/bin/docker compose -p mon-projet restart >> /var/log/docker-restart.log 2>&1
+----
+* **Vérifier l'état du service :** assurez-vous que le démon est actif sur le système :
++
+[source,bash]
+----
+sudo systemctl status cron    # Sur Debian / Ubuntu
+sudo systemctl status crond   # Sur RHEL / CentOS / Fedora
+----
+
+=== Application
+
+Ici, l'objectif est de faire redémarrer tous les conteneurs Docker de mon projet tous les lundis.
+
+Je récupère le nom du projet à l'aide d'une commande Docker (voir la <<list-docker-project,documentation>>).
+
+[source,console]
+----
+laimee@laimee-dev-v1:~$ docker compose ls
+NAME                STATUS              CONFIG FILES
+laimee              running(19)         /home/laimee/Documents/docker-target/docker/docker-compose.yml,/home/laimee/Documents/docker-target/docker/docker-compose.postgres.yml,/home/laimee/Documents/docker-target/docker/docker-compose.kafka.yml,/home/laimee/Documents/docker-target-gateway/docker/docker-compose.yml
+laimee@laimee-dev-v1:~$
+----
+
+Mon projet s'appelle **laimee**.
+
+==== Création de ma tâche `cron`
+
+[source,cron]
+----
+0 0 * * 1 /usr/bin/docker compose -p laimee restart >> /var/log/docker-laimee-auto-restart.log 2>&1
+----
+
+IMPORTANT: Ici, on journalise le résultat de la tâche `cron` dans le fichier `docker-laimee-auto-restart.log` afin de pouvoir diagnostiquer de potentielles erreurs par la suite.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-== Generer mon .Adoc en live server 
+== Generer mon `.adoc` en live server 
 
 [source, powershell]
 ----
