@@ -828,12 +828,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_commandes_docker_utiles">3. Commandes Docker utiles</a>
 <ul class="sectlevel2">
 <li><a href="#_supprimer_tous_les_conteneurs_docker">3.1. Supprimer tous les conteneurs Docker</a></li>
-<li><a href="#_vérifier_que_les_conteneurs_redémarrent_au_démarrage_du_système">3.2. Vérifier que les conteneurs redémarrent au démarrage du système</a>
+<li><a href="#list-docker-project">3.2. Lister tous les projets Docker en cours</a></li>
+<li><a href="#_vérifier_que_les_conteneurs_redémarrent_au_démarrage_du_système">3.3. Vérifier que les conteneurs redémarrent au démarrage du système</a>
 <ul class="sectlevel3">
-<li><a href="#_exemple_de_résultat">3.2.1. Exemple de résultat</a></li>
+<li><a href="#_exemple_de_résultat">3.3.1. Exemple de résultat</a></li>
 </ul>
 </li>
-<li><a href="#list-docker-project">3.3. Lister tous les projets Docker en cours</a></li>
+<li><a href="#_commande_docker_pour_trouver_lemplacement_du_fichier_docker_compose_yml_dun_conteneur_en_fonctionnement">3.4. Commande Docker pour trouver l&#8217;emplacement du fichier <code>docker-compose.yml</code> d&#8217;un conteneur en fonctionnement</a></li>
 </ul>
 </li>
 <li><a href="#_diagrammes_darchitecture_de_laimee">4. Diagrammes d&#8217;architecture de LAIMEE</a>
@@ -852,35 +853,30 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_erreur_dutilisation_des_commandes_de_chauffage_de_laimee">5. Erreur d&#8217;utilisation des commandes de chauffage de LAIMEE</a>
+<li><a href="#_optimisation_des_scripts_bash">5. Optimisation des scripts Bash</a>
 <ul class="sectlevel2">
-<li><a href="#_commande_docker_pour_trouver_lemplacement_du_fichier_docker_compose_yml_dun_conteneur_en_fonctionnement">5.1. Commande Docker pour trouver l&#8217;emplacement du fichier <code>docker-compose.yml</code> d&#8217;un conteneur en fonctionnement</a></li>
+<li><a href="#_sécurité_et_gestion_des_erreurs">5.1. Sécurité et gestion des erreurs</a>
+<ul class="sectlevel3">
+<li><a href="#_arrêt_sur_erreur_set_euo_pipefail">5.1.1. Arrêt sur erreur (<code>set -euo pipefail</code>)</a></li>
+<li><a href="#_répertoires_temporaires_et_nettoyage_automatique_mktemp_et_trap">5.1.2. Répertoires temporaires et nettoyage automatique (<code>mktemp</code> et <code>trap</code>)</a></li>
 </ul>
 </li>
-<li><a href="#_optimisation_des_scripts_bash">6. Optimisation des scripts Bash</a>
-<ul class="sectlevel2">
-<li><a href="#_sécurité_et_gestion_des_erreurs">6.1. Sécurité et gestion des erreurs</a>
+<li><a href="#_compression_et_factorisation_de_commandes">5.2. Compression et factorisation de commandes</a>
 <ul class="sectlevel3">
-<li><a href="#_arrêt_sur_erreur_set_euo_pipefail">6.1.1. Arrêt sur erreur (<code>set -euo pipefail</code>)</a></li>
-<li><a href="#_répertoires_temporaires_et_nettoyage_automatique_mktemp_et_trap">6.1.2. Répertoires temporaires et nettoyage automatique (<code>mktemp</code> et <code>trap</code>)</a></li>
+<li><a href="#_rsync">5.2.1. rsync</a></li>
+<li><a href="#_création_de_répertoires_mkdir_p">5.2.2. Création de répertoires (<code>mkdir -p</code>)</a></li>
 </ul>
 </li>
-<li><a href="#_compression_et_factorisation_de_commandes">6.2. Compression et factorisation de commandes</a>
+<li><a href="#_fiabilité_et_performances_des_commandes">5.3. Fiabilité et performances des commandes</a>
 <ul class="sectlevel3">
-<li><a href="#_rsync">6.2.1. rsync</a></li>
-<li><a href="#_création_de_répertoires_mkdir_p">6.2.2. Création de répertoires (<code>mkdir -p</code>)</a></li>
-</ul>
-</li>
-<li><a href="#_fiabilité_et_performances_des_commandes">6.3. Fiabilité et performances des commandes</a>
-<ul class="sectlevel3">
-<li><a href="#_écriture_de_fichier_de_configuration_cat_vs_tee">6.3.1. Écriture de fichier de configuration (<code>cat</code> vs <code>tee</code>)</a></li>
-<li><a href="#_copie_en_mode_archive_cp_a">6.3.2. Copie en mode archive (<code>cp -a</code>)</a></li>
-<li><a href="#_extraction_rapide_tar">6.3.3. Extraction rapide (<code>tar</code>)</a></li>
-<li><a href="#_déplacement_de_fichiers_mv">6.3.4. Déplacement de fichiers (<code>mv</code>)</a></li>
-<li><a href="#_installation_dun_paquet_deb_local">6.3.5. Installation d&#8217;un paquet <code>.deb</code> local</a></li>
-<li><a href="#_lecture_de_lentrée_utilisateur_read_r">6.3.6. Lecture de l&#8217;entrée utilisateur (<code>read -r</code>)</a></li>
-<li><a href="#_vérification_de_fichier_et_tests_conditionnels_f">6.3.7. Vérification de fichier et tests conditionnels (<code>[[ ! -f &#8230;&#8203; ]]</code>)</a></li>
-<li><a href="#_résultat_des_scripts_bash_offline_optimisés">6.3.8. Résultat des scripts bash <em>Offline</em> optimisés</a>
+<li><a href="#_écriture_de_fichier_de_configuration_cat_vs_tee">5.3.1. Écriture de fichier de configuration (<code>cat</code> vs <code>tee</code>)</a></li>
+<li><a href="#_copie_en_mode_archive_cp_a">5.3.2. Copie en mode archive (<code>cp -a</code>)</a></li>
+<li><a href="#_extraction_rapide_tar">5.3.3. Extraction rapide (<code>tar</code>)</a></li>
+<li><a href="#_déplacement_de_fichiers_mv">5.3.4. Déplacement de fichiers (<code>mv</code>)</a></li>
+<li><a href="#_installation_dun_paquet_deb_local">5.3.5. Installation d&#8217;un paquet <code>.deb</code> local</a></li>
+<li><a href="#_lecture_de_lentrée_utilisateur_read_r">5.3.6. Lecture de l&#8217;entrée utilisateur (<code>read -r</code>)</a></li>
+<li><a href="#_vérification_de_fichier_et_tests_conditionnels_f">5.3.7. Vérification de fichier et tests conditionnels (<code>[[ ! -f &#8230;&#8203; ]]</code>)</a></li>
+<li><a href="#_résultat_des_scripts_bash_offline_optimisés">5.3.8. Résultat des scripts bash <em>Offline</em> optimisés</a>
 <ul class="sectlevel4">
 <li><a href="#_résultat_du_script_1_install_dependances_sh">Résultat du script <code>1-install-dependances.sh</code></a></li>
 <li><a href="#_résultat_du_script_2_install_docker_sh">Résultat du script <code>2-install-docker.sh</code></a></li>
@@ -889,7 +885,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_résultat_du_script_opt2_update_gateway_services_sh">Résultat du script <code>opt2-update-gateway-services.sh</code></a></li>
 </ul>
 </li>
-<li><a href="#_résultat_des_scripts_bash_online_optimisés">6.3.9. Résultat des scripts bash <em>Online</em> optimisés</a>
+<li><a href="#_résultat_des_scripts_bash_online_optimisés">5.3.9. Résultat des scripts bash <em>Online</em> optimisés</a>
 <ul class="sectlevel4">
 <li><a href="#_résultat_du_script_1_install_dependances_sh_2">Résultat du script <code>1-install-dependances.sh</code></a></li>
 <li><a href="#_résultat_du_script_2_install_docker_sh_2">Résultat du script <code>2-install-docker.sh</code></a></li>
@@ -901,34 +897,37 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_redémarage_hebdomadaire_des_dockers">7. Redémarage hebdomadaire des dockers</a>
+<li><a href="#_redémarage_hebdomadaire_des_dockers">6. Redémarage hebdomadaire des dockers</a>
 <ul class="sectlevel2">
-<li><a href="#_documentation_de_cron_et_crontab">7.1. Documentation de <code>cron</code> et <code>crontab</code></a>
+<li><a href="#_documentation_de_cron_et_crontab">6.1. Documentation de <code>cron</code> et <code>crontab</code></a>
 <ul class="sectlevel3">
-<li><a href="#_présentation">7.1.1. Présentation</a></li>
-<li><a href="#_commandes_principales_de_crontab">7.1.2. Commandes principales de <code>crontab</code></a></li>
-<li><a href="#_syntaxe_dune_ligne_crontab">7.1.3. Syntaxe d&#8217;une ligne <code>crontab</code></a>
+<li><a href="#_présentation">6.1.1. Présentation</a></li>
+<li><a href="#_commandes_principales_de_crontab">6.1.2. Commandes principales de <code>crontab</code></a></li>
+<li><a href="#syntaxe-crontab">6.1.3. Syntaxe d&#8217;une ligne <code>crontab</code></a></li>
+<li><a href="#_détail_des_5_champs_temporels">6.1.4. Détail des 5 champs temporels</a></li>
+<li><a href="#_caractères_spéciaux_opérateurs">6.1.5. Caractères spéciaux (opérateurs)</a></li>
+<li><a href="#_raccourcis_prédéfinis_mots_clés">6.1.6. Raccourcis prédéfinis (mots-clés)</a>
 <ul class="sectlevel4">
 <li><a href="#_caractères_spéciaux">Caractères spéciaux</a></li>
 </ul>
 </li>
-<li><a href="#_exemples_concrets">7.1.4. Exemples concrets</a>
+<li><a href="#_exemples_concrets">6.1.7. Exemples concrets</a>
 <ul class="sectlevel4">
 <li><a href="#_redémarrer_un_projet_docker_compose_tous_les_lundis_à_4h00">Redémarrer un projet Docker Compose tous les lundis à 4h00</a></li>
 <li><a href="#_autres_exemples_courants">Autres exemples courants</a></li>
 </ul>
 </li>
-<li><a href="#_bonnes_pratiques_et_dépannage">7.1.5. Bonnes pratiques et dépannage</a></li>
+<li><a href="#_bonnes_pratiques_et_dépannage">6.1.8. Bonnes pratiques et dépannage</a></li>
 </ul>
 </li>
-<li><a href="#_application">7.2. Application</a>
+<li><a href="#_application">6.2. Application</a>
 <ul class="sectlevel3">
-<li><a href="#_création_de_ma_tâche_cron">7.2.1. Création de ma tâche <code>cron</code></a></li>
+<li><a href="#_création_de_ma_tâche_cron">6.2.1. Création de ma tâche <code>cron</code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</a></li>
+<li><a href="#_generer_mon_adoc_en_live_server">7. Generer mon <code>.adoc</code> en live server</a></li>
 </ul>
 </div>
 </div>
@@ -2065,7 +2064,42 @@ Cette action supprime définitivement tous les conteneurs (actifs ou arrêtés),
 </div>
 </div>
 <div class="sect2">
-<h3 id="_vérifier_que_les_conteneurs_redémarrent_au_démarrage_du_système">3.2. Vérifier que les conteneurs redémarrent au démarrage du système</h3>
+<h3 id="list-docker-project">3.2. Lister tous les projets Docker en cours</h3>
+<div class="paragraph">
+<p><strong>Commande Docker :</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker compose ls</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Résultat :</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">laimee@laimee-dev-v1:~$ docker compose ls
+NAME                STATUS              CONFIG FILES
+laimee              running(19)         /home/laimee/Documents/docker-target/docker/docker-compose.yml,/home/laimee/Documents/docker-target/docker/docker-compose.postgres.yml,/home/laimee/Documents/docker-target/docker/docker-compose.kafka.yml,/home/laimee/Documents/docker-target-gateway/docker/docker-compose.yml
+laimee@laimee-dev-v1:~$</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>La colonne <code>NAME</code> indique le nom du projet (ex. <code>laimee</code>, utilisable avec l&#8217;option <code>-p</code>).</p>
+</li>
+<li>
+<p>La colonne <code>STATUS</code> affiche l&#8217;état du projet (<code>running</code>, <code>exited</code>, etc.) ainsi que le nombre de conteneurs concernés.</p>
+</li>
+<li>
+<p>La colonne <code>CONFIG FILES</code> affiche les chemins absolus des fichiers <code>docker-compose.yml</code> associés à ce projet.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vérifier_que_les_conteneurs_redémarrent_au_démarrage_du_système">3.3. Vérifier que les conteneurs redémarrent au démarrage du système</h3>
 <div class="paragraph">
 <p>Pour contrôler la politique de redémarrage (<code>RestartPolicy</code>) appliquée à chaque conteneur lors du démarrage de Docker Desktop :</p>
 </div>
@@ -2085,7 +2119,7 @@ Cette action supprime définitivement tous les conteneurs (actifs ou arrêtés),
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_exemple_de_résultat">3.2.1. Exemple de résultat</h4>
+<h4 id="_exemple_de_résultat">3.3.1. Exemple de résultat</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">PS C:\Users\Dev-Sta-1\Documents\Melvin\laimee&gt; docker inspect -f "{{.Name}} : {{.HostConfig.RestartPolicy.Name}}" $(docker ps -aq)
@@ -2126,35 +2160,26 @@ Dans cet exemple, tous les services principaux sont bien configurés sur <code>a
 </div>
 </div>
 <div class="sect2">
-<h3 id="list-docker-project">3.3. Lister tous les projets Docker en cours</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker compose ls</code></pre>
-</div>
-</div>
+<h3 id="_commande_docker_pour_trouver_lemplacement_du_fichier_docker_compose_yml_dun_conteneur_en_fonctionnement">3.4. Commande Docker pour trouver l&#8217;emplacement du fichier <code>docker-compose.yml</code> d&#8217;un conteneur en fonctionnement</h3>
 <div class="paragraph">
-<p><strong>Résultat :</strong></p>
+<p>Permet d&#8217;afficher le chemin complet du fichier de configuration utilisé pour lancer le conteneur :</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">laimee@laimee-dev-v1:~$ docker compose ls
-NAME                STATUS              CONFIG FILES
-laimee              running(19)         /home/laimee/Documents/docker-target/docker/docker-compose.yml,/home/laimee/Documents/docker-target/docker/docker-compose.postgres.yml,/home/laimee/Documents/docker-target/docker/docker-compose.kafka.yml,/home/laimee/Documents/docker-target-gateway/docker/docker-compose.yml
-laimee@laimee-dev-v1:~$</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' laimee-tb-gateway-1</code></pre>
 </div>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>La colonne <code>NAME</code> indique le nom du projet (ex. <code>laimee</code>, utilisable avec l&#8217;option <code>-p</code>).</p>
-</li>
-<li>
-<p>La colonne <code>STATUS</code> affiche l&#8217;état du projet (<code>running</code>, <code>exited</code>, etc.) ainsi que le nombre de conteneurs concernés.</p>
-</li>
-<li>
-<p>La colonne <code>CONFIG FILES</code> affiche les chemins absolus des fichiers <code>docker-compose.yml</code> associés à ce projet.</p>
-</li>
-</ul>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Pour lister l&#8217;ensemble des projets Docker Compose actifs sur la machine ainsi que l&#8217;emplacement de leurs fichiers, vous pouvez également utiliser <code>docker compose ls</code> (<a href="#list-docker-project">voir la documentation</a>).
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -2388,40 +2413,12 @@ Ce bloc contient le code source <strong>Mermaid</strong> (<code>.mmd</code>) du 
 </div>
 </div>
 <div class="sect1">
-<h2 id="_erreur_dutilisation_des_commandes_de_chauffage_de_laimee">5. Erreur d&#8217;utilisation des commandes de chauffage de LAIMEE</h2>
+<h2 id="_optimisation_des_scripts_bash">5. Optimisation des scripts Bash</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_commande_docker_pour_trouver_lemplacement_du_fichier_docker_compose_yml_dun_conteneur_en_fonctionnement">5.1. Commande Docker pour trouver l&#8217;emplacement du fichier <code>docker-compose.yml</code> d&#8217;un conteneur en fonctionnement</h3>
-<div class="paragraph">
-<p>Permet d&#8217;afficher le chemin complet du fichier de configuration utilisé pour lancer le conteneur :</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' laimee-tb-gateway-1</code></pre>
-</div>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-Pour lister l&#8217;ensemble des projets Docker Compose actifs sur la machine ainsi que l&#8217;emplacement de leurs fichiers, vous pouvez également utiliser <code>docker compose ls</code>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_optimisation_des_scripts_bash">6. Optimisation des scripts Bash</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_sécurité_et_gestion_des_erreurs">6.1. Sécurité et gestion des erreurs</h3>
+<h3 id="_sécurité_et_gestion_des_erreurs">5.1. Sécurité et gestion des erreurs</h3>
 <div class="sect3">
-<h4 id="_arrêt_sur_erreur_set_euo_pipefail">6.1.1. Arrêt sur erreur (<code>set -euo pipefail</code>)</h4>
+<h4 id="_arrêt_sur_erreur_set_euo_pipefail">5.1.1. Arrêt sur erreur (<code>set -euo pipefail</code>)</h4>
 <div class="paragraph">
 <p>Permet d&#8217;éviter que le script continue son exécution et modifie ou supprime des fichiers si une commande précédente échoue.</p>
 </div>
@@ -2446,7 +2443,7 @@ set -euo pipefail</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_répertoires_temporaires_et_nettoyage_automatique_mktemp_et_trap">6.1.2. Répertoires temporaires et nettoyage automatique (<code>mktemp</code> et <code>trap</code>)</h4>
+<h4 id="_répertoires_temporaires_et_nettoyage_automatique_mktemp_et_trap">5.1.2. Répertoires temporaires et nettoyage automatique (<code>mktemp</code> et <code>trap</code>)</h4>
 <div class="paragraph">
 <p>Remplacement des chemins statiques et des suppressions manuelles en fin de script par un répertoire temporaire généré dynamiquement via <code>mktemp -d</code>, couplé à un <code>trap &#8230;&#8203; EXIT</code>.</p>
 </div>
@@ -2507,9 +2504,9 @@ L&#8217;utilisation de <code>${VAR:?}</code> empêche une suppression accidentel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_compression_et_factorisation_de_commandes">6.2. Compression et factorisation de commandes</h3>
+<h3 id="_compression_et_factorisation_de_commandes">5.2. Compression et factorisation de commandes</h3>
 <div class="sect3">
-<h4 id="_rsync">6.2.1. rsync</h4>
+<h4 id="_rsync">5.2.1. rsync</h4>
 <div class="paragraph">
 <p>Regroupement des transferts de fichiers en une seule exécution pour réduire le temps de traitement.</p>
 </div>
@@ -2532,7 +2529,7 @@ rsync -ah --progress docker-gateway.tar.gz ~/laimee-docker</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_création_de_répertoires_mkdir_p">6.2.2. Création de répertoires (<code>mkdir -p</code>)</h4>
+<h4 id="_création_de_répertoires_mkdir_p">5.2.2. Création de répertoires (<code>mkdir -p</code>)</h4>
 <div class="paragraph">
 <p>Factorisation des créations de dossiers en une seule ligne avec l&#8217;option <code>-p</code> (évite les erreurs si le dossier existe déjà).</p>
 </div>
@@ -2556,9 +2553,9 @@ mkdir -p /opt/docker/scripts/laimee/core</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_fiabilité_et_performances_des_commandes">6.3. Fiabilité et performances des commandes</h3>
+<h3 id="_fiabilité_et_performances_des_commandes">5.3. Fiabilité et performances des commandes</h3>
 <div class="sect3">
-<h4 id="_écriture_de_fichier_de_configuration_cat_vs_tee">6.3.1. Écriture de fichier de configuration (<code>cat</code> vs <code>tee</code>)</h4>
+<h4 id="_écriture_de_fichier_de_configuration_cat_vs_tee">5.3.1. Écriture de fichier de configuration (<code>cat</code> vs <code>tee</code>)</h4>
 <div class="paragraph">
 <p>Remplacement de <code>tee</code> par <code>cat</code> avec redirection directe (<code>&gt;</code>) pour éviter l&#8217;affichage inutile du contenu dans le terminal. Ajout de la section <code>[Sleep]</code> indispensable pour que <code>systemd</code> valide la configuration.</p>
 </div>
@@ -2591,7 +2588,7 @@ EOF</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_copie_en_mode_archive_cp_a">6.3.2. Copie en mode archive (<code>cp -a</code>)</h4>
+<h4 id="_copie_en_mode_archive_cp_a">5.3.2. Copie en mode archive (<code>cp -a</code>)</h4>
 <div class="paragraph">
 <p>Remplacement de <code>-r</code> par <code>-a</code> pour préserver les droits d&#8217;exécution des scripts, les propriétaires et les liens symboliques.</p>
 </div>
@@ -2613,7 +2610,7 @@ EOF</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_extraction_rapide_tar">6.3.3. Extraction rapide (<code>tar</code>)</h4>
+<h4 id="_extraction_rapide_tar">5.3.3. Extraction rapide (<code>tar</code>)</h4>
 <div class="paragraph">
 <p>Suppression de l&#8217;option verbose (<code>-v</code>) pour accélérer la décompression et éviter de surcharger le terminal.</p>
 </div>
@@ -2635,7 +2632,7 @@ EOF</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_déplacement_de_fichiers_mv">6.3.4. Déplacement de fichiers (<code>mv</code>)</h4>
+<h4 id="_déplacement_de_fichiers_mv">5.3.4. Déplacement de fichiers (<code>mv</code>)</h4>
 <div class="paragraph">
 <p>Suppression de l&#8217;option invalide <code>-r</code> (<code>mv</code> gère les répertoires nativement).</p>
 </div>
@@ -2657,7 +2654,7 @@ EOF</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_installation_dun_paquet_deb_local">6.3.5. Installation d&#8217;un paquet <code>.deb</code> local</h4>
+<h4 id="_installation_dun_paquet_deb_local">5.3.5. Installation d&#8217;un paquet <code>.deb</code> local</h4>
 <div class="paragraph">
 <p>Remplacement de <code>dpkg -i</code> suivi de <code>apt-get install -f</code> par <code>apt-get install</code> directement sur les fichiers locaux. Cela permet de résoudre l&#8217;ordre des dépendances en une seule passe et d&#8217;éviter de masquer d&#8217;éventuelles erreurs avec <code>|| true</code>. L&#8217;option <code>--no-download</code> garantit un échec immédiat et propre si un paquet manque en mode hors-ligne.</p>
 </div>
@@ -2682,7 +2679,7 @@ apt-get install -f -y</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lecture_de_lentrée_utilisateur_read_r">6.3.6. Lecture de l&#8217;entrée utilisateur (<code>read -r</code>)</h4>
+<h4 id="_lecture_de_lentrée_utilisateur_read_r">5.3.6. Lecture de l&#8217;entrée utilisateur (<code>read -r</code>)</h4>
 <div class="paragraph">
 <p>Ajout de l&#8217;option <code>-r</code> (<strong>raw</strong>) à la commande <code>read</code> afin d&#8217;empêcher Bash d&#8217;interpréter les antislashs (<code>\</code>) comme des caractères d&#8217;échappement. Cela garantit que la saisie utilisateur est lue telle quelle et évite des comportements inattendus lors d&#8217;une pause interactive.</p>
 </div>
@@ -2704,7 +2701,7 @@ apt-get install -f -y</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_vérification_de_fichier_et_tests_conditionnels_f">6.3.7. Vérification de fichier et tests conditionnels (<code>[[ ! -f &#8230;&#8203; ]]</code>)</h4>
+<h4 id="_vérification_de_fichier_et_tests_conditionnels_f">5.3.7. Vérification de fichier et tests conditionnels (<code>[[ ! -f &#8230;&#8203; ]]</code>)</h4>
 <div class="paragraph">
 <p>Remplacement des simples crochets <code>[ &#8230;&#8203; ]</code> par les doubles crochets Bash <code>[[ &#8230;&#8203; ]]</code> et utilisation de l&#8217;opérateur <code>-f</code> au lieu de <code>-e</code>.</p>
 </div>
@@ -2742,7 +2739,7 @@ fi</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_résultat_des_scripts_bash_offline_optimisés">6.3.8. Résultat des scripts bash <em>Offline</em> optimisés</h4>
+<h4 id="_résultat_des_scripts_bash_offline_optimisés">5.3.8. Résultat des scripts bash <em>Offline</em> optimisés</h4>
 <div class="sect4">
 <h5 id="_résultat_du_script_1_install_dependances_sh">Résultat du script <code>1-install-dependances.sh</code></h5>
 <table class="tableblock frame-all grid-all stretch">
@@ -3479,7 +3476,7 @@ echo "Update complete, LAIMEE Gateway is now updated with the new images."</code
 </div>
 </div>
 <div class="sect3">
-<h4 id="_résultat_des_scripts_bash_online_optimisés">6.3.9. Résultat des scripts bash <em>Online</em> optimisés</h4>
+<h4 id="_résultat_des_scripts_bash_online_optimisés">5.3.9. Résultat des scripts bash <em>Online</em> optimisés</h4>
 <div class="sect4">
 <h5 id="_résultat_du_script_1_install_dependances_sh_2">Résultat du script <code>1-install-dependances.sh</code></h5>
 <table class="tableblock frame-all grid-all stretch">
@@ -3821,12 +3818,12 @@ bash ../offline/opt1-update-core-services.sh</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_redémarage_hebdomadaire_des_dockers">7. Redémarage hebdomadaire des dockers</h2>
+<h2 id="_redémarage_hebdomadaire_des_dockers">6. Redémarage hebdomadaire des dockers</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_documentation_de_cron_et_crontab">7.1. Documentation de <code>cron</code> et <code>crontab</code></h3>
+<h3 id="_documentation_de_cron_et_crontab">6.1. Documentation de <code>cron</code> et <code>crontab</code></h3>
 <div class="sect3">
-<h4 id="_présentation">7.1.1. Présentation</h4>
+<h4 id="_présentation">6.1.1. Présentation</h4>
 <div class="paragraph">
 <p>Sous Linux et les systèmes Unix, la planification automatique de tâches repose sur deux éléments complémentaires :</p>
 </div>
@@ -3842,7 +3839,7 @@ bash ../offline/opt1-update-core-services.sh</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_commandes_principales_de_crontab">7.1.2. Commandes principales de <code>crontab</code></h4>
+<h4 id="_commandes_principales_de_crontab">6.1.2. Commandes principales de <code>crontab</code></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -3875,7 +3872,7 @@ bash ../offline/opt1-update-core-services.sh</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_syntaxe_dune_ligne_crontab">7.1.3. Syntaxe d&#8217;une ligne <code>crontab</code></h4>
+<h4 id="syntaxe-crontab">6.1.3. Syntaxe d&#8217;une ligne <code>crontab</code></h4>
 <div class="paragraph">
 <p>Chaque ligne d&#8217;un fichier <code>crontab</code> suit une structure composée de <strong>5 champs temporels</strong> suivis de la <strong>commande à exécuter</strong> :</p>
 </div>
@@ -3889,6 +3886,158 @@ bash ../offline/opt1-update-core-services.sh</code></pre>
 │ │ │ │ │
 * * * * * /chemin/absolu/vers/la/commande</code></pre>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_détail_des_5_champs_temporels">6.1.4. Détail des 5 champs temporels</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 37.5%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Position</th>
+<th class="tableblock halign-left valign-top">Champ</th>
+<th class="tableblock halign-left valign-top">Valeurs autorisées</th>
+<th class="tableblock halign-left valign-top">Détails et exemples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Minute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0</code> à <code>59</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Minute précise à laquelle la commande se lance (<code>0</code> pour l&#8217;heure pile, <code>30</code> pour la demi-heure).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>2</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Heure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0</code> à <code>23</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Heure au format 24h (<code>0</code> = minuit, <code>4</code> = 4h du matin, <code>14</code> = 14h).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>3</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jour du mois</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code> à <code>31</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Numéro du jour dans le mois (<code>1</code> = le 1er du mois, <code>15</code> = le 15).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>4</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mois</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code> à <code>12</code> (ou <code>jan</code> à <code>dec</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Numéro ou abréviation anglaise du mois (<code>1</code> ou <code>jan</code> = janvier, <code>6</code> ou <code>jun</code> = juin).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>5</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jour de la semaine</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0</code> à <code>7</code> (ou <code>sun</code> à <code>sat</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0</code> et <code>7</code> = dimanche, <code>1</code> = lundi, <code>2</code> = mardi, <code>3</code> = mercredi, <code>4</code> = jeudi, <code>5</code> = vendredi, <code>6</code> = samedi.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_caractères_spéciaux_opérateurs">6.1.5. Caractères spéciaux (opérateurs)</h4>
+<div class="paragraph">
+<p>Il est possible de combiner des opérateurs dans chaque champ pour créer des planifications complexes :</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 33.3333%;">
+<col style="width: 50.0001%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Symbole</th>
+<th class="tableblock halign-left valign-top">Signification</th>
+<th class="tableblock halign-left valign-top">Exemple concret</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Toutes les valeurs</strong> (chaque occurrence)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*</code> dans le champ <em>heure</em> = toutes les heures.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>,</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Liste de valeurs</strong> (séparateur)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1,3,5</code> dans le champ <em>jour de la semaine</em> = lundi, mercredi et vendredi.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>-</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plage continue</strong> (de X à Y inclus)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>9-17</code> dans le champ <em>heure</em> = toutes les heures de 9h à 17h.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>/</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Intervalle ou pas</strong> (tous les N)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*/15</code> dans le champ <em>minute</em> = toutes les 15 minutes (<code>0, 15, 30, 45</code>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_raccourcis_prédéfinis_mots_clés">6.1.6. Raccourcis prédéfinis (mots-clés)</h4>
+<div class="paragraph">
+<p>À la place des 5 étoiles, <code>cron</code> accepte des mots-clés spéciaux pour les fréquences les plus courantes :</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Raccourci</th>
+<th class="tableblock halign-left valign-top">Équivalent <code>cron</code></th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>@reboot</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Aucun</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Exécute la commande une seule fois au démarrage du serveur.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>@hourly</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0 * * * *</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Une fois par heure (à la minute 0).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>@daily</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0 0 * * *</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Une fois par jour (à minuit).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>@weekly</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0 0 * * 0</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Une fois par semaine (le dimanche à minuit).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>@monthly</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0 0 1 * *</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Une fois par mois (le 1er du mois à minuit).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Si le <strong>jour du mois</strong> (champ 3) et le <strong>jour de la semaine</strong> (champ 5) sont tous les deux renseignés (différents de <code><strong></code>), <code>cron</code> exécute la tâche dès que <strong>l&#8217;une ou l&#8217;autre</strong> des deux conditions est vraie (opérateur logique *OU</strong>).
+</td>
+</tr>
+</table>
 </div>
 <div class="sect4">
 <h5 id="_caractères_spéciaux">Caractères spéciaux</h5>
@@ -3911,7 +4060,7 @@ bash ../offline/opt1-update-core-services.sh</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_exemples_concrets">7.1.4. Exemples concrets</h4>
+<h4 id="_exemples_concrets">6.1.7. Exemples concrets</h4>
 <div class="sect4">
 <h5 id="_redémarrer_un_projet_docker_compose_tous_les_lundis_à_4h00">Redémarrer un projet Docker Compose tous les lundis à 4h00</h5>
 <div class="listingblock">
@@ -3955,7 +4104,7 @@ bash ../offline/opt1-update-core-services.sh</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_bonnes_pratiques_et_dépannage">7.1.5. Bonnes pratiques et dépannage</h4>
+<h4 id="_bonnes_pratiques_et_dépannage">6.1.8. Bonnes pratiques et dépannage</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -3983,7 +4132,7 @@ sudo systemctl status crond   # Sur RHEL / CentOS / Fedora</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_application">7.2. Application</h3>
+<h3 id="_application">6.2. Application</h3>
 <div class="paragraph">
 <p>Ici, l&#8217;objectif est de faire redémarrer tous les conteneurs Docker de mon projet tous les lundis.</p>
 </div>
@@ -4002,11 +4151,18 @@ laimee@laimee-dev-v1:~$</code></pre>
 <p>Mon projet s&#8217;appelle <strong>laimee</strong>.</p>
 </div>
 <div class="sect3">
-<h4 id="_création_de_ma_tâche_cron">7.2.1. Création de ma tâche <code>cron</code></h4>
+<h4 id="_création_de_ma_tâche_cron">6.2.1. Création de ma tâche <code>cron</code></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cron hljs" data-lang="cron">0 0 * * 1 /usr/bin/docker compose -p laimee restart &gt;&gt; /var/log/docker-laimee-auto-restart.log 2&gt;&amp;1</code></pre>
 </div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>0 0 * * 1</code> permet de redémarrer le projet <strong>laimee</strong> tous les lundis à 00h00 (voir la <a href="#syntaxe-crontab">documentation</a>).</p>
+</li>
+</ul>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -4025,7 +4181,7 @@ Ici, on journalise le résultat de la tâche <code>cron</code> dans le fichier <
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</h2>
+<h2 id="_generer_mon_adoc_en_live_server">7. Generer mon <code>.adoc</code> en live server</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
@@ -4050,7 +4206,7 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 <div id="footer">
 <div id="footer-text">
 Version 1.5<br>
-Last updated 2026-11-20 11:32:09 +0100
+Last updated 2026-11-20 11:44:58 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
