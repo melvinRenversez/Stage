@@ -781,7 +781,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Documentation technique : Stage Besttic</h1>
 <div class="details">
 <span id="author" class="author">Melvin</span><br>
-<span id="revnumber">version 1.6,</span>
+<span id="revnumber">version 1.7,</span>
 <span id="revdate">2026-11-17</span>
 </div>
 <div id="toc" class="toc2">
@@ -927,7 +927,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_generer_mon_adoc_en_live_server">7. Generer mon <code>.adoc</code> en live server</a></li>
+<li><a href="#_arrete_les_logs_derreurs_du_au_redemarage">7. Arrete les logs d&#8217;erreurs du au redemarage</a>
+<ul class="sectlevel2">
+<li><a href="#_les_logs">7.1. Les logs</a></li>
+<li><a href="#_comprend_qui_est_172_23_0_3">7.2. Comprend qui est <code>172.23.0.3</code>.</a></li>
+</ul>
+</li>
+<li><a href="#_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</a></li>
 </ul>
 </div>
 </div>
@@ -4181,7 +4187,75 @@ Ici, on journalise le résultat de la tâche <code>cron</code> dans le fichier <
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generer_mon_adoc_en_live_server">7. Generer mon <code>.adoc</code> en live server</h2>
+<h2 id="_arrete_les_logs_derreurs_du_au_redemarage">7. Arrete les logs d&#8217;erreurs du au redemarage</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_les_logs">7.1. Les logs</h3>
+<div class="paragraph">
+<p>A l&#8217;aide de cette commande</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker compose -p laimee logs -f --since "2026-11-20T16:42:00"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On peut voir sur les logs ci-dessous montre l&#8217;erreur en question</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">tb-js-executor-1      | 2026-11-20 16:42:16,282 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.282Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-1      | 2026-11-20 16:42:16,297 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.297Z","logger":"kafkajs","retryCount":0,"retryTime":283}
+tb-js-executor-2      | 2026-11-20 16:42:16,335 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.335Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-2      | 2026-11-20 16:42:16,338 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.338Z","logger":"kafkajs","retryCount":0,"retryTime":242}
+tb-js-executor-1      | 2026-11-20 16:42:16,590 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.589Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-1      | 2026-11-20 16:42:16,595 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.595Z","logger":"kafkajs","retryCount":1,"retryTime":658}
+tb-js-executor-2      | 2026-11-20 16:42:16,602 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.602Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-2      | 2026-11-20 16:42:16,602 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.602Z","logger":"kafkajs","retryCount":1,"retryTime":404}</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>On voie que les erreurs sont causer par <code>tb-js-executor-1</code> et <code>tb-js-executor-2</code>.</p>
+</li>
+<li>
+<p>De plus on voie que la connection est refuser pour l&#8217;ip <code>172.23.0.3</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_comprend_qui_est_172_23_0_3">7.2. Comprend qui est <code>172.23.0.3</code>.</h3>
+<div class="paragraph">
+<p>A l&#8217;aide de cette commande</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker exec -it laimee-tb-js-executor-1 bash</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>J&#8217;accede a un terminal bash du docker <code>tb-js-executor-1</code>, puis je regarde son fichier <code>/ect/hosts</code> pour voir qui correspond <code>172.23.0.3</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">laimee@375ae37b95aa:/$ cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::  ip6-localnet
+ff00::  ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+172.23.0.13     375ae37b95aa
+laimee@375ae37b95aa:/$</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
@@ -4205,8 +4279,8 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.6<br>
-Last updated 2026-11-20 11:55:51 +0100
+Version 1.7<br>
+Last updated 2026-11-20 17:19:25 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

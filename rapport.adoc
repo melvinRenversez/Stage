@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
 Melvin
-v1.6, 2026-11-17
+v1.7, 2026-11-17
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
@@ -240,7 +240,6 @@ if errorlevel 1 (
   * Dès que le serveur Java ouvre le port `8080`, la commande réussit (`errorlevel 0`), ce qui libère le script pour redémarrer **HAProxy** et ouvrir automatiquement `http://localhost`.
 
 TIP: Si l'image Docker utilisée ne dispose pas de `bash` (cas des images minimales sous `/bin/sh`), la sonde `/dev/tcp` peut être remplacée par une lecture directe de la table réseau du noyau Linux : `docker exec laimee-tb-core1-1 grep -qi ":1F90" /proc/net/tcp /proc/net/tcp6` (où `1F90` correspond au port `8080` en hexadécimal).
-
 
 === Résultat de l'execution du script dans le terminal
 
@@ -2757,6 +2756,101 @@ Mon projet s'appelle **laimee**.
 * `0 0 * * 1` permet de redémarrer le projet **laimee** tous les lundis à 00h00 (voir la <<syntaxe-crontab,documentation>>).
 
 IMPORTANT: Ici, on journalise le résultat de la tâche `cron` dans le fichier `docker-laimee-auto-restart.log` afin de pouvoir diagnostiquer de potentielles erreurs par la suite.
+
+
+== Arrete les logs d'erreurs du au redemarage
+
+
+=== Les logs
+
+A l'aide de cette commande 
+[source, powershell]
+----
+docker compose -p laimee logs -f --since "2026-11-20T16:42:00"
+----
+
+On peut voir sur les logs ci-dessous montre l'erreur en question
+
+[source, console]
+----
+tb-js-executor-1      | 2026-11-20 16:42:16,282 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.282Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-1      | 2026-11-20 16:42:16,297 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.297Z","logger":"kafkajs","retryCount":0,"retryTime":283}
+tb-js-executor-2      | 2026-11-20 16:42:16,335 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.335Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-2      | 2026-11-20 16:42:16,338 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.338Z","logger":"kafkajs","retryCount":0,"retryTime":242}
+tb-js-executor-1      | 2026-11-20 16:42:16,590 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.589Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-1      | 2026-11-20 16:42:16,595 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.595Z","logger":"kafkajs","retryCount":1,"retryTime":658}
+tb-js-executor-2      | 2026-11-20 16:42:16,602 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.602Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+tb-js-executor-2      | 2026-11-20 16:42:16,602 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.602Z","logger":"kafkajs","retryCount":1,"retryTime":404}
+----
+
+* On voie que les erreurs sont causer par `tb-js-executor-1` et `tb-js-executor-2`.
+* De plus on voie que la connection est refuser pour l'ip `172.23.0.3`.
+
+=== Comprend qui est `172.23.0.3`.
+
+A l'aide de cette commande
+[source, powershell]
+----
+docker exec -it laimee-tb-js-executor-1 bash
+----
+
+J'accede a un terminal bash du docker `tb-js-executor-1`, puis je regarde son fichier `/ect/hosts` pour voir qui correspond `172.23.0.3`.
+
+[source, console]
+----
+laimee@375ae37b95aa:/$ cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::  ip6-localnet
+ff00::  ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+172.23.0.13     375ae37b95aa
+laimee@375ae37b95aa:/$
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
