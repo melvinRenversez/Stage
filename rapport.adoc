@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
 Melvin
-v1.5, 2026-11-17
+v1.6, 2026-11-17
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
