@@ -930,7 +930,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_arrete_les_logs_derreurs_du_au_redemarage">7. Arrete les logs d&#8217;erreurs du au redemarage</a>
 <ul class="sectlevel2">
 <li><a href="#_les_logs">7.1. Les logs</a></li>
-<li><a href="#_comprend_qui_est_172_23_0_3">7.2. Comprend qui est <code>172.23.0.3</code>.</a></li>
+<li><a href="#_script_wait_for_kafka_sh">7.2. Script <code>wait-for-kafka.sh</code></a></li>
+<li><a href="#_ajoute_dans_le_compose">7.3. Ajoute dans le compose</a></li>
+<li><a href="#_résultat_du_script">7.4. Résultat du script</a></li>
 </ul>
 </li>
 <li><a href="#_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</a></li>
@@ -4196,7 +4198,7 @@ Ici, on journalise le résultat de la tâche <code>cron</code> dans le fichier <
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker compose -p laimee logs -f --since "2026-11-20T16:42:00"</code></pre>
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker logs laimee-tb-js-executor-</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4204,51 +4206,114 @@ Ici, on journalise le résultat de la tâche <code>cron</code> dans le fichier <
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">tb-js-executor-1      | 2026-11-20 16:42:16,282 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.282Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
-tb-js-executor-1      | 2026-11-20 16:42:16,297 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.297Z","logger":"kafkajs","retryCount":0,"retryTime":283}
-tb-js-executor-2      | 2026-11-20 16:42:16,335 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.335Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
-tb-js-executor-2      | 2026-11-20 16:42:16,338 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.338Z","logger":"kafkajs","retryCount":0,"retryTime":242}
-tb-js-executor-1      | 2026-11-20 16:42:16,590 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.589Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
-tb-js-executor-1      | 2026-11-20 16:42:16,595 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.595Z","logger":"kafkajs","retryCount":1,"retryTime":658}
-tb-js-executor-2      | 2026-11-20 16:42:16,602 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.602Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.3:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
-tb-js-executor-2      | 2026-11-20 16:42:16,602 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.3:9092: {"timestamp":"2026-11-20T15:42:16.602Z","logger":"kafkajs","retryCount":1,"retryTime":404}</code></pre>
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">2026-11-23 09:23:19,946 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:19.945Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.2:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+2026-11-23 09:23:19,963 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:19.963Z","logger":"kafkajs","retryCount":0,"retryTime":309}
+2026-11-23 09:23:20,292 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:20.292Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.2:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+2026-11-23 09:23:20,293 [kafkajs] ERROR: Failed to connect to seed broker, trying another broker from the list: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:20.293Z","logger":"kafkajs","retryCount":1,"retryTime":630}
+2026-11-23 09:23:21,022 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:21.022Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.2:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}</code></pre>
 </div>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>On voie que les erreurs sont causer par <code>tb-js-executor-1</code> et <code>tb-js-executor-2</code>.</p>
+<p>On voie que les erreurs sont causer par <code>tb-js-executor-1</code>.</p>
 </li>
 <li>
-<p>De plus on voie que la connection est refuser pour l&#8217;ip <code>172.23.0.3</code>.</p>
+<p>De plus on voie que la connection est refuser pour pour <code>kafka</code>.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_comprend_qui_est_172_23_0_3">7.2. Comprend qui est <code>172.23.0.3</code>.</h3>
-<div class="paragraph">
-<p>A l&#8217;aide de cette commande</p>
-</div>
+<h3 id="_script_wait_for_kafka_sh">7.2. Script <code>wait-for-kafka.sh</code></h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker exec -it laimee-tb-js-executor-1 bash</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+HOST=$1
+PORT=$2
+shift 3 # Ignore HOST, PORT et "--"
+
+echo "En attente de $HOST sur le port $PORT..."
+
+while true; do
+  # Vérifie que le port spécifié est ouvert
+  (echo &gt; /dev/tcp/"$HOST"/"$PORT") &gt;/dev/null 2&gt;&amp;1
+  PORT_OK=$?
+
+  if [ $PORT_OK -eq 0 ]; then
+    echo "$HOST:$PORT est completement pret !"
+    break
+  fi
+
+  echo "$HOST:$PORT pas encore pret (code=$PORT_OK) - Nouvelle tentative dans 3s..."
+  sleep 3
+done
+
+# Lance la commande passée après "--"
+exec "$@"</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>J&#8217;accede a un terminal bash du docker <code>tb-js-executor-1</code>, puis je regarde son fichier <code>/ect/hosts</code> pour voir qui correspond <code>172.23.0.3</code>.</p>
 </div>
+<div class="sect2">
+<h3 id="_ajoute_dans_le_compose">7.3. Ajoute dans le compose</h3>
+<div class="literalblock">
+<div class="content">
+<pre>tb-js-executor:
+  #restart: always
+  #restart: no
+  restart: on-failure:5
+  image: "${DOCKER_REPO}/${JS_EXECUTOR_DOCKER_NAME}:${TB_VERSION}"
+  networks:
+    - laimee_docker_network
+  pull_policy: missing
+  #nb of containers
+  #scale: 20
+  scale: 2
+  env_file:
+    - tb-js-executor.env
+  environment:
+    TZ: "${TIME_ZONE}"
+  volumes:
+    - ./wait-for-kafka.sh:/kafka-waiter/wait-for-kafka.sh
+  command:
+    - /bin/bash
+    - /kafka-waiter/wait-for-kafka.sh
+    - kafka
+    - "9092"
+    - --
+    - start-js-executor.sh</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_résultat_du_script">7.4. Résultat du script</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">laimee@375ae37b95aa:/$ cat /etc/hosts
-127.0.0.1       localhost
-::1     localhost ip6-localhost ip6-loopback
-fe00::  ip6-localnet
-ff00::  ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-172.23.0.13     375ae37b95aa
-laimee@375ae37b95aa:/$</code></pre>
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">En attente de kafka sur le port 9092...
+kafka:9092 pas encore pret (code=1) - Nouvelle tentative dans 3s...
+kafka:9092 pas encore pret (code=1) - Nouvelle tentative dans 3s...
+kafka:9092 pas encore pret (code=1) - Nouvelle tentative dans 3s...
+kafka:9092 pas encore pret (code=1) - Nouvelle tentative dans 3s...
+kafka:9092 est completement pret !
+Starting 'ThingsBoard JavaScript Executor Microservice' ...
+JS-EXECUTOR
+WARNING: NODE_ENV value of 'production' did not match any deployment config file names.
+WARNING: See https://github.com/lorenwest/node-config/wiki/Strict-Mode
+2026-11-23 11:49:15,414 [main] INFO: Starting kafka template.
+2026-11-23 11:49:15,439 [kafkaTemplate] INFO: Starting LAIMEE JavaScript Executor Microservice...
+2026-11-23 11:49:15,444 [kafkaTemplate] INFO: Kafka Bootstrap Servers: kafka:9092
+2026-11-23 11:49:15,446 [kafkaTemplate] INFO: Kafka Requests Topic: js_eval.requests
+2026-11-23 11:49:15,470 [main] INFO: kafka template started.
+2026-11-23 11:49:25,429 [kafkaTemplate] INFO: Created new topic: js_eval.requests
+Producer: KafkaProducer { send: [AsyncFunction] }
+2026-11-23 11:49:25,552 [kafkaTemplate] INFO: Started ThingsBoard JavaScript Executor Microservice.
+2026-11-23 11:49:25,554 [kafkajs] INFO: Starting: {"timestamp":"2026-11-23T10:49:25.554Z","logger":"kafkajs","groupId":"js-executor-group"}
+2026-11-23 11:49:26,359 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:26.359Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":2,"size":55}
+2026-11-23 11:49:26,941 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:26.941Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":3,"size":55}
+2026-11-23 11:49:28,009 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:28.009Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":4,"size":55}
+2026-11-23 11:49:29,957 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:29.957Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":5,"size":55}
+2026-11-23 11:49:33,896 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:33.895Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":6,"size":55}
+2026-11-23 11:49:43,635 [kafkajs] INFO: Consumer has joined the group: {"timestamp":"2026-11-23T10:49:43.635Z","logger":"kafkajs","groupId":"js-executor-group","memberId":"kafkajs-f06b5d82-29cb-4da4-b7ee-83f587f442e4","leaderId":"kafkajs-f06b5d82-29cb-4da4-b7ee-83f587f442e4","isLeader":true,"memberAssignment":{"js_eval.requests":[0]},"groupProtocol":"RoundRobinAssigner","duration":18076}</code></pre>
 </div>
 </div>
 </div>
@@ -4280,7 +4345,7 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 <div id="footer">
 <div id="footer-text">
 Version 1.7<br>
-Last updated 2026-11-20 17:19:25 +0100
+Last updated 2026-11-23 12:01:03 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
