@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<meta name="author" content="Melvin">
+<meta name="author" content="Melvin Renversez">
 <title>Documentation technique : Stage Besttic</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -709,6 +709,27 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   }
 }
 
+
+  /* --- BADGES DE STATUT DANS LES LOGS --- */
+  .badge-healthy {
+    color: #3fb950 !important;
+    background-color: rgba(46, 160, 67, 0.2) !important;
+    border: 1px solid rgba(63, 185, 80, 0.4);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-weight: bold;
+  }
+
+  .badge-error {
+    color: #ff7b72 !important;
+    background-color: rgba(248, 81, 73, 0.2) !important;
+    border: 1px solid rgba(255, 123, 114, 0.4);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-weight: bold;
+  }
+
+
 </style>
 
 <script>
@@ -780,9 +801,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>Documentation technique : Stage Besttic</h1>
 <div class="details">
-<span id="author" class="author">Melvin</span><br>
-<span id="revnumber">version 1.7,</span>
-<span id="revdate">2026-11-17</span>
+<span id="author" class="author">Melvin Renversez</span><br>
+<span id="revnumber">version 2.0,</span>
+<span id="revdate">23-11-2026</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sommaire</div>
@@ -927,12 +948,30 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_arrete_les_logs_derreurs_du_au_redemarage">7. Arrete les logs d&#8217;erreurs du au redemarage</a>
+<li><a href="#_arrêter_les_logs_derreurs_dus_au_redémarrage">7. Arrêter les logs d&#8217;erreurs dus au redémarrage</a>
 <ul class="sectlevel2">
 <li><a href="#_les_logs">7.1. Les logs</a></li>
-<li><a href="#_script_wait_for_kafka_sh">7.2. Script <code>wait-for-kafka.sh</code></a></li>
-<li><a href="#_ajoute_dans_le_compose">7.3. Ajoute dans le compose</a></li>
+<li><a href="#_script_wait_for_kafka_sh">7.2. Script <code>wait-for-kafka.sh</code></a>
+<ul class="sectlevel3">
+<li><a href="#_fonctionnement_du_script">7.2.1. Fonctionnement du script</a></li>
+</ul>
+</li>
+<li><a href="#_ajout_dans_le_fichier_compose">7.3. Ajout dans le fichier Compose</a></li>
 <li><a href="#_résultat_du_script">7.4. Résultat du script</a></li>
+<li><a href="#_synchronisation_du_démarrage_entre_kafka_et_tb_js_executor">7.5. Synchronisation du démarrage entre Kafka et <code>tb-js-executor</code></a>
+<ul class="sectlevel3">
+<li><a href="#_problématique">7.5.1. Problématique</a></li>
+<li><a href="#_solution_retenue_healthcheck_natif_docker_compose">7.5.2. Solution retenue : <code>healthcheck</code> natif Docker Compose</a></li>
+</ul>
+</li>
+<li><a href="#_configuration_dans_docker_compose_kafka_yml">7.6. Configuration dans <code>docker-compose.kafka.yml</code></a>
+<ul class="sectlevel4">
+<li><a href="#_détail_des_paramètres_du_healthcheck">Détail des paramètres du <code>healthcheck</code></a></li>
+<li><a href="#_résultat_attendu">7.6.2. Résultat attendu</a></li>
+<li><a href="#_création_du_fichier_restart_windows_bat">7.6.3. Création du fichier <code>restart-windows.bat</code></a></li>
+<li><a href="#_fonctionnement_du_script_restart_windows_bat">7.6.4. Fonctionnement du script <code>restart-windows.bat</code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</a></li>
@@ -2206,6 +2245,7 @@ Pour lister l&#8217;ensemble des projets Docker Compose actifs sur la machine ai
 <div class="content">
 <img src="images/diagram-dependance.png" alt="Diagramme des dépendances LAIMEE">
 </div>
+<div class="title">Figure 3. Diagramme des dépendances de LAIMEE</div>
 </div>
 </div>
 <div class="sect3">
@@ -2264,6 +2304,7 @@ Ce code s&#8217;ecxecute dans un terminal powershell
 <div class="content">
 <img src="images/mermaid-diagram-2026-11-18-171615.png" alt="Diagramme des flux de communication LAIMEE">
 </div>
+<div class="title">Figure 4. Diagramme des flux de communication de LAIMEE</div>
 </div>
 <div class="ulist">
 <div class="title">Légende des flux :</div>
@@ -4189,20 +4230,20 @@ Ici, on journalise le résultat de la tâche <code>cron</code> dans le fichier <
 </div>
 </div>
 <div class="sect1">
-<h2 id="_arrete_les_logs_derreurs_du_au_redemarage">7. Arrete les logs d&#8217;erreurs du au redemarage</h2>
+<h2 id="_arrêter_les_logs_derreurs_dus_au_redémarrage">7. Arrêter les logs d&#8217;erreurs dus au redémarrage</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_les_logs">7.1. Les logs</h3>
 <div class="paragraph">
-<p>A l&#8217;aide de cette commande</p>
+<p>À l&#8217;aide de cette commande :</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker logs laimee-tb-js-executor-</code></pre>
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">docker logs laimee-tb-js-executor-1</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>On peut voir sur les logs ci-dessous montre l&#8217;erreur en question</p>
+<p>Les logs ci-dessous montrent l&#8217;erreur en question :</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4216,10 +4257,10 @@ Ici, on journalise le résultat de la tâche <code>cron</code> dans le fichier <
 <div class="ulist">
 <ul>
 <li>
-<p>On voie que les erreurs sont causer par <code>tb-js-executor-1</code>.</p>
+<p>On voit que les erreurs sont causées par le conteneur <code>tb-js-executor-1</code>.</p>
 </li>
 <li>
-<p>De plus on voie que la connection est refuser pour pour <code>kafka</code>.</p>
+<p>De plus, on constate que la connexion vers <code>kafka</code> est refusée (<code>ECONNREFUSED</code>).</p>
 </li>
 </ul>
 </div>
@@ -4253,40 +4294,61 @@ done
 exec "$@"</code></pre>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_fonctionnement_du_script">7.2.1. Fonctionnement du script</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Récupération des arguments</strong> : Extrait l&#8217;hôte (<code>$1</code> = <code>kafka</code>) et le port (<code>$2</code> = <code>9092</code>), puis décale de 3 positions (<code>shift 3</code>) pour éliminer ces arguments et le séparateur <code>--</code>, ne laissant que la commande finale dans <code>$@</code>.</p>
+</li>
+<li>
+<p><strong>Test TCP</strong> : Utilise une boucle infinie avec <code>/dev/tcp/"$HOST"/"$PORT"</code> pour tester l&#8217;ouverture du port sans dépendre d&#8217;outils externes.</p>
+</li>
+<li>
+<p><strong>Boucle de temporisation</strong> : Patiente 3 secondes (<code>sleep 3</code>) tant que le port ne répond pas (<code>$? != 0</code>).</p>
+</li>
+<li>
+<p><strong>Démarrage du service</strong> : Dès que Kafka est prêt (<code>PORT_OK=0</code>), la commande <code>exec "$@"</code> lance <code>start-js-executor.sh</code> en reprenant le PID 1.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_ajoute_dans_le_compose">7.3. Ajoute dans le compose</h3>
-<div class="literalblock">
+<h3 id="_ajout_dans_le_fichier_compose">7.3. Ajout dans le fichier Compose</h3>
+<div class="paragraph">
+<p>Modifiez la configuration du service pour intégrer le script et retarder le lancement :</p>
+</div>
+<div class="listingblock">
 <div class="content">
-<pre>tb-js-executor:
-  #restart: always
-  #restart: no
-  restart: on-failure:5
-  image: "${DOCKER_REPO}/${JS_EXECUTOR_DOCKER_NAME}:${TB_VERSION}"
-  networks:
-    - laimee_docker_network
-  pull_policy: missing
-  #nb of containers
-  #scale: 20
-  scale: 2
-  env_file:
-    - tb-js-executor.env
-  environment:
-    TZ: "${TIME_ZONE}"
-  volumes:
-    - ./wait-for-kafka.sh:/kafka-waiter/wait-for-kafka.sh
-  command:
-    - /bin/bash
-    - /kafka-waiter/wait-for-kafka.sh
-    - kafka
-    - "9092"
-    - --
-    - start-js-executor.sh</pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">  tb-js-executor:
+    restart: on-failure:5
+    image: "${DOCKER_REPO}/${JS_EXECUTOR_DOCKER_NAME}:${TB_VERSION}"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    scale: 2
+    env_file:
+      - tb-js-executor.env
+    environment:
+      TZ: "${TIME_ZONE}"
+    volumes:
+      - ./wait-for-kafka.sh:/kafka-waiter/wait-for-kafka.sh
+    command:
+      - /bin/bash
+      - /kafka-waiter/wait-for-kafka.sh
+      - kafka
+      - "9092"
+      - --
+      - start-js-executor.sh</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_résultat_du_script">7.4. Résultat du script</h3>
+<div class="paragraph">
+<p>Le script retarde l&#8217;exécution jusqu&#8217;à ce que Kafka réponde, éliminant les boucles d&#8217;erreur initiales dans les logs :</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">En attente de kafka sur le port 9092...
@@ -4314,6 +4376,232 @@ Producer: KafkaProducer { send: [AsyncFunction] }
 2026-11-23 11:49:29,957 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:29.957Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":5,"size":55}
 2026-11-23 11:49:33,896 [kafkajs] ERROR: Response GroupCoordinator(key: 10, version: 1): {"timestamp":"2026-11-23T10:49:33.895Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","error":"The group coordinator is not available","correlationId":6,"size":55}
 2026-11-23 11:49:43,635 [kafkajs] INFO: Consumer has joined the group: {"timestamp":"2026-11-23T10:49:43.635Z","logger":"kafkajs","groupId":"js-executor-group","memberId":"kafkajs-f06b5d82-29cb-4da4-b7ee-83f587f442e4","leaderId":"kafkajs-f06b5d82-29cb-4da4-b7ee-83f587f442e4","isLeader":true,"memberAssignment":{"js_eval.requests":[0]},"groupProtocol":"RoundRobinAssigner","duration":18076}</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>On voit que l&#8217;erreur de connexion TCP à Kafka (<code>ECONNREFUSED</code>) n&#8217;apparaît plus et ne pollue plus les logs, car <code>laimee-tb-js-executor</code> ne se lance qu&#8217;après l&#8217;ouverture du port de Kafka.</p>
+</li>
+<li>
+<p>En revanche, on observe encore des erreurs liées à l&#8217;initialisation plus tardive des services internes de Kafka (<code>The group coordinator is not available</code>).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_synchronisation_du_démarrage_entre_kafka_et_tb_js_executor">7.5. Synchronisation du démarrage entre Kafka et <code>tb-js-executor</code></h3>
+<div class="sect3">
+<h4 id="_problématique">7.5.1. Problématique</h4>
+<div class="paragraph">
+<p>Lors du démarrage de la stack Docker, le conteneur <code>tb-js-executor</code> (Node.js) démarre en moins d&#8217;une seconde, alors que le broker <code>kafka</code> nécessite entre 10 et 20 secondes pour initialiser Zookeeper, ses partitions et son coordinateur de groupe.</p>
+</div>
+<div class="paragraph">
+<p>Par conséquent, <code>tb-js-executor</code> tente de se connecter immédiatement à <code>kafka:9092</code>, échoue avec une erreur <code>ECONNREFUSED</code>, et s&#8217;arrête :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">2026-11-23 09:23:19,946 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:19.945Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.2:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+2026-11-23 09:23:21,022 [kafkaTemplate] ERROR: Failed to start ThingsBoard JavaScript Executor Microservice: Connection error: connect ECONNREFUSED 172.23.0.2:9092</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_solution_retenue_healthcheck_natif_docker_compose">7.5.2. Solution retenue : <code>healthcheck</code> natif Docker Compose</h4>
+<div class="paragraph">
+<p>Plutôt que d&#8217;utiliser un script d&#8217;attente externe (qui ne vérifie que l&#8217;ouverture du port TCP et non la disponibilité réelle du broker) ou un délai fixe (<code>sleep</code>), la solution consiste à utiliser un <code>healthcheck</code> natif sur le service <code>kafka</code>.</p>
+</div>
+<div class="paragraph">
+<p>La commande <code>kafka-broker-api-versions.sh</code> interroge directement l&#8217;API interne du broker : le conteneur n&#8217;est déclaré sain (<code>healthy</code>) que lorsque Kafka est réellement prêt à accepter des requêtes clients.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_dans_docker_compose_kafka_yml">7.6. Configuration dans <code>docker-compose.kafka.yml</code></h3>
+<div class="paragraph">
+<p>Ajoutez le bloc <code>healthcheck</code> sur le service <code>kafka</code> et conditionnez le démarrage de <code>tb-js-executor</code> avec <code>condition: service_healthy</code> :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  kafka:
+    restart: always
+    image: "wurstmeister/kafka:2.12-2.3.0"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "9092:9092"
+    env_file:
+      - kafka.env
+    environment:
+      TZ: "${TIME_ZONE}"
+    healthcheck:
+      # Interroge l'API interne du broker Kafka pour vérifier qu'il est prêt à accepter des connexions (code 0 = sain)
+      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092 &gt; /dev/null 2&gt;&amp;1"]
+      # Exécute cette vérification toutes les 5 secondes
+      interval: 5s
+      # Considère le test comme échoué si la commande met plus de 5 secondes à répondre
+      timeout: 5s
+      # Autorise jusqu'à 15 échecs consécutifs (75s max) avant de déclarer le conteneur "unhealthy"
+      retries: 15
+      # Laisse une période de grâce de 10s au démarrage (les échecs pendant ce laps de temps ne comptent pas)
+      start_period: 10s
+
+
+
+  tb-js-executor:
+    env_file:
+      - queue-kafka.env
+    # depends_on:
+    #   - kafka
+    depends_on:
+      kafka:
+        condition: service_healthy</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_détail_des_paramètres_du_healthcheck">Détail des paramètres du <code>healthcheck</code></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><code>test</code></strong> : Exécute <code>kafka-broker-api-versions.sh</code> sur <code>localhost:9092</code>. Retourne <code>0</code> uniquement si le broker répond correctement.</p>
+</li>
+<li>
+<p><strong><code>interval: 5s</code></strong> : Vérifie l&#8217;état de santé toutes les 5 secondes.</p>
+</li>
+<li>
+<p><strong><code>timeout: 5s</code></strong> : Considère le test comme échoué si la commande met plus de 5 secondes à répondre.</p>
+</li>
+<li>
+<p><strong><code>retries: 15</code></strong> : Autorise jusqu&#8217;à 15 échecs consécutifs (soit 75 secondes maximum) avant de déclarer le conteneur <code>unhealthy</code>.</p>
+</li>
+<li>
+<p><strong><code>start_period: 10s</code></strong> : Accorde une période de grâce de 10 secondes au démarrage initial de la JVM Kafka.</p>
+</li>
+<li>
+<p><strong><code>condition: service_healthy</code></strong> : Bloque le démarrage de <code>tb-js-executor</code> tant que <code>kafka</code> n&#8217;a pas atteint le statut <code>healthy</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_résultat_attendu">7.6.2. Résultat attendu</h4>
+<div class="paragraph">
+<p>Lors de l&#8217;exécution de <code>docker compose up -d</code>, Docker orchestre automatiquement l&#8217;ordre de démarrage :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-console hljs" data-lang="console">[+] up 19/19
+ ✔ Container laimee-postgres-1                   Running                   0.0s
+ ✔ Container laimee-redis-1                      Running                   0.0s
+ ✔ Container laimee-kafka-1                     <span class="badge-healthy">Healthy</span>                 77.5s
+ ✔ Container laimee-tb-web-ui2-1                 Started                   6.0s
+ ✔ Container laimee-zookeeper-1                  Started                   6.6s
+ ✔ Container laimee-init-permissions-1           Started                   4.0s
+ ✔ Container laimee-tb-web-ui1-1                 Started                   5.4s
+ ✔ Container laimee-tb-http-transport1-1         Started                   8.9s
+ ✔ Container laimee-tb-js-executor-1             Started                  77.3s
+ ✔ Container laimee-tb-mqtt-transport1-1         Started                   9.8s
+ ✔ Container laimee-tb-coap-transport-1          Started                   7.0s
+ ✔ Container laimee-tb-js-executor-2             Started                  77.8s
+ ✔ Container laimee-tb-mqtt-transport2-1         Started                   7.9s
+ ✔ Container laimee-tb-http-transport2-1         Started                   6.4s
+ ✔ Container laimee-tb-rule-engine2-1            Started                  78.2s
+ ✔ Container laimee-tb-rule-engine1-1            Started                  77.6s
+ ✔ Container laimee-tb-core2-1                   Started                  78.5s
+ ✔ Container laimee-tb-core1-1                   Started                  79.1s
+ ✔ Container haproxy-certbot                     Started                  79.7s</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Les conteneurs <code>tb-js-executor</code> démarrent sans erreur <code>ECONNREFUSED</code> et rejoignent immédiatement le groupe Kafka (<code>Consumer has joined the group</code>).</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Le seul problème lié à l&#8217;utilisation du <code>healthcheck</code> est qu&#8217;il n&#8217;est pas pris en compte par la commande <code>docker compose -p laimee restart</code> (qui relance tous les conteneurs simultanément sans vérifier les dépendances). Il est donc nécessaire de créer un script de redémarrage dédié permettant de conserver cette condition <code>service_healthy</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_création_du_fichier_restart_windows_bat">7.6.3. Création du fichier <code>restart-windows.bat</code></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-batch hljs" data-lang="batch">@echo off
+setlocal enabledelayedexpansion
+
+echo ===================================================
+echo   REDEMARRAGE PROPRE DE LAIMEE (AVEC HEALTHCHECKS)
+echo ===================================================
+
+REM 1. Lecture automatique des fichiers Compose depuis .env
+call compose-utils.bat :additionalComposeQueueArgs
+if errorlevel 1 exit /b %errorlevel%
+call compose-utils.bat :additionalComposeArgs
+if errorlevel 1 exit /b %errorlevel%
+
+REM 2. Arret propre des conteneurs (conserve les volumes et les donnees)
+echo [1/3] Arret des conteneurs en cours...
+docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% stop
+if errorlevel 1 (
+    echo Erreur lors de l'arret des conteneurs.
+    pause
+    exit /b 1
+)
+
+REM 3. Redemarrage orchestre en respectant depends_on et service_healthy
+echo [2/3] Redemarrage des services (attente des healthchecks)...
+docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% up -d
+if errorlevel 1 (
+    echo Erreur lors du redemarrage des conteneurs.
+    pause
+    exit /b 1
+)
+
+REM 4. Synchronisation de HAProxy une fois le backend pret
+echo [3/3] Attente que le serveur backend soit operationnel...
+set /a elapsed=0
+:wait_backend
+timeout /t 15 /nobreak &gt;nul
+set /a elapsed+=15
+docker exec laimee-tb-core1-1 bash -c "echo &gt; /dev/tcp/localhost/8080" &gt;nul 2&gt;&amp;1
+if errorlevel 1 (
+    echo   [!elapsed!s] Demarrage des services Java en cours, merci de patienter...
+    goto :wait_backend
+)
+
+echo   Synchronisation de HAProxy...
+docker restart haproxy-certbot &gt;nul 2&gt;&amp;1
+
+echo.
+echo ===================================================
+echo   REDEMARRAGE TERMINE AVEC SUCCES !
+echo   Interface Web : http://localhost
+echo ===================================================
+echo.
+pause</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fonctionnement_du_script_restart_windows_bat">7.6.4. Fonctionnement du script <code>restart-windows.bat</code></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Chargement dynamique de la configuration</strong> : Appelle <code>compose-utils.bat</code> pour récupérer automatiquement les fichiers Docker Compose actifs depuis le fichier <code>.env</code> (PostgreSQL, Kafka, etc.).</p>
+</li>
+<li>
+<p><strong>Arrêt propre (<code>stop</code>)</strong> : Stoppe l&#8217;ensemble des conteneurs sans supprimer les volumes ni les données persistées.</p>
+</li>
+<li>
+<p><strong>Redémarrage orchestré (<code>up -d</code>)</strong> : Remplace la commande <code>restart</code> par <code>up -d</code> afin d&#8217;obliger Docker Compose à réévaluer l&#8217;arbre <code>depends_on</code> et à attendre que <code>kafka</code> atteigne le statut <code>healthy</code> avant de lancer <code>tb-js-executor</code>.</p>
+</li>
+<li>
+<p><strong>Synchronisation du reverse proxy (<code>HAProxy</code>)</strong> : Vérifie toutes les 15 secondes la disponibilité du port <code>8080</code> sur <code>tb-core1</code>, puis redémarre <code>haproxy-certbot</code> afin d&#8217;éviter toute erreur <code>502 Bad Gateway</code> lors de l&#8217;accès à l&#8217;interface Web.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -4344,8 +4632,8 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.7<br>
-Last updated 2026-11-23 12:01:03 +0100
+Version 2.0<br>
+Last updated 2026-11-23 17:18:01 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
-Melvin
-v1.7, 2026-11-17
+Melvin Renversez
+v2.0, 23-11-2026
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
@@ -1083,6 +1083,7 @@ Représentation des directives `depends_on` définies dans les fichiers `docker-
 
 ==== Graphe
 
+.Diagramme des dépendances de LAIMEE
 image::diagram-dependance.png[Diagramme des dépendances LAIMEE, align="center"]
 
 ==== code source
@@ -1125,6 +1126,7 @@ IMPORTANT: Ce code s'ecxecute dans un terminal powershell
 
 Parcours des requêtes depuis l'interface web jusqu'à la passerelle (`laimee-tb-gateway-1`) et l'automate de chauffage (`Thermozyklus`) :
 
+.Diagramme des flux de communication de LAIMEE
 image::mermaid-diagram-2026-11-18-171615.png[Diagramme des flux de communication LAIMEE, align="center"]
 
 .Légende des flux :
@@ -2758,18 +2760,18 @@ Mon projet s'appelle **laimee**.
 IMPORTANT: Ici, on journalise le résultat de la tâche `cron` dans le fichier `docker-laimee-auto-restart.log` afin de pouvoir diagnostiquer de potentielles erreurs par la suite.
 
 
-== Arrete les logs d'erreurs du au redemarage
-
+== Arrêter les logs d'erreurs dus au redémarrage
 
 === Les logs
 
-A l'aide de cette commande 
+À l'aide de cette commande :
+
 [source, powershell]
 ----
-docker logs laimee-tb-js-executor-
+docker logs laimee-tb-js-executor-1
 ----
 
-On peut voir sur les logs ci-dessous montre l'erreur en question
+Les logs ci-dessous montrent l'erreur en question :
 
 [source, console]
 ----
@@ -2780,8 +2782,8 @@ On peut voir sur les logs ci-dessous montre l'erreur en question
 2026-11-23 09:23:21,022 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:21.022Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.2:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
 ----
 
-* On voie que les erreurs sont causer par `tb-js-executor-1`.
-* De plus on voie que la connection est refuser pour pour `kafka`.
+* On voit que les erreurs sont causées par le conteneur `tb-js-executor-1`.
+* De plus, on constate que la connexion vers `kafka` est refusée (`ECONNREFUSED`).
 
 === Script `wait-for-kafka.sh`
 
@@ -2812,18 +2814,25 @@ done
 exec "$@"
 ----
 
-=== Ajoute dans le compose
+==== Fonctionnement du script
 
+* **Récupération des arguments** : Extrait l'hôte (`$1` = `kafka`) et le port (`$2` = `9092`), puis décale de 3 positions (`shift 3`) pour éliminer ces arguments et le séparateur `--`, ne laissant que la commande finale dans `$@`.
+* **Test TCP** : Utilise une boucle infinie avec `/dev/tcp/"$HOST"/"$PORT"` pour tester l'ouverture du port sans dépendre d'outils externes.
+* **Boucle de temporisation** : Patiente 3 secondes (`sleep 3`) tant que le port ne répond pas (`$? != 0`).
+* **Démarrage du service** : Dès que Kafka est prêt (`PORT_OK=0`), la commande `exec "$@"` lance `start-js-executor.sh` en reprenant le PID 1.
+
+=== Ajout dans le fichier Compose
+
+Modifiez la configuration du service pour intégrer le script et retarder le lancement :
+
+[source, yaml]
+----
   tb-js-executor:
-    #restart: always
-    #restart: no
     restart: on-failure:5
     image: "${DOCKER_REPO}/${JS_EXECUTOR_DOCKER_NAME}:${TB_VERSION}"
     networks:
       - laimee_docker_network
     pull_policy: missing
-    #nb of containers
-    #scale: 20
     scale: 2
     env_file:
       - tb-js-executor.env
@@ -2838,9 +2847,11 @@ exec "$@"
       - "9092"
       - --
       - start-js-executor.sh
-
+----
 
 === Résultat du script
+
+Le script retarde l'exécution jusqu'à ce que Kafka réponde, éliminant les boucles d'erreur initiales dans les logs :
 
 [source, console]
 ----
@@ -2871,49 +2882,179 @@ Producer: KafkaProducer { send: [AsyncFunction] }
 2026-11-23 11:49:43,635 [kafkajs] INFO: Consumer has joined the group: {"timestamp":"2026-11-23T10:49:43.635Z","logger":"kafkajs","groupId":"js-executor-group","memberId":"kafkajs-f06b5d82-29cb-4da4-b7ee-83f587f442e4","leaderId":"kafkajs-f06b5d82-29cb-4da4-b7ee-83f587f442e4","isLeader":true,"memberAssignment":{"js_eval.requests":[0]},"groupProtocol":"RoundRobinAssigner","duration":18076}
 ----
 
+* On voit que l'erreur de connexion TCP à Kafka (`ECONNREFUSED`) n'apparaît plus et ne pollue plus les logs, car `laimee-tb-js-executor` ne se lance qu'après l'ouverture du port de Kafka.
+* En revanche, on observe encore des erreurs liées à l'initialisation plus tardive des services internes de Kafka (`The group coordinator is not available`).
+
+=== Synchronisation du démarrage entre Kafka et `tb-js-executor`
+
+==== Problématique
+
+Lors du démarrage de la stack Docker, le conteneur `tb-js-executor` (Node.js) démarre en moins d'une seconde, alors que le broker `kafka` nécessite entre 10 et 20 secondes pour initialiser Zookeeper, ses partitions et son coordinateur de groupe.
+
+Par conséquent, `tb-js-executor` tente de se connecter immédiatement à `kafka:9092`, échoue avec une erreur `ECONNREFUSED`, et s'arrête :
+
+[source, console]
+----
+2026-11-23 09:23:19,946 [kafkajs] ERROR: Connection error: connect ECONNREFUSED 172.23.0.2:9092: {"timestamp":"2026-11-23T08:23:19.945Z","logger":"kafkajs","broker":"kafka:9092","clientId":"kafkajs","stack":"Error: connect ECONNREFUSED 172.23.0.2:9092\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)"}
+2026-11-23 09:23:21,022 [kafkaTemplate] ERROR: Failed to start ThingsBoard JavaScript Executor Microservice: Connection error: connect ECONNREFUSED 172.23.0.2:9092
+----
+
+==== Solution retenue : `healthcheck` natif Docker Compose
+
+Plutôt que d'utiliser un script d'attente externe (qui ne vérifie que l'ouverture du port TCP et non la disponibilité réelle du broker) ou un délai fixe (`sleep`), la solution consiste à utiliser un `healthcheck` natif sur le service `kafka`.
+
+La commande `kafka-broker-api-versions.sh` interroge directement l'API interne du broker : le conteneur n'est déclaré sain (`healthy`) que lorsque Kafka est réellement prêt à accepter des requêtes clients.
+
+=== Configuration dans `docker-compose.kafka.yml`
+
+Ajoutez le bloc `healthcheck` sur le service `kafka` et conditionnez le démarrage de `tb-js-executor` avec `condition: service_healthy` :
+
+[source, yaml]
+----
+services:
+  kafka:
+    restart: always
+    image: "wurstmeister/kafka:2.12-2.3.0"
+    networks:
+      - laimee_docker_network
+    pull_policy: missing
+    ports:
+      - "9092:9092"
+    env_file:
+      - kafka.env
+    environment:
+      TZ: "${TIME_ZONE}"
+    healthcheck:
+      # Interroge l'API interne du broker Kafka pour vérifier qu'il est prêt à accepter des connexions (code 0 = sain)
+      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      # Exécute cette vérification toutes les 5 secondes
+      interval: 5s
+      # Considère le test comme échoué si la commande met plus de 5 secondes à répondre
+      timeout: 5s
+      # Autorise jusqu'à 15 échecs consécutifs (75s max) avant de déclarer le conteneur "unhealthy"
+      retries: 15
+      # Laisse une période de grâce de 10s au démarrage (les échecs pendant ce laps de temps ne comptent pas)
+      start_period: 10s
 
 
 
+  tb-js-executor:
+    env_file:
+      - queue-kafka.env
+    # depends_on:
+    #   - kafka
+    depends_on:
+      kafka:
+        condition: service_healthy
 
+----
 
+===== Détail des paramètres du `healthcheck`
 
+* **`test`** : Exécute `kafka-broker-api-versions.sh` sur `localhost:9092`. Retourne `0` uniquement si le broker répond correctement.
+* **`interval: 5s`** : Vérifie l'état de santé toutes les 5 secondes.
+* **`timeout: 5s`** : Considère le test comme échoué si la commande met plus de 5 secondes à répondre.
+* **`retries: 15`** : Autorise jusqu'à 15 échecs consécutifs (soit 75 secondes maximum) avant de déclarer le conteneur `unhealthy`.
+* **`start_period: 10s`** : Accorde une période de grâce de 10 secondes au démarrage initial de la JVM Kafka.
+* **`condition: service_healthy`** : Bloque le démarrage de `tb-js-executor` tant que `kafka` n'a pas atteint le statut `healthy`.
 
+==== Résultat attendu
 
+Lors de l'exécution de `docker compose up -d`, Docker orchestre automatiquement l'ordre de démarrage :
 
+[source, console, subs="quotes"]
+----
+[+] up 19/19
+ ✔ Container laimee-postgres-1                   Running                   0.0s
+ ✔ Container laimee-redis-1                      Running                   0.0s
+ ✔ Container laimee-kafka-1                     [.badge-healthy]#Healthy#                 77.5s
+ ✔ Container laimee-tb-web-ui2-1                 Started                   6.0s
+ ✔ Container laimee-zookeeper-1                  Started                   6.6s
+ ✔ Container laimee-init-permissions-1           Started                   4.0s
+ ✔ Container laimee-tb-web-ui1-1                 Started                   5.4s
+ ✔ Container laimee-tb-http-transport1-1         Started                   8.9s
+ ✔ Container laimee-tb-js-executor-1             Started                  77.3s
+ ✔ Container laimee-tb-mqtt-transport1-1         Started                   9.8s
+ ✔ Container laimee-tb-coap-transport-1          Started                   7.0s
+ ✔ Container laimee-tb-js-executor-2             Started                  77.8s
+ ✔ Container laimee-tb-mqtt-transport2-1         Started                   7.9s
+ ✔ Container laimee-tb-http-transport2-1         Started                   6.4s
+ ✔ Container laimee-tb-rule-engine2-1            Started                  78.2s
+ ✔ Container laimee-tb-rule-engine1-1            Started                  77.6s
+ ✔ Container laimee-tb-core2-1                   Started                  78.5s
+ ✔ Container laimee-tb-core1-1                   Started                  79.1s
+ ✔ Container haproxy-certbot                     Started                  79.7s
+----
 
+Les conteneurs `tb-js-executor` démarrent sans erreur `ECONNREFUSED` et rejoignent immédiatement le groupe Kafka (`Consumer has joined the group`).
 
+* Le seul problème lié à l'utilisation du `healthcheck` est qu'il n'est pas pris en compte par la commande `docker compose -p laimee restart` (qui relance tous les conteneurs simultanément sans vérifier les dépendances). Il est donc nécessaire de créer un script de redémarrage dédié permettant de conserver cette condition `service_healthy`.
 
+==== Création du fichier `restart-windows.bat`
 
+[source, batch]
+----
+@echo off
+setlocal enabledelayedexpansion
 
+echo ===================================================
+echo   REDEMARRAGE PROPRE DE LAIMEE (AVEC HEALTHCHECKS)
+echo ===================================================
 
+REM 1. Lecture automatique des fichiers Compose depuis .env
+call compose-utils.bat :additionalComposeQueueArgs
+if errorlevel 1 exit /b %errorlevel%
+call compose-utils.bat :additionalComposeArgs
+if errorlevel 1 exit /b %errorlevel%
 
+REM 2. Arret propre des conteneurs (conserve les volumes et les donnees)
+echo [1/3] Arret des conteneurs en cours...
+docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% stop
+if errorlevel 1 (
+    echo Erreur lors de l'arret des conteneurs.
+    pause
+    exit /b 1
+)
 
+REM 3. Redemarrage orchestre en respectant depends_on et service_healthy
+echo [2/3] Redemarrage des services (attente des healthchecks)...
+docker compose -p laimee -f docker-compose.yml %ADDITIONAL_COMPOSE_ARGS% %ADDITIONAL_COMPOSE_QUEUE_ARGS% up -d
+if errorlevel 1 (
+    echo Erreur lors du redemarrage des conteneurs.
+    pause
+    exit /b 1
+)
 
+REM 4. Synchronisation de HAProxy une fois le backend pret
+echo [3/3] Attente que le serveur backend soit operationnel...
+set /a elapsed=0
+:wait_backend
+timeout /t 15 /nobreak >nul
+set /a elapsed+=15
+docker exec laimee-tb-core1-1 bash -c "echo > /dev/tcp/localhost/8080" >nul 2>&1
+if errorlevel 1 (
+    echo   [!elapsed!s] Demarrage des services Java en cours, merci de patienter...
+    goto :wait_backend
+)
 
+echo   Synchronisation de HAProxy...
+docker restart haproxy-certbot >nul 2>&1
 
+echo.
+echo ===================================================
+echo   REDEMARRAGE TERMINE AVEC SUCCES !
+echo   Interface Web : http://localhost
+echo ===================================================
+echo.
+pause
+----
 
+==== Fonctionnement du script `restart-windows.bat`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* **Chargement dynamique de la configuration** : Appelle `compose-utils.bat` pour récupérer automatiquement les fichiers Docker Compose actifs depuis le fichier `.env` (PostgreSQL, Kafka, etc.).
+* **Arrêt propre (`stop`)** : Stoppe l'ensemble des conteneurs sans supprimer les volumes ni les données persistées.
+* **Redémarrage orchestré (`up -d`)** : Remplace la commande `restart` par `up -d` afin d'obliger Docker Compose à réévaluer l'arbre `depends_on` et à attendre que `kafka` atteigne le statut `healthy` avant de lancer `tb-js-executor`.
+* **Synchronisation du reverse proxy (`HAProxy`)** : Vérifie toutes les 15 secondes la disponibilité du port `8080` sur `tb-core1`, puis redémarre `haproxy-certbot` afin d'éviter toute erreur `502 Bad Gateway` lors de l'accès à l'interface Web.
 
 
 == Generer mon `.adoc` en live server 
