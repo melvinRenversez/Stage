@@ -292,6 +292,40 @@
   }
 
 
+  .listingblock .content {
+    position: relative;
+  }
+
+  .copy-code-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-family: sans-serif;
+    color: #f8f9fa;
+    background-color: rgba(45, 55, 72, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 10;
+  }
+
+  .listingblock .content:hover .copy-code-btn {
+    opacity: 1;
+  }
+
+  .copy-code-btn:hover {
+    background-color: #2b6cb0;
+  }
+
+  .copy-code-btn.copied {
+    background-color: #2f855a;
+    border-color: #48bb78;
+    opacity: 1;
+  }
 </style>
 
 <script>
@@ -356,5 +390,29 @@
         localStorage.setItem("adoc-nav-width", currentWidth);
       });
     }
+
+    // 3. Ajout du bouton Copier sur chaque bloc de code
+    document.querySelectorAll(".listingblock .content").forEach(function (block) {
+      const codeEl = block.querySelector("pre code") || block.querySelector("pre");
+      if (!codeEl) return;
+
+      const btn = document.createElement("button");
+      btn.className = "copy-code-btn";
+      btn.type = "button";
+      btn.textContent = "Copier";
+
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(codeEl.innerText).then(function () {
+          btn.textContent = "Copié !";
+          btn.classList.add("copied");
+          setTimeout(function () {
+            btn.textContent = "Copier";
+            btn.classList.remove("copied");
+          }, 2000);
+        });
+      });
+
+      block.appendChild(btn);
+    });
   });
 </script>

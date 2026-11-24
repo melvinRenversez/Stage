@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
 Melvin Renversez
-v2.0, 23-11-2026
+v2.1, 23-11-2026
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
@@ -2949,7 +2949,7 @@ services:
 
 ----
 
-===== Détail des paramètres du `healthcheck`
+==== Détail des paramètres du `healthcheck`
 
 * **`test`** : Exécute `kafka-broker-api-versions.sh` sur `localhost:9092`. Retourne `0` uniquement si le broker répond correctement.
 * **`interval: 5s`** : Vérifie l'état de santé toutes les 5 secondes.
@@ -3055,6 +3055,422 @@ pause
 * **Arrêt propre (`stop`)** : Stoppe l'ensemble des conteneurs sans supprimer les volumes ni les données persistées.
 * **Redémarrage orchestré (`up -d`)** : Remplace la commande `restart` par `up -d` afin d'obliger Docker Compose à réévaluer l'arbre `depends_on` et à attendre que `kafka` atteigne le statut `healthy` avant de lancer `tb-js-executor`.
 * **Synchronisation du reverse proxy (`HAProxy`)** : Vérifie toutes les 15 secondes la disponibilité du port `8080` sur `tb-core1`, puis redémarre `haproxy-certbot` afin d'éviter toute erreur `502 Bad Gateway` lors de l'accès à l'interface Web.
+
+== test du docker sous linux
+
+=== Installation de Docker sous Linux Server
+
+==== Ajout de la clef `GPG`
+
+[source, bash]
+----
+sudo apt update
+sudo apt install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+----
+
+==== Ajout des dépôts Docker
+
+[source, bash]
+----
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+----
+
+==== Installation de Docker
+
+[source, bash]
+----
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+----
+
+=== Importer les images Docker personnalisées
+
+==== Installation de SSH (sur la VM Linux)
+
+[source, bash]
+----
+sudo apt update
+sudo apt install -y openssh-server
+sudo systemctl enable --now ssh
+mkdir -p ~/images
+----
+
+==== Copier les images Docker de la machine hôte vers la machine virtuelle Linux
+
+[source, powershell]
+----
+scp *.tar ubuntu@192.168.56.102:~/images/
+----
+
+==== Charger les images dans Docker (sur la VM Linux)
+
+[source, bash]
+----
+for img in ~/images/*.tar; do
+    echo "Chargement de $(basename "$img")..."
+    sudo docker load -i "$img"
+done
+----
+
+NOTE: Une fois l'importation vérifiée avec `sudo docker images`, vous pouvez supprimer les archives `.tar` de la VM (`rm -rf ~/images/*.tar`) pour libérer l'espace disque.
+
+=== Création et exécution du script d'installation pour Linux
+
+Créez le fichier `installer-linux.sh` dans le répertoire du projet (`~/workdir/laimee`) avec le contenu suivant :
+
+[source, bash]
+------
+#!/usr/bin/env bash
+set -e
+
+echo "==================================================="
+echo "  DEMARRAGE AUTOMATIQUE DE LAIMEE SOUS UBUNTU"
+echo "==================================================="
+
+# 0. Activation des modules noyau iptables legacy pour HAProxy
+echo "[0/7] Verification des modules noyau iptables..."
+sudo modprobe ip_tables 2>/dev/null || true
+sudo modprobe iptable_mangle 2>/dev/null || true
+sudo modprobe iptable_nat 2>/dev/null || true
+
+if [ ! -f "/etc/modules-load.d/iptables-legacy.conf" ]; then
+    printf "ip_tables\niptable_mangle\niptable_nat\n" | sudo tee /etc/modules-load.d/iptables-legacy.conf >/dev/null
+fi
+
+# 1. Creation des dossiers de logs et de configuration
+echo "[1/7] Verification des dossiers locaux..."
+for f in tb-core1 tb-core2 tb-rule-engine1 tb-rule-engine2; do
+    mkdir -p "tb-node/log/$f"
+done
+
+for d in \
+    "tb-node/conf" \
+    "tb-laimee" \
+    "tb-transports/coap/conf" \
+    "tb-transports/coap/log/tb-coap-transport" \
+    "tb-transports/http/conf" \
+    "tb-transports/http/log/tb-http-transport1" \
+    "tb-transports/http/log/tb-http-transport2" \
+    "tb-transports/mqtt/conf" \
+    "tb-transports/mqtt/log/tb-mqtt-transport1" \
+    "tb-transports/mqtt/log/tb-mqtt-transport2" \
+    "haproxy/config" \
+    "haproxy/letsencrypt" \
+    "haproxy/certs.d" \
+    "$HOME/.tb-gateway" \
+    "$HOME/.tb-laimee"
+do
+    mkdir -p "$d"
+done
+
+# 2. Extraction automatique des fichiers conf + correction localhost->postgres
+if [ ! -f "tb-node/conf/laimee.conf" ]; then
+    echo "[2/7] Extraction des fichiers de configuration depuis les images Docker..."
+    docker create --name temp-node laimee/tb-node:latest >/dev/null
+    docker cp temp-node:/usr/share/laimee/conf/. tb-node/conf/
+    docker rm temp-node >/dev/null
+
+    docker create --name temp-mqtt laimee/tb-mqtt-transport:latest >/dev/null
+    docker cp temp-mqtt:/usr/share/tb-mqtt-transport/conf/. tb-transports/mqtt/conf/
+    docker rm temp-mqtt >/dev/null
+
+    docker create --name temp-http laimee/tb-http-transport:latest >/dev/null
+    docker cp temp-http:/usr/share/tb-http-transport/conf/. tb-transports/http/conf/
+    docker rm temp-http >/dev/null
+
+    docker create --name temp-coap laimee/tb-coap-transport:latest >/dev/null
+    docker cp temp-coap:/usr/share/tb-coap-transport/conf/. tb-transports/coap/conf/
+    docker rm temp-coap >/dev/null
+else
+    echo "[2/7] Fichiers de configuration deja presents."
+fi
+
+# Nettoyage propre de laimee.conf (format Unix LF sans \r + postgres:5432)
+sed -i -e 's/\r//g' -e 's/localhost:5432/postgres:5432/g' tb-node/conf/laimee.conf
+
+# 3. Generation automatique de haproxy.cfg
+echo "[3/7] Configuration de HAProxy..."
+cat << 'HAPROXY_EOF' > haproxy/config/haproxy.cfg
+global
+    maxconn 4096
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+frontend http-in
+    bind *:80
+    acl is_api path_beg /api /swagger /webjars /v2/api-docs
+    acl is_telemetry path_beg /api/v1
+    use_backend tb_http_backend if is_telemetry
+    use_backend tb_core_backend if is_api
+    default_backend tb_web_ui_backend
+
+backend tb_core_backend
+    balance roundrobin
+    server tb-core1 tb-core1:8080
+    server tb-core2 tb-core2:8080
+
+backend tb_http_backend
+    balance roundrobin
+    server tb-http1 tb-http-transport1:8081
+    server tb-http2 tb-http-transport2:8081
+
+backend tb_web_ui_backend
+    balance roundrobin
+    server tb-web-ui1 tb-web-ui1:8080
+    server tb-web-ui2 tb-web-ui2:8080
+
+frontend mqtt-in
+    bind *:1883
+    mode tcp
+    default_backend tb_mqtt_backend
+
+backend tb_mqtt_backend
+    mode tcp
+    balance roundrobin
+    server tb-mqtt1 tb-mqtt-transport1:1883
+    server tb-mqtt2 tb-mqtt-transport2:1883
+HAPROXY_EOF
+
+# Attribution des permissions UID 799 (utilisateur laimee/thingsboard dans les conteneurs)
+echo "    Application des droits (UID 799) sur les dossiers locaux..."
+sudo chown -R 799:799 tb-laimee tb-node/log tb-node/conf tb-transports haproxy
+sudo chmod -R 775 tb-laimee tb-node/log tb-transports
+
+# 4. Creation du reseau Docker si inexistant
+echo "[4/7] Verification du reseau Docker laimee_docker_network..."
+if ! docker network inspect laimee_docker_network >/dev/null 2>&1; then
+    docker network create --driver=bridge --subnet=172.23.0.0/24 --gateway=172.23.0.1 laimee_docker_network >/dev/null
+fi
+
+# 5. Lecture des arguments Compose (compose-utils.sh s'il existe dans le projet)
+if [ -f "./compose-utils.sh" ]; then
+    source ./compose-utils.sh
+    ADDITIONAL_COMPOSE_QUEUE_ARGS=$(additionalComposeQueueArgs 2>/dev/null || echo "")
+    ADDITIONAL_COMPOSE_ARGS=$(additionalComposeArgs 2>/dev/null || echo "")
+    ADDITIONAL_STARTUP_SERVICES=$(additionalStartupServices 2>/dev/null || echo "")
+fi
+
+# 6. Detection et installation automatique de la base de donnees si vierge
+if [ ! -f "tb-node/postgres/PG_VERSION" ]; then
+    echo "[5/7] Base de donnees vierge detectee : installation des tables SQL en cours..."
+    docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d redis $ADDITIONAL_STARTUP_SERVICES
+    sleep 5
+    docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS run --no-deps --rm -e INSTALL_TB=true -e LOAD_DEMO=false -e INSTALL_DATA_DIR=/usr/share/laimee/data tb-core1
+else
+    echo "[5/7] Base de donnees deja initialisee."
+fi
+
+# 7. Demarrage complet de tous les services et synchronisation HAProxy
+echo "[6/7] Demarrage de tous les conteneurs..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d
+
+echo "[7/7] Attente que le serveur backend soit operationnel (environ 3 a 5 minutes)..."
+elapsed=0
+while ! docker exec laimee-tb-core1-1 bash -c "echo > /dev/tcp/localhost/8080" >/dev/null 2>&1; do
+    sleep 30
+    elapsed=$((elapsed + 30))
+    mins=$((elapsed / 60))
+    secs=$(printf "%02d" $((elapsed % 60)))
+    echo "  [${mins}m ${secs}s] Demarrage des services Java en cours, merci de patienter..."
+done
+
+echo "  Serveur operationnel ! Synchronisation de HAProxy..."
+docker restart haproxy-certbot >/dev/null 2>&1 || true
+sleep 3
+
+IP_VM=$(hostname -I | awk '{print $1}')
+echo ""
+echo "==================================================="
+echo "  TOUT EST PRET !"
+echo "  Interface Web : http://${IP_VM}"
+echo "  Identifiant   : sysadmin@laimee.org"
+echo "  Mot de passe  : sysadmin"
+echo "==================================================="
+echo ""
+------
+
+==== Lancement de l'installation
+
+Rendez le script exécutable puis lancez-le avec les droits administrateur :
+
+[source, bash]
+----
+chmod +x installer-linux.sh
+sudo ./installer-linux.sh
+----
+
+==== Fonctionnement détaillé du script
+
+Le script `installer-linux.sh` est conçu pour être **idempotent** : il peut être relancé à tout moment sans écraser une base de données existante ni re-extraire les fichiers de configuration déjà présents.
+
+[cols="1,3", options="header"]
+|===
+
+| Étape | Rôle technique
+
+| **[0/7] Modules noyau**
+| Charge les modules `ip_tables`, `iptable_mangle` et `iptable_nat` sur l'hôte Ubuntu et les inscrit dans `/etc/modules-load.d/iptables-legacy.conf`. Ce prérequis évite le redémarrage en boucle du conteneur `haproxy-certbot`, qui s'appuie sur `iptables` legacy.
+
+| **[1/7] Arborescence**
+| Crée tous les répertoires nécessaires aux journaux applicatifs (`tb-node/log`), aux configurations des transports (`MQTT`, `HTTP`, `CoAP`), au stockage des fichiers statiques (`tb-laimee`) et aux certificats HAProxy.
+
+| **[2/7] Extraction & Formatage**
+| Si `tb-node/conf/laimee.conf` est absent, crée des conteneurs temporaires pour extraire les configurations par défaut des images Docker, puis convertit les fins de ligne au format Unix (`LF`) et remplace `localhost:5432` par le nom du service Docker `postgres:5432`.
+
+| **[3/7] HAProxy & Droits**
+| Génère le fichier `haproxy.cfg` (routage HTTP sur le port `80` vers l'interface Web, l'API REST ou le transport HTTP, et routage TCP sur le port `1883` pour le MQTT). Applique ensuite le propriétaire `799:799` (UID interne de l'utilisateur applicatif dans les conteneurs ThingsBoard/Laimee) sur les volumes montés.
+
+| **[4/7] Réseau Docker**
+| Vérifie la présence du réseau bridge `laimee_docker_network` (`172.23.0.0/24`) et le crée s'il n'existe pas.
+
+| **[5/7] Base de données**
+| Vérifie la présence du fichier `tb-node/postgres/PG_VERSION`. S'il est absent, démarre PostgreSQL/Redis et exécute un conteneur éphémère `tb-core1` avec `INSTALL_TB=true` pour créer le schéma SQL et les données système.
+
+| **[6/7] & [7/7] Démarrage**
+| Lance l'ensemble de la stack via `docker compose`, interroge le port interne `8080` de `laimee-tb-core1-1` toutes les 30 secondes jusqu'à ce que les services Java soient prêts, puis redémarre `haproxy-certbot` pour synchroniser le routage.
+|===
+
+==== Prérequis de structure du répertoire
+
+Avant d'exécuter `installer-linux.sh`, assurez-vous que votre dossier `~/workdir/laimee` contient bien les fichiers suivants :
+
+* `docker-compose.yml` : définition de l'ensemble des conteneurs et volumes de la stack.
+* `.env` *(optionnel)* : variables d'environnement personnalisées (versions, ports, type de file de messages Kafka/In-Memory).
+* `compose-utils.sh` *(optionnel)* : fonctions utilitaires permettant de résoudre les arguments additionnels de Docker Compose.
+
+==== Commandes de maintenance courante
+
+Une fois l'environnement déployé, vous pouvez administrer la plateforme avec les commandes suivantes depuis `~/workdir/laimee` :
+
+* **Vérifier l'état de tous les conteneurs :**
++
+[source, bash]
+----
+sudo docker compose -p laimee ps
+----
+
+* **Consulter les journaux en temps réel du cœur applicatif :**
++
+[source, bash]
+----
+sudo docker logs -f laimee-tb-core1-1
+----
+
+* **Arrêter proprement tous les services (sans perte de données) :**
++
+[source, bash]
+----
+sudo docker compose -p laimee down
+----
+
+* **Redémarrer la plateforme après un arrêt ou un redémarrage de la VM :**
++
+[source, bash]
+----
+sudo ./installer-linux.sh
+----
+
+CAUTION: Ne modifiez jamais les permissions du dossier `tb-node/postgres` avec l'UID `799` : PostgreSQL utilise son propre utilisateur système (UID `999`) et refusera de démarrer si les droits de ses fichiers de données sont altérés.
+
+=== Création et exécution du script de redémarrage (`restart-linux.sh`)
+
+Pour redémarrer proprement l'ensemble des services sans recréer les volumes ni réinitialiser la base de données (par exemple après une modification de configuration ou un redémarrage de la machine virtuelle), créez le fichier `restart-linux.sh` dans le répertoire `~/workdir/laimee` :
+
+[source, bash]
+------
+#!/usr/bin/env bash
+set -e
+
+echo "==================================================="
+echo "  REDEMARRAGE PROPRE DE LAIMEE (AVEC HEALTHCHECKS)"
+echo "==================================================="
+
+# 0. Verification des modules noyau iptables legacy pour HAProxy
+sudo modprobe ip_tables 2>/dev/null || true
+sudo modprobe iptable_mangle 2>/dev/null || true
+sudo modprobe iptable_nat 2>/dev/null || true
+
+# 1. Lecture automatique des fichiers Compose depuis compose-utils.sh (si present)
+if [ -f "./compose-utils.sh" ]; then
+    source ./compose-utils.sh
+    ADDITIONAL_COMPOSE_QUEUE_ARGS=$(additionalComposeQueueArgs 2>/dev/null || echo "")
+    ADDITIONAL_COMPOSE_ARGS=$(additionalComposeArgs 2>/dev/null || echo "")
+fi
+
+# 2. Arret propre des conteneurs (conserve les volumes et les donnees)
+echo "[1/3] Arret des conteneurs en cours..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS stop
+
+# 3. Redemarrage orchestre en respectant depends_on et service_healthy
+echo "[2/3] Redemarrage des services (attente des healthchecks)..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d
+
+# 4. Synchronisation de HAProxy une fois le backend pret
+echo "[3/3] Attente que le serveur backend soit operationnel..."
+elapsed=0
+while ! docker exec laimee-tb-core1-1 bash -c "echo > /dev/tcp/localhost/8080" >/dev/null 2>&1; do
+    sleep 15
+    elapsed=$((elapsed + 15))
+    echo "  [${elapsed}s] Demarrage des services Java en cours, merci de patienter..."
+done
+
+echo "  Synchronisation de HAProxy..."
+docker restart haproxy-certbot >/dev/null 2>&1 || true
+
+IP_VM=$(hostname -I | awk '{print $1}')
+echo ""
+echo "==================================================="
+echo "  REDEMARRAGE TERMINE AVEC SUCCES !"
+echo "  Interface Web : http://${IP_VM}"
+echo "==================================================="
+echo ""
+------
+
+==== Attribution des droits et lancement
+
+Rendez le script exécutable puis lancez-le avec les privilèges administrateur :
+
+[source, bash]
+----
+chmod +x restart-linux.sh
+sudo ./restart-linux.sh
+----
+
+==== Fonctionnement détaillé du redémarrage
+
+Contrairement à une suppression complète (`docker compose down`), ce script préserve l'intégralité de vos données et suit trois étapes orchestrées :
+
+[cols="1,3", options="header"]
+|===
+
+| Étape | Rôle technique
+
+| **[0/3] Modules noyau**
+| S'assure que `ip_tables`, `iptable_mangle` et `iptable_nat` sont bien chargés en mémoire avant de relancer HAProxy.
+
+| **[1/3] Arrêt propre (`stop`)**
+| Interrompt proprement les conteneurs actifs sans les supprimer, garantissant l'intégrité des écritures en cours dans PostgreSQL et Kafka.
+
+| **[2/3] Relance (`up -d`)**
+| Redémarre les conteneurs dans l'ordre défini par les directives `depends_on` et attend que les services critiques (comme Kafka et PostgreSQL) passent en état `healthy`.
+
+| **[3/3] Synchronisation HAProxy**
+| Vérifie toutes les 15 secondes la disponibilité du port interne `8080` de `laimee-tb-core1-1`, puis redémarre `haproxy-certbot` afin d'éviter toute erreur `503 Service Unavailable` lors de la reconnexion.
+|===
 
 
 == Generer mon `.adoc` en live server 

@@ -730,6 +730,40 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   }
 
 
+  .listingblock .content {
+    position: relative;
+  }
+
+  .copy-code-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-family: sans-serif;
+    color: #f8f9fa;
+    background-color: rgba(45, 55, 72, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 10;
+  }
+
+  .listingblock .content:hover .copy-code-btn {
+    opacity: 1;
+  }
+
+  .copy-code-btn:hover {
+    background-color: #2b6cb0;
+  }
+
+  .copy-code-btn.copied {
+    background-color: #2f855a;
+    border-color: #48bb78;
+    opacity: 1;
+  }
 </style>
 
 <script>
@@ -794,6 +828,30 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
         localStorage.setItem("adoc-nav-width", currentWidth);
       });
     }
+
+    // 3. Ajout du bouton Copier sur chaque bloc de code
+    document.querySelectorAll(".listingblock .content").forEach(function (block) {
+      const codeEl = block.querySelector("pre code") || block.querySelector("pre");
+      if (!codeEl) return;
+
+      const btn = document.createElement("button");
+      btn.className = "copy-code-btn";
+      btn.type = "button";
+      btn.textContent = "Copier";
+
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(codeEl.innerText).then(function () {
+          btn.textContent = "Copié !";
+          btn.classList.add("copied");
+          setTimeout(function () {
+            btn.textContent = "Copier";
+            btn.classList.remove("copied");
+          }, 2000);
+        });
+      });
+
+      block.appendChild(btn);
+    });
   });
 </script>
 </head>
@@ -802,7 +860,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Documentation technique : Stage Besttic</h1>
 <div class="details">
 <span id="author" class="author">Melvin Renversez</span><br>
-<span id="revnumber">version 2.0,</span>
+<span id="revnumber">version 2.1,</span>
 <span id="revdate">23-11-2026</span>
 </div>
 <div id="toc" class="toc2">
@@ -965,8 +1023,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#_configuration_dans_docker_compose_kafka_yml">7.6. Configuration dans <code>docker-compose.kafka.yml</code></a>
-<ul class="sectlevel4">
-<li><a href="#_détail_des_paramètres_du_healthcheck">Détail des paramètres du <code>healthcheck</code></a></li>
+<ul class="sectlevel3">
+<li><a href="#_détail_des_paramètres_du_healthcheck">7.6.1. Détail des paramètres du <code>healthcheck</code></a></li>
 <li><a href="#_résultat_attendu">7.6.2. Résultat attendu</a></li>
 <li><a href="#_création_du_fichier_restart_windows_bat">7.6.3. Création du fichier <code>restart-windows.bat</code></a></li>
 <li><a href="#_fonctionnement_du_script_restart_windows_bat">7.6.4. Fonctionnement du script <code>restart-windows.bat</code></a></li>
@@ -974,7 +1032,39 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</a></li>
+<li><a href="#_test_du_docker_sous_linux">8. test du docker sous linux</a>
+<ul class="sectlevel2">
+<li><a href="#_installation_de_docker_sous_linux_server">8.1. Installation de Docker sous Linux Server</a>
+<ul class="sectlevel3">
+<li><a href="#_ajout_de_la_clef_gpg">8.1.1. Ajout de la clef <code>GPG</code></a></li>
+<li><a href="#_ajout_des_dépôts_docker">8.1.2. Ajout des dépôts Docker</a></li>
+<li><a href="#_installation_de_docker">8.1.3. Installation de Docker</a></li>
+</ul>
+</li>
+<li><a href="#_importer_les_images_docker_personnalisées">8.2. Importer les images Docker personnalisées</a>
+<ul class="sectlevel3">
+<li><a href="#_installation_de_ssh_sur_la_vm_linux">8.2.1. Installation de SSH (sur la VM Linux)</a></li>
+<li><a href="#_copier_les_images_docker_de_la_machine_hôte_vers_la_machine_virtuelle_linux">8.2.2. Copier les images Docker de la machine hôte vers la machine virtuelle Linux</a></li>
+<li><a href="#_charger_les_images_dans_docker_sur_la_vm_linux">8.2.3. Charger les images dans Docker (sur la VM Linux)</a></li>
+</ul>
+</li>
+<li><a href="#_création_et_exécution_du_script_dinstallation_pour_linux">8.3. Création et exécution du script d&#8217;installation pour Linux</a>
+<ul class="sectlevel3">
+<li><a href="#_lancement_de_linstallation">8.3.1. Lancement de l&#8217;installation</a></li>
+<li><a href="#_fonctionnement_détaillé_du_script">8.3.2. Fonctionnement détaillé du script</a></li>
+<li><a href="#_prérequis_de_structure_du_répertoire">8.3.3. Prérequis de structure du répertoire</a></li>
+<li><a href="#_commandes_de_maintenance_courante">8.3.4. Commandes de maintenance courante</a></li>
+</ul>
+</li>
+<li><a href="#_création_et_exécution_du_script_de_redémarrage_restart_linux_sh">8.4. Création et exécution du script de redémarrage (<code>restart-linux.sh</code>)</a>
+<ul class="sectlevel3">
+<li><a href="#_attribution_des_droits_et_lancement">8.4.1. Attribution des droits et lancement</a></li>
+<li><a href="#_fonctionnement_détaillé_du_redémarrage">8.4.2. Fonctionnement détaillé du redémarrage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_generer_mon_adoc_en_live_server">9. Generer mon <code>.adoc</code> en live server</a></li>
 </ul>
 </div>
 </div>
@@ -4460,8 +4550,8 @@ Producer: KafkaProducer { send: [AsyncFunction] }
         condition: service_healthy</code></pre>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_détail_des_paramètres_du_healthcheck">Détail des paramètres du <code>healthcheck</code></h5>
+<div class="sect3">
+<h4 id="_détail_des_paramètres_du_healthcheck">7.6.1. Détail des paramètres du <code>healthcheck</code></h4>
 <div class="ulist">
 <ul>
 <li>
@@ -4608,7 +4698,514 @@ pause</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generer_mon_adoc_en_live_server">8. Generer mon <code>.adoc</code> en live server</h2>
+<h2 id="_test_du_docker_sous_linux">8. test du docker sous linux</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_installation_de_docker_sous_linux_server">8.1. Installation de Docker sous Linux Server</h3>
+<div class="sect3">
+<h4 id="_ajout_de_la_clef_gpg">8.1.1. Ajout de la clef <code>GPG</code></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo apt update
+sudo apt install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ajout_des_dépôts_docker">8.1.2. Ajout des dépôts Docker</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo tee /etc/apt/sources.list.d/docker.sources &lt;&lt;EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release &amp;&amp; echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_installation_de_docker">8.1.3. Installation de Docker</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_importer_les_images_docker_personnalisées">8.2. Importer les images Docker personnalisées</h3>
+<div class="sect3">
+<h4 id="_installation_de_ssh_sur_la_vm_linux">8.2.1. Installation de SSH (sur la VM Linux)</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo apt update
+sudo apt install -y openssh-server
+sudo systemctl enable --now ssh
+mkdir -p ~/images</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_copier_les_images_docker_de_la_machine_hôte_vers_la_machine_virtuelle_linux">8.2.2. Copier les images Docker de la machine hôte vers la machine virtuelle Linux</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">scp *.tar ubuntu@192.168.56.102:~/images/</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_charger_les_images_dans_docker_sur_la_vm_linux">8.2.3. Charger les images dans Docker (sur la VM Linux)</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for img in ~/images/*.tar; do
+    echo "Chargement de $(basename "$img")..."
+    sudo docker load -i "$img"
+done</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Une fois l&#8217;importation vérifiée avec <code>sudo docker images</code>, vous pouvez supprimer les archives <code>.tar</code> de la VM (<code>rm -rf ~/images/*.tar</code>) pour libérer l&#8217;espace disque.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_création_et_exécution_du_script_dinstallation_pour_linux">8.3. Création et exécution du script d&#8217;installation pour Linux</h3>
+<div class="paragraph">
+<p>Créez le fichier <code>installer-linux.sh</code> dans le répertoire du projet (<code>~/workdir/laimee</code>) avec le contenu suivant :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/usr/bin/env bash
+set -e
+
+echo "==================================================="
+echo "  DEMARRAGE AUTOMATIQUE DE LAIMEE SOUS UBUNTU"
+echo "==================================================="
+
+# 0. Activation des modules noyau iptables legacy pour HAProxy
+echo "[0/7] Verification des modules noyau iptables..."
+sudo modprobe ip_tables 2&gt;/dev/null || true
+sudo modprobe iptable_mangle 2&gt;/dev/null || true
+sudo modprobe iptable_nat 2&gt;/dev/null || true
+
+if [ ! -f "/etc/modules-load.d/iptables-legacy.conf" ]; then
+    printf "ip_tables\niptable_mangle\niptable_nat\n" | sudo tee /etc/modules-load.d/iptables-legacy.conf &gt;/dev/null
+fi
+
+# 1. Creation des dossiers de logs et de configuration
+echo "[1/7] Verification des dossiers locaux..."
+for f in tb-core1 tb-core2 tb-rule-engine1 tb-rule-engine2; do
+    mkdir -p "tb-node/log/$f"
+done
+
+for d in \
+    "tb-node/conf" \
+    "tb-laimee" \
+    "tb-transports/coap/conf" \
+    "tb-transports/coap/log/tb-coap-transport" \
+    "tb-transports/http/conf" \
+    "tb-transports/http/log/tb-http-transport1" \
+    "tb-transports/http/log/tb-http-transport2" \
+    "tb-transports/mqtt/conf" \
+    "tb-transports/mqtt/log/tb-mqtt-transport1" \
+    "tb-transports/mqtt/log/tb-mqtt-transport2" \
+    "haproxy/config" \
+    "haproxy/letsencrypt" \
+    "haproxy/certs.d" \
+    "$HOME/.tb-gateway" \
+    "$HOME/.tb-laimee"
+do
+    mkdir -p "$d"
+done
+
+# 2. Extraction automatique des fichiers conf + correction localhost-&gt;postgres
+if [ ! -f "tb-node/conf/laimee.conf" ]; then
+    echo "[2/7] Extraction des fichiers de configuration depuis les images Docker..."
+    docker create --name temp-node laimee/tb-node:latest &gt;/dev/null
+    docker cp temp-node:/usr/share/laimee/conf/. tb-node/conf/
+    docker rm temp-node &gt;/dev/null
+
+    docker create --name temp-mqtt laimee/tb-mqtt-transport:latest &gt;/dev/null
+    docker cp temp-mqtt:/usr/share/tb-mqtt-transport/conf/. tb-transports/mqtt/conf/
+    docker rm temp-mqtt &gt;/dev/null
+
+    docker create --name temp-http laimee/tb-http-transport:latest &gt;/dev/null
+    docker cp temp-http:/usr/share/tb-http-transport/conf/. tb-transports/http/conf/
+    docker rm temp-http &gt;/dev/null
+
+    docker create --name temp-coap laimee/tb-coap-transport:latest &gt;/dev/null
+    docker cp temp-coap:/usr/share/tb-coap-transport/conf/. tb-transports/coap/conf/
+    docker rm temp-coap &gt;/dev/null
+else
+    echo "[2/7] Fichiers de configuration deja presents."
+fi
+
+# Nettoyage propre de laimee.conf (format Unix LF sans \r + postgres:5432)
+sed -i -e 's/\r//g' -e 's/localhost:5432/postgres:5432/g' tb-node/conf/laimee.conf
+
+# 3. Generation automatique de haproxy.cfg
+echo "[3/7] Configuration de HAProxy..."
+cat &lt;&lt; 'HAPROXY_EOF' &gt; haproxy/config/haproxy.cfg
+global
+    maxconn 4096
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+frontend http-in
+    bind *:80
+    acl is_api path_beg /api /swagger /webjars /v2/api-docs
+    acl is_telemetry path_beg /api/v1
+    use_backend tb_http_backend if is_telemetry
+    use_backend tb_core_backend if is_api
+    default_backend tb_web_ui_backend
+
+backend tb_core_backend
+    balance roundrobin
+    server tb-core1 tb-core1:8080
+    server tb-core2 tb-core2:8080
+
+backend tb_http_backend
+    balance roundrobin
+    server tb-http1 tb-http-transport1:8081
+    server tb-http2 tb-http-transport2:8081
+
+backend tb_web_ui_backend
+    balance roundrobin
+    server tb-web-ui1 tb-web-ui1:8080
+    server tb-web-ui2 tb-web-ui2:8080
+
+frontend mqtt-in
+    bind *:1883
+    mode tcp
+    default_backend tb_mqtt_backend
+
+backend tb_mqtt_backend
+    mode tcp
+    balance roundrobin
+    server tb-mqtt1 tb-mqtt-transport1:1883
+    server tb-mqtt2 tb-mqtt-transport2:1883
+HAPROXY_EOF
+
+# Attribution des permissions UID 799 (utilisateur laimee/thingsboard dans les conteneurs)
+echo "    Application des droits (UID 799) sur les dossiers locaux..."
+sudo chown -R 799:799 tb-laimee tb-node/log tb-node/conf tb-transports haproxy
+sudo chmod -R 775 tb-laimee tb-node/log tb-transports
+
+# 4. Creation du reseau Docker si inexistant
+echo "[4/7] Verification du reseau Docker laimee_docker_network..."
+if ! docker network inspect laimee_docker_network &gt;/dev/null 2&gt;&amp;1; then
+    docker network create --driver=bridge --subnet=172.23.0.0/24 --gateway=172.23.0.1 laimee_docker_network &gt;/dev/null
+fi
+
+# 5. Lecture des arguments Compose (compose-utils.sh s'il existe dans le projet)
+if [ -f "./compose-utils.sh" ]; then
+    source ./compose-utils.sh
+    ADDITIONAL_COMPOSE_QUEUE_ARGS=$(additionalComposeQueueArgs 2&gt;/dev/null || echo "")
+    ADDITIONAL_COMPOSE_ARGS=$(additionalComposeArgs 2&gt;/dev/null || echo "")
+    ADDITIONAL_STARTUP_SERVICES=$(additionalStartupServices 2&gt;/dev/null || echo "")
+fi
+
+# 6. Detection et installation automatique de la base de donnees si vierge
+if [ ! -f "tb-node/postgres/PG_VERSION" ]; then
+    echo "[5/7] Base de donnees vierge detectee : installation des tables SQL en cours..."
+    docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d redis $ADDITIONAL_STARTUP_SERVICES
+    sleep 5
+    docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS run --no-deps --rm -e INSTALL_TB=true -e LOAD_DEMO=false -e INSTALL_DATA_DIR=/usr/share/laimee/data tb-core1
+else
+    echo "[5/7] Base de donnees deja initialisee."
+fi
+
+# 7. Demarrage complet de tous les services et synchronisation HAProxy
+echo "[6/7] Demarrage de tous les conteneurs..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d
+
+echo "[7/7] Attente que le serveur backend soit operationnel (environ 3 a 5 minutes)..."
+elapsed=0
+while ! docker exec laimee-tb-core1-1 bash -c "echo &gt; /dev/tcp/localhost/8080" &gt;/dev/null 2&gt;&amp;1; do
+    sleep 30
+    elapsed=$((elapsed + 30))
+    mins=$((elapsed / 60))
+    secs=$(printf "%02d" $((elapsed % 60)))
+    echo "  [${mins}m ${secs}s] Demarrage des services Java en cours, merci de patienter..."
+done
+
+echo "  Serveur operationnel ! Synchronisation de HAProxy..."
+docker restart haproxy-certbot &gt;/dev/null 2&gt;&amp;1 || true
+sleep 3
+
+IP_VM=$(hostname -I | awk '{print $1}')
+echo ""
+echo "==================================================="
+echo "  TOUT EST PRET !"
+echo "  Interface Web : http://${IP_VM}"
+echo "  Identifiant   : sysadmin@laimee.org"
+echo "  Mot de passe  : sysadmin"
+echo "==================================================="
+echo ""</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_lancement_de_linstallation">8.3.1. Lancement de l&#8217;installation</h4>
+<div class="paragraph">
+<p>Rendez le script exécutable puis lancez-le avec les droits administrateur :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">chmod +x installer-linux.sh
+sudo ./installer-linux.sh</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fonctionnement_détaillé_du_script">8.3.2. Fonctionnement détaillé du script</h4>
+<div class="paragraph">
+<p>Le script <code>installer-linux.sh</code> est conçu pour être <strong>idempotent</strong> : il peut être relancé à tout moment sans écraser une base de données existante ni re-extraire les fichiers de configuration déjà présents.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Étape</th>
+<th class="tableblock halign-left valign-top">Rôle technique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[0/7] Modules noyau</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Charge les modules <code>ip_tables</code>, <code>iptable_mangle</code> et <code>iptable_nat</code> sur l&#8217;hôte Ubuntu et les inscrit dans <code>/etc/modules-load.d/iptables-legacy.conf</code>. Ce prérequis évite le redémarrage en boucle du conteneur <code>haproxy-certbot</code>, qui s&#8217;appuie sur <code>iptables</code> legacy.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[1/7] Arborescence</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crée tous les répertoires nécessaires aux journaux applicatifs (<code>tb-node/log</code>), aux configurations des transports (<code>MQTT</code>, <code>HTTP</code>, <code>CoAP</code>), au stockage des fichiers statiques (<code>tb-laimee</code>) et aux certificats HAProxy.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[2/7] Extraction &amp; Formatage</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Si <code>tb-node/conf/laimee.conf</code> est absent, crée des conteneurs temporaires pour extraire les configurations par défaut des images Docker, puis convertit les fins de ligne au format Unix (<code>LF</code>) et remplace <code>localhost:5432</code> par le nom du service Docker <code>postgres:5432</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[3/7] HAProxy &amp; Droits</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Génère le fichier <code>haproxy.cfg</code> (routage HTTP sur le port <code>80</code> vers l&#8217;interface Web, l&#8217;API REST ou le transport HTTP, et routage TCP sur le port <code>1883</code> pour le MQTT). Applique ensuite le propriétaire <code>799:799</code> (UID interne de l&#8217;utilisateur applicatif dans les conteneurs ThingsBoard/Laimee) sur les volumes montés.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[4/7] Réseau Docker</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vérifie la présence du réseau bridge <code>laimee_docker_network</code> (<code>172.23.0.0/24</code>) et le crée s&#8217;il n&#8217;existe pas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[5/7] Base de données</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vérifie la présence du fichier <code>tb-node/postgres/PG_VERSION</code>. S&#8217;il est absent, démarre PostgreSQL/Redis et exécute un conteneur éphémère <code>tb-core1</code> avec <code>INSTALL_TB=true</code> pour créer le schéma SQL et les données système.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[6/7] &amp; [7/7] Démarrage</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lance l&#8217;ensemble de la stack via <code>docker compose</code>, interroge le port interne <code>8080</code> de <code>laimee-tb-core1-1</code> toutes les 30 secondes jusqu&#8217;à ce que les services Java soient prêts, puis redémarre <code>haproxy-certbot</code> pour synchroniser le routage.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_prérequis_de_structure_du_répertoire">8.3.3. Prérequis de structure du répertoire</h4>
+<div class="paragraph">
+<p>Avant d&#8217;exécuter <code>installer-linux.sh</code>, assurez-vous que votre dossier <code>~/workdir/laimee</code> contient bien les fichiers suivants :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>docker-compose.yml</code> : définition de l&#8217;ensemble des conteneurs et volumes de la stack.</p>
+</li>
+<li>
+<p><code>.env</code> <strong>(optionnel)</strong> : variables d&#8217;environnement personnalisées (versions, ports, type de file de messages Kafka/In-Memory).</p>
+</li>
+<li>
+<p><code>compose-utils.sh</code> <strong>(optionnel)</strong> : fonctions utilitaires permettant de résoudre les arguments additionnels de Docker Compose.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_commandes_de_maintenance_courante">8.3.4. Commandes de maintenance courante</h4>
+<div class="paragraph">
+<p>Une fois l&#8217;environnement déployé, vous pouvez administrer la plateforme avec les commandes suivantes depuis <code>~/workdir/laimee</code> :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Vérifier l&#8217;état de tous les conteneurs :</strong></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo docker compose -p laimee ps</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Consulter les journaux en temps réel du cœur applicatif :</strong></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo docker logs -f laimee-tb-core1-1</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Arrêter proprement tous les services (sans perte de données) :</strong></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo docker compose -p laimee down</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Redémarrer la plateforme après un arrêt ou un redémarrage de la VM :</strong></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo ./installer-linux.sh</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Ne modifiez jamais les permissions du dossier <code>tb-node/postgres</code> avec l&#8217;UID <code>799</code> : PostgreSQL utilise son propre utilisateur système (UID <code>999</code>) et refusera de démarrer si les droits de ses fichiers de données sont altérés.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_création_et_exécution_du_script_de_redémarrage_restart_linux_sh">8.4. Création et exécution du script de redémarrage (<code>restart-linux.sh</code>)</h3>
+<div class="paragraph">
+<p>Pour redémarrer proprement l&#8217;ensemble des services sans recréer les volumes ni réinitialiser la base de données (par exemple après une modification de configuration ou un redémarrage de la machine virtuelle), créez le fichier <code>restart-linux.sh</code> dans le répertoire <code>~/workdir/laimee</code> :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/usr/bin/env bash
+set -e
+
+echo "==================================================="
+echo "  REDEMARRAGE PROPRE DE LAIMEE (AVEC HEALTHCHECKS)"
+echo "==================================================="
+
+# 0. Verification des modules noyau iptables legacy pour HAProxy
+sudo modprobe ip_tables 2&gt;/dev/null || true
+sudo modprobe iptable_mangle 2&gt;/dev/null || true
+sudo modprobe iptable_nat 2&gt;/dev/null || true
+
+# 1. Lecture automatique des fichiers Compose depuis compose-utils.sh (si present)
+if [ -f "./compose-utils.sh" ]; then
+    source ./compose-utils.sh
+    ADDITIONAL_COMPOSE_QUEUE_ARGS=$(additionalComposeQueueArgs 2&gt;/dev/null || echo "")
+    ADDITIONAL_COMPOSE_ARGS=$(additionalComposeArgs 2&gt;/dev/null || echo "")
+fi
+
+# 2. Arret propre des conteneurs (conserve les volumes et les donnees)
+echo "[1/3] Arret des conteneurs en cours..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS stop
+
+# 3. Redemarrage orchestre en respectant depends_on et service_healthy
+echo "[2/3] Redemarrage des services (attente des healthchecks)..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d
+
+# 4. Synchronisation de HAProxy une fois le backend pret
+echo "[3/3] Attente que le serveur backend soit operationnel..."
+elapsed=0
+while ! docker exec laimee-tb-core1-1 bash -c "echo &gt; /dev/tcp/localhost/8080" &gt;/dev/null 2&gt;&amp;1; do
+    sleep 15
+    elapsed=$((elapsed + 15))
+    echo "  [${elapsed}s] Demarrage des services Java en cours, merci de patienter..."
+done
+
+echo "  Synchronisation de HAProxy..."
+docker restart haproxy-certbot &gt;/dev/null 2&gt;&amp;1 || true
+
+IP_VM=$(hostname -I | awk '{print $1}')
+echo ""
+echo "==================================================="
+echo "  REDEMARRAGE TERMINE AVEC SUCCES !"
+echo "  Interface Web : http://${IP_VM}"
+echo "==================================================="
+echo ""</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_attribution_des_droits_et_lancement">8.4.1. Attribution des droits et lancement</h4>
+<div class="paragraph">
+<p>Rendez le script exécutable puis lancez-le avec les privilèges administrateur :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">chmod +x restart-linux.sh
+sudo ./restart-linux.sh</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fonctionnement_détaillé_du_redémarrage">8.4.2. Fonctionnement détaillé du redémarrage</h4>
+<div class="paragraph">
+<p>Contrairement à une suppression complète (<code>docker compose down</code>), ce script préserve l&#8217;intégralité de vos données et suit trois étapes orchestrées :</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Étape</th>
+<th class="tableblock halign-left valign-top">Rôle technique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[0/3] Modules noyau</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">S&#8217;assure que <code>ip_tables</code>, <code>iptable_mangle</code> et <code>iptable_nat</code> sont bien chargés en mémoire avant de relancer HAProxy.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[1/3] Arrêt propre (<code>stop</code>)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interrompt proprement les conteneurs actifs sans les supprimer, garantissant l&#8217;intégrité des écritures en cours dans PostgreSQL et Kafka.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[2/3] Relance (<code>up -d</code>)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Redémarre les conteneurs dans l&#8217;ordre défini par les directives <code>depends_on</code> et attend que les services critiques (comme Kafka et PostgreSQL) passent en état <code>healthy</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[3/3] Synchronisation HAProxy</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vérifie toutes les 15 secondes la disponibilité du port interne <code>8080</code> de <code>laimee-tb-core1-1</code>, puis redémarre <code>haproxy-certbot</code> afin d&#8217;éviter toute erreur <code>503 Service Unavailable</code> lors de la reconnexion.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_generer_mon_adoc_en_live_server">9. Generer mon <code>.adoc</code> en live server</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
@@ -4632,8 +5229,8 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.0<br>
-Last updated 2026-11-23 17:18:01 +0100
+Version 2.1<br>
+Last updated 2026-11-24 14:17:58 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
