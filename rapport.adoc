@@ -3473,13 +3473,11 @@ Contrairement à une suppression complète (`docker compose down`), ce script pr
 |===
 
 
-== Generer mon `.adoc` en live server 
+== Générer mon fichier `.adoc` en Live Server
 
 [source, powershell]
 ----
-while ($true) { asciidoctor -o index.html rapport.adoc; Write-Host "[$(Get-Date -Format 'HH:mm:ss')] index.html mis a jour" -ForegroundColor Green; Start-Sleep -Seconds 5 }
+while ($true) { asciidoctor -o index.html rapport.adoc; Write-Host "[$(Get-Date -Format 'HH:mm:ss')] index.html mis à jour" -ForegroundColor Green; Start-Sleep -Seconds 5 }
 ----
 
-NOTE: Ici, l'utilisation de l'option `-o index.html` permet de nommer le fichier de sortie HTML en `index.html`.
-
-
+NOTE: L'option `-o index.html` permet de nommer directement le fichier de sortie HTML en `index.html`, reconnu par défaut par l'extension *Live Server* de VS Code.

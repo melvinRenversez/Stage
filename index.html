@@ -1142,7 +1142,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_generer_mon_adoc_en_live_server">9. Generer mon <code>.adoc</code> en live server</a></li>
+<li><a href="#_générer_mon_fichier_adoc_en_live_server">9. Générer mon fichier <code>.adoc</code> en Live Server</a></li>
 </ul>
 </div>
 </div>
@@ -5283,11 +5283,11 @@ sudo ./restart-linux.sh</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generer_mon_adoc_en_live_server">9. Generer mon <code>.adoc</code> en live server</h2>
+<h2 id="_générer_mon_fichier_adoc_en_live_server">9. Générer mon fichier <code>.adoc</code> en Live Server</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">while ($true) { asciidoctor -o index.html rapport.adoc; Write-Host "[$(Get-Date -Format 'HH:mm:ss')] index.html mis a jour" -ForegroundColor Green; Start-Sleep -Seconds 5 }</code></pre>
+<pre class="highlightjs highlight"><code class="language-powershell hljs" data-lang="powershell">while ($true) { asciidoctor -o index.html rapport.adoc; Write-Host "[$(Get-Date -Format 'HH:mm:ss')] index.html mis à jour" -ForegroundColor Green; Start-Sleep -Seconds 5 }</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -5297,7 +5297,7 @@ sudo ./restart-linux.sh</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de nommer le fichier de sortie HTML en <code>index.html</code>.
+L&#8217;option <code>-o index.html</code> permet de nommer directement le fichier de sortie HTML en <code>index.html</code>, reconnu par défaut par l&#8217;extension <strong>Live Server</strong> de VS Code.
 </td>
 </tr>
 </table>
@@ -5308,7 +5308,7 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 <div id="footer">
 <div id="footer-text">
 Version 2.1<br>
-Last updated 2026-11-24 14:35:43 +0100
+Last updated 2026-11-24 14:37:49 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
