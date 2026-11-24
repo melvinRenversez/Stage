@@ -387,6 +387,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     const sideToc = document.getElementById("toc");
     const content = document.getElementById("content");
+    const scrollCallBackButtonRange = 1200;
 
     // 1. Duplication du sommaire en haut du contenu principal
     if (sideToc && content) {
@@ -478,7 +479,7 @@
     document.body.appendChild(backToTopBtn);
 
     window.addEventListener("scroll", function () {
-      if (window.scrollY > 300) {
+      if (window.scrollY > scrollCallBackButtonRange) {
         backToTopBtn.classList.add("visible");
       } else {
         backToTopBtn.classList.remove("visible");
