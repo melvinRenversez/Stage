@@ -3056,7 +3056,7 @@ pause
 * **Redémarrage orchestré (`up -d`)** : Remplace la commande `restart` par `up -d` afin d'obliger Docker Compose à réévaluer l'arbre `depends_on` et à attendre que `kafka` atteigne le statut `healthy` avant de lancer `tb-js-executor`.
 * **Synchronisation du reverse proxy (`HAProxy`)** : Vérifie toutes les 15 secondes la disponibilité du port `8080` sur `tb-core1`, puis redémarre `haproxy-certbot` afin d'éviter toute erreur `502 Bad Gateway` lors de l'accès à l'interface Web.
 
-== test du docker sous linux
+== Test du docker sous linux
 
 === Installation de Docker sous Linux Server
 
