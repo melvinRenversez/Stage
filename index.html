@@ -729,14 +729,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
     font-weight: bold;
   }
 
-
   .listingblock .content {
     position: relative;
   }
 
   .copy-code-btn {
     position: absolute;
-    bottom: 8px;
+    top: 8px;
     right: 8px;
     padding: 4px 10px;
     font-size: 12px;
@@ -764,6 +763,62 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
     border-color: #48bb78;
     opacity: 1;
   }
+
+   /* Bouton retour en haut (Style Moderne Glassmorphism) */
+  #back-to-top-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(16px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1000;
+  }
+
+  #back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  #back-to-top-btn:hover {
+    background: #501f88;
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
+  }
+
+  #back-to-top-btn:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+
+  #back-to-top-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    fill: none;
+    transition: transform 0.25s ease;
+  }
+
+  #back-to-top-btn:hover svg {
+    transform: translateY(-2px);
+  }
+
 </style>
 
 <script>
@@ -810,7 +865,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
       document.addEventListener("mousemove", function (e) {
         if (!isResizing) return;
 
-        // Calcul direct depuis le bord gauche de l'écran (clientX)
         let newWidthPercent = (e.clientX / window.innerWidth) * 100;
         newWidthPercent = Math.max(10, Math.min(50, newWidthPercent));
 
@@ -851,6 +905,29 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
       });
 
       block.appendChild(btn);
+    });
+
+    // 4. Bouton flottant pour remonte r tout en haut de la page
+    const backToTopBtn = document.createElement("button");
+    backToTopBtn.id = "back-to-top-btn";
+    backToTopBtn.type = "button";
+    backToTopBtn.title = "Remonter en haut de la page";
+    backToTopBtn.innerHTML = "&#8593;";
+    document.body.appendChild(backToTopBtn);
+
+    window.addEventListener("scroll", function () {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add("visible");
+      } else {
+        backToTopBtn.classList.remove("visible");
+      }
+    });
+
+    backToTopBtn.addEventListener("click", function () {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
     });
   });
 </script>
@@ -5230,7 +5307,7 @@ Ici, l&#8217;utilisation de l&#8217;option <code>-o index.html</code> permet de 
 <div id="footer">
 <div id="footer-text">
 Version 2.1<br>
-Last updated 2026-11-24 14:17:58 +0100
+Last updated 2026-11-24 14:25:24 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
