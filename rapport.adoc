@@ -3624,7 +3624,9 @@ echo "==================================================="
 Si le fichier `ofelia-restart.sh` est édité sous Windows, il doit impérativement être enregistré avec des fins de ligne de type **LF** (Unix) et non **CRLF** (Windows), sans quoi l'exécution dans le conteneur Linux échouera.
 ====
 
-== Creation des script d'installation et de desinstallation de docker desktop ou engine
+
+== Création des scripts d'installation et de désinstallation de Docker `Desktop` ou `Engine`
+
 
 === Script `install.bat`
 
