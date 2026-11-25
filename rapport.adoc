@@ -1,6 +1,6 @@
 = Documentation technique : Stage Besttic
 Melvin Renversez
-v2.1, 23-11-2026
+v2.2, 23-11-2026
 :toc: left
 :toc-title: Sommaire
 :docinfo: shared
