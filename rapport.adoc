@@ -3474,7 +3474,7 @@ Contrairement à une suppression complète (`docker compose down`), ce script pr
 |===
 
 
-== Ajout d'un redémarrage hebdomadaire à l'aide d'`ofelia`
+== Ajout d'un redémarrage hebdomadaire à l'aide de `ofelia`
 
 === Modification du `docker-compose.yml`
 
@@ -3526,7 +3526,7 @@ Contrairement à une suppression complète (`docker compose down`), ce script pr
 * `ofelia.job-run.restart-hebdo.delete: "true"` : Supprime automatiquement le conteneur temporaire `docker:cli` une fois le redémarrage terminé.
 
 
-=== Création du fichier de redémarrage d'`ofelia` (`ofelia/ofelia-restart.sh`)
+=== Création du fichier de redémarrage de `ofelia` (`ofelia/ofelia-restart.sh`)
 
 [source, sh]
 ----
