@@ -259,10 +259,10 @@ Successfully copied 22.5kB to C:\Users\Dev-Sta-1\Documents\Melvin\laimee\tb-tran
 [4/7] Verification du reseau Docker laimee_docker_network...
 [5/7] Base de donnees vierge detectee : installation des tables SQL en cours...
 [+] up 2/2
- ✔ Container laimee-redis-1    Started                       0.5s
- ✔ Container laimee-postgres-1 Started                       0.8s
+ ✔ Container laimee-redis-1                                Started                       0.5s
+ ✔ Container laimee-postgres-1                             Started                       0.8s
 [+] run 1/1
- ✔ Container laimee-tb-core1-run-63cf0c987e9a Created        0.1s
+ ✔ Container laimee-tb-core1-run-63cf0c987e9a              Created                       0.1s
 TB-NODE
 Starting Laimee installation ...
 OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
@@ -2582,6 +2582,7 @@ Chaque ligne d'un fichier `crontab` suit une structure composée de **5 champs t
 * * * * * /chemin/absolu/vers/la/commande
 ----
 
+[[champs-temporels-cron]]
 ==== Détail des 5 champs temporels
 
 [cols="1,2,2,3", options="header"]
@@ -3471,6 +3472,182 @@ Contrairement à une suppression complète (`docker compose down`), ce script pr
 | **[3/3] Synchronisation HAProxy**
 | Vérifie toutes les 15 secondes la disponibilité du port interne `8080` de `laimee-tb-core1-1`, puis redémarre `haproxy-certbot` afin d'éviter toute erreur `503 Service Unavailable` lors de la reconnexion.
 |===
+
+
+== Ajout d'un redémarrage hebdomadaire à l'aide d'`ofelia`
+
+=== Modification du `docker-compose.yml`
+
+[source, yaml]
+----
+  # Restart service
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ofelia
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Monter la RACINE du projet (./) pour que docker-compose.yml et compose-utils.sh soient dans /project
+      - ./:/project
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-run.restart-hebdo.schedule: "0 33 3 * * 0"
+      ofelia.job-run.restart-hebdo.image: "docker:cli"
+      ofelia.job-run.restart-hebdo.volumes: "/var/run/docker.sock:/var/run/docker.sock"
+      ofelia.job-run.restart-hebdo.volumes-from: "ofelia"
+      # Chemin complet depuis la racine /project
+      ofelia.job-run.restart-hebdo.command: "sh /project/ofelia/ofelia-restart.sh"
+      ofelia.job-run.restart-hebdo.no-overlap: "true"
+      ofelia.job-run.restart-hebdo.delete: "true"
+----
+
+==== Explication de la configuration ajoutée
+
+===== Paramètres généraux du conteneur `ofelia`
+* `image: mcuadros/ofelia:latest` : Utilise l'image officielle d'Ofelia, un ordonnanceur de tâches léger conçu pour Docker.
+* `container_name: ofelia` : Attribue un nom fixe au conteneur pour faciliter le suivi des journaux (`docker logs ofelia`) et son exclusion lors du redémarrage.
+* `restart: unless-stopped` : Garantit qu'Ofelia redémarre automatiquement en cas de plantage ou de redémarrage de la machine hôte.
+* `TZ=Europe/Paris` : Définit le fuseau horaire français afin que l'heure planifiée (`03h33`) corresponde à l'heure locale (gestion automatique heure d'été / heure d'hiver).
+* `command: daemon --docker` : Lance Ofelia en mode service continu en écoutant les labels des conteneurs Docker.
+* `/var/run/docker.sock:/var/run/docker.sock:ro` : Permet à Ofelia de communiquer avec le démon Docker de l'hôte (compatible Linux et Windows).
+* `./:/project` : Monte la racine du projet dans `/project` à l'intérieur du conteneur afin d'accéder aux fichiers `docker-compose.yml`, `.env` et au dossier `ofelia/`.
+
+===== Labels de planification (`job-run`)
+* `ofelia.enabled: "true"` : Active la détection de ce conteneur par Ofelia.
+* `ofelia.job-run.restart-hebdo.schedule: "0 33 3 * * 0"` : Définit le déclenchement au format cron à 6 champs (`seconde minute heure jour mois jour_semaine`), soit **tous les dimanches à 03h33m00s** (remplacer `0` par `*` pour un déclenchement quotidien) voir la <<champs-temporels-cron, documentation cron>>.
+* `ofelia.job-run.restart-hebdo.image: "docker:cli"` : Démarre un conteneur temporaire contenant l'outil en ligne de commande `docker` et `docker compose` pour piloter les autres services.
+* `ofelia.job-run.restart-hebdo.volumes` : Donne au conteneur temporaire `docker:cli` l'accès au socket Docker pour arrêter et relancer les services de la stack.
+* `ofelia.job-run.restart-hebdo.volumes-from: "ofelia"` : Hérite directement du montage `/project` d'Ofelia (assure une compatibilité totale des chemins entre Linux et Windows).
+* `ofelia.job-run.restart-hebdo.command: "sh /project/ofelia/ofelia-restart.sh"` : Exécute le script de redémarrage via `sh` pour éviter tout problème de permissions d'exécution sous Windows.
+* `ofelia.job-run.restart-hebdo.no-overlap: "true"` : Empêche le lancement d'une nouvelle tâche si la précédente est toujours en cours d'exécution.
+* `ofelia.job-run.restart-hebdo.delete: "true"` : Supprime automatiquement le conteneur temporaire `docker:cli` une fois le redémarrage terminé.
+
+
+=== Création du fichier de redémarrage d'`ofelia` (`ofelia/ofelia-restart.sh`)
+
+[source, sh]
+----
+#!/bin/sh
+set -e
+
+cd /project
+
+# 1. Charge les fichiers compose additionnels (postgres, kafka, etc.)
+if [ -f "./compose-utils.sh" ]; then
+    . ./compose-utils.sh
+    ADDITIONAL_COMPOSE_QUEUE_ARGS=$(additionalComposeQueueArgs 2>/dev/null || echo "")
+    ADDITIONAL_COMPOSE_ARGS=$(additionalComposeArgs 2>/dev/null || echo "")
+fi
+
+# Liste tous les services SAUF ofelia
+SERVICES=$(docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS config --services | grep -v "^ofelia$")
+
+echo "[1/4] Arret du projet laimee..."
+docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS stop $SERVICES
+
+echo "[2/4] Demarrage du projet laimee (up -d)..."
+attempt=0
+max_attempts=5
+
+until docker compose -p laimee -f docker-compose.yml $ADDITIONAL_COMPOSE_ARGS $ADDITIONAL_COMPOSE_QUEUE_ARGS up -d --no-recreate $SERVICES; do
+    attempt=$((attempt + 1))
+    if [ "$attempt" -ge "$max_attempts" ]; then
+        echo "  [Erreur] Echec du demarrage apres ${max_attempts} tentatives."
+        exit 1
+    fi
+    echo "  [Tentative ${attempt}/${max_attempts}] Kafka n'est pas encore pret/healthy, nouvelle tentative dans 15s..."
+    sleep 15
+done
+
+echo "[3/4] Attente de ThingsBoard (port 8080) avant de redemarrer HAProxy..."
+elapsed=0
+while ! docker exec laimee-tb-core1-1 bash -c "echo > /dev/tcp/localhost/8080" >/dev/null 2>&1; do
+    if [ "$elapsed" -ge 300 ]; then
+        echo "  [Attention] Delai d'attente de 5 min depasse, redemarrage de HAProxy force..."
+        break
+    fi
+    sleep 10
+    elapsed=$((elapsed + 10))
+    echo "  [${elapsed}s] Demarrage de ThingsBoard en cours..."
+done
+
+echo "  Redemarrage de haproxy-certbot..."
+docker restart haproxy-certbot
+
+echo "[4/4] Verification que le port 80 repond..."
+retry=0
+max_retries=12 # 12 x 5s = 60 secondes maximum
+
+# Teste si le port 80 est ouvert sur haproxy-certbot (via le reseau interne ou en exec)
+while ! docker exec haproxy-certbot sh -c "nc -z 127.0.0.1 80 || echo > /dev/tcp/127.0.0.1/80" >/dev/null 2>&1; do
+    retry=$((retry + 1))
+    if [ "$retry" -ge "$max_retries" ]; then
+        echo "  [Erreur] Le port 80 ne repond toujours pas apres 60s."
+        exit 1
+    fi
+    echo "  [Tentative ${retry}/${max_retries}] Port 80 ferme, relance de haproxy-certbot..."
+    docker restart haproxy-certbot >/dev/null 2>&1 || true
+    sleep 5
+done
+
+echo "  [OK] Le port 80 de haproxy-certbot est actif et accessible !"
+echo "==================================================="
+echo "  REDEMARRAGE TERMINE AVEC SUCCES !"
+echo "==================================================="
+----
+
+==== Explication détaillée du script `ofelia-restart.sh`
+
+===== Initialisation et préparation
+* `#!/bin/sh` et `set -e` : Utilise l'interpréteur shell léger POSIX (`sh`, compatible avec l'image Alpine `docker:cli`) et interrompt immédiatement le script en cas d'erreur critique non gérée.
+* `cd /project` : Se positionne à la racine du projet montée dans le conteneur afin de retrouver `docker-compose.yml` et `compose-utils.sh`.
+* Chargement de `compose-utils.sh` : Détecte automatiquement les fichiers Compose additionnels actifs sur l'installation (tels que `docker-compose.postgres.yml` et `docker-compose.kafka.yml`).
+* Filtrage `SERVICES=$(... | grep -v "^ofelia$")` : Récupère la liste complète des services de la stack `laimee` **en excluant `ofelia`** afin d'éviter qu'Ofelia ne s'arrête lui-même en cours d'exécution.
+
+===== Étapes d'exécution du redémarrage
+* **Étape 1 — Arrêt propre (`stop`)** : Arrête tous les conteneurs ciblés tout en conservant leurs volumes de données et leurs configurations intactes.
+* **Étape 2 — Redémarrage orchestré avec tolérance de panne (`up -d --no-recreate`)** :
+  ** L'option `--no-recreate` redémarre les conteneurs existants dans l'ordre des `depends_on` sans les recréer, ce qui préserve les chemins de montage d'origine (indispensable pour la compatibilité Windows et Linux).
+  ** La boucle `until` relance automatiquement le démarrage jusqu'à **5 fois** (toutes les 15 secondes) si un service lourd comme **Kafka** met plus de temps que prévu à passer au statut `healthy`.
+* **Étape 3 — Synchronisation avec le backend Java (`tb-core1`)** :
+  ** Interroge le port interne `8080` du conteneur `laimee-tb-core1-1` toutes les 10 secondes (avec un délai maximal de sécurité de 5 minutes) jusqu'à ce que le serveur ThingsBoard soit opérationnel.
+  ** Une fois le backend prêt, force le redémarrage de `haproxy-certbot` afin qu'il actualise la résolution DNS des conteneurs et établisse correctement le routage.
+* **Étape 4 — Validation de l'accessibilité web (port `80`)** :
+  ** Vérifie toutes les 5 secondes (jusqu'à 12 tentatives, soit 60 secondes) que HAProxy écoute bien sur le port `80`.
+  ** Si le port `80` est fermé, le script relance automatiquement `haproxy-certbot` jusqu'à ce que l'interface web soit confirmée accessible.
+
+[IMPORTANT]
+====
+Si le fichier `ofelia-restart.sh` est édité sous Windows, il doit impérativement être enregistré avec des fins de ligne de type **LF** (Unix) et non **CRLF** (Windows), sans quoi l'exécution dans le conteneur Linux échouera.
+====
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 == Générer mon fichier `.adoc` en Live Server
