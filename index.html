@@ -735,7 +735,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 
   .copy-code-btn {
     position: absolute;
-    top: 8px;
+    bottom: 8px;
     right: 8px;
     padding: 4px 10px;
     font-size: 12px;
@@ -938,7 +938,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Documentation technique : Stage Besttic</h1>
 <div class="details">
 <span id="author" class="author">Melvin Renversez</span><br>
-<span id="revnumber">version 2.1,</span>
+<span id="revnumber">version 2.2,</span>
 <span id="revdate">23-11-2026</span>
 </div>
 <div id="toc" class="toc2">
@@ -1166,7 +1166,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_générer_mon_fichier_adoc_en_live_server">10. Générer mon fichier <code>.adoc</code> en Live Server</a></li>
+<li><a href="#_creation_des_script_dinstallation_et_de_desinstallation_de_docker_desktop_ou_engine">10. Creation des script d&#8217;installation et de desinstallation de docker desktop ou engine</a>
+<ul class="sectlevel2">
+<li><a href="#_script_install_bat">10.1. Script <code>install.bat</code></a></li>
+<li><a href="#_script_uninstall_bat">10.2. Script <code>uninstall.bat</code></a></li>
+</ul>
+</li>
+<li><a href="#_générer_mon_fichier_adoc_en_live_server">11. Générer mon fichier <code>.adoc</code> en Live Server</a></li>
 </ul>
 </div>
 </div>
@@ -5562,7 +5568,284 @@ echo "==================================================="</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_générer_mon_fichier_adoc_en_live_server">10. Générer mon fichier <code>.adoc</code> en Live Server</h2>
+<h2 id="_creation_des_script_dinstallation_et_de_desinstallation_de_docker_desktop_ou_engine">10. Creation des script d&#8217;installation et de desinstallation de docker desktop ou engine</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_script_install_bat">10.1. Script <code>install.bat</code></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bat hljs" data-lang="bat">@echo off
+setlocal EnableDelayedExpansion
+
+net session &gt;nul 2&gt;&amp;1
+if %errorLevel% neq 0 (
+    echo [Erreur] Ce script doit etre execute en tant qu'Administrateur.
+    pause
+    exit /b 1
+)
+
+set "LOCAL_TEMP=%~dp0temp"
+
+
+:gui-question
+set /p "GUI_MODE=Voulez-vous installer l'interface graphique (Docker Desktop) ? [Y/N/q] : "
+
+if /I "%GUI_MODE%"=="Y" goto install-docker-gui
+if /I "%GUI_MODE%"=="N" goto install-docker-no-gui
+if /I "%GUI_MODE%"=="q" goto end
+goto gui-question
+
+
+:install-docker-no-gui
+
+echo.
+echo ============================================================================
+echo   INSTALLATION DE DOCKER ENGINE (SANS INTERFACE GRAPHIQUE)
+echo ============================================================================
+
+echo.
+echo [1/3] Preparation de l'espace de travail temporaire...
+if exist "%LOCAL_TEMP%" rmdir /s /q "%LOCAL_TEMP%"
+mkdir "%LOCAL_TEMP%"
+
+
+set "DOCKER_FILE=%LOCAL_TEMP%\DockerEngineInstaller.ps1"
+set "DOCKER_URL=https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-DockerCE/install-docker-ce.ps1"
+
+echo.
+echo [2/3] Telechargement de l'installeur officiel Docker Engine...
+curl.exe -L --progress-bar "%DOCKER_URL%" -o "%DOCKER_FILE%"
+if %errorLevel% neq 0 (
+    echo [ERREUR] Echec du telechargement de Docker Desktop.
+    goto end
+)
+
+
+echo.
+echo [3/3] Execution de l'installation de Docker Engine...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%DOCKER_FILE%" -NoRestart
+if %errorLevel% neq 0 (
+    echo [ERREUR] L'installation de Docker Engine a echoue.
+    goto end
+)
+
+echo.
+echo [4/4] Attribution des droits Docker a l'utilisateur courant (%USERNAME%)...
+
+:: 1. Creation du groupe docker-users (ignore l'erreur s'il existe deja) et ajout du user
+net localgroup docker-users /add &gt;nul 2&gt;&amp;1
+net localgroup docker-users "%USERDOMAIN%\%USERNAME%" /add &gt;nul 2&gt;&amp;1
+
+:: 2. Ajout de la directive "group": "docker-users" dans C:\ProgramData\docker\config\daemon.json
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p = \"$env:ProgramData\docker\config\daemon.json\"; $j = if (Test-Path $p) { Get-Content $p -Raw | ConvertFrom-Json } else { New-Object PSObject }; $j | Add-Member -NotePropertyName 'group' -NotePropertyValue 'docker-users' -Force; $j | ConvertTo-Json | Out-File -FilePath $p -Encoding ASCII"
+
+:: 3. Redemarrage du service Docker pour appliquer les nouveaux droits
+net stop docker &gt;nul 2&gt;&amp;1
+net start docker &gt;nul 2&gt;&amp;1
+
+goto end
+
+
+:install-docker-gui
+echo.
+echo ============================================================================
+echo   INSTALLATION DE DOCKER DESKTOP (INTERFACE GRAPHIQUE)
+echo ============================================================================
+
+echo.
+echo [1/3] Preparation de l'espace de travail temporaire...
+if exist "%LOCAL_TEMP%" rmdir /s /q "%LOCAL_TEMP%"
+mkdir "%LOCAL_TEMP%"
+
+set "DOCKER_FILE=%LOCAL_TEMP%\DockerDesktopInstaller.exe"
+set "DOCKER_URL=https://desktop.docker.com/win/main/amd64/Docker%%20Desktop%%20Installer.exe"
+
+echo.
+echo [2/3] Telechargement de l'installeur officiel Docker Desktop...
+curl.exe -L --progress-bar "%DOCKER_URL%" -o "%DOCKER_FILE%"
+if %errorLevel% neq 0 (
+    echo [ERREUR] Echec du telechargement de Docker Desktop.
+    goto end
+)
+
+echo.
+echo [3/3] Installation en cours (merci de patienter)...
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$p = Start-Process -FilePath $env:DOCKER_FILE -ArgumentList 'install', '--quiet', '--accept-license' -PassThru; " ^
+    "$pct = 0; " ^
+    "while (-not $p.HasExited) { " ^
+        "if ($pct -lt 95) { $pct += 2 }; " ^
+        "Write-Progress -Activity 'Installation de Docker Desktop' -Status \"Installation des composants en cours ($pct%%)...\" -PercentComplete $pct; " ^
+        "Start-Sleep -Seconds 2 " ^
+    "}; " ^
+    "Write-Progress -Activity 'Installation de Docker Desktop' -Status 'Finalisation...' -PercentComplete 100 -Completed; " ^
+    "if ($p.ExitCode -eq 3) { Write-Host '[INFO] Docker Desktop est deja installe sur ce poste.' -ForegroundColor Yellow; exit 0 }; " ^
+    "if ($p.ExitCode -ne 0) { Write-Host '[ERREUR] Echec de l''installation (Code de sortie :' $p.ExitCode ').' -ForegroundColor Red; exit $p.ExitCode }; " ^
+    "Write-Host '[SUCCES] Docker Desktop a ete installe avec succes.' -ForegroundColor Green"
+
+if %errorLevel% neq 0 goto end
+
+echo.
+echo [INFO] Lancement de Docker Desktop...
+if exist "%ProgramFiles%\Docker\Docker\Docker Desktop.exe" (
+    start "" "%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+    echo.
+    echo ============================================================================
+    echo   [ACTION REQUISE] Dans la fenetre Docker Desktop qui vient de s'ouvrir :
+    echo   1. Acceptez les conditions ^(si demande^)
+    echo   2. Cliquez sur "Skip" ^(ou "Continue without signing in"^) pour demarrer
+    echo      le moteur Docker Engine.
+    echo ============================================================================
+) else if exist "%LocalAppData%\Programs\Docker\Docker\Docker Desktop.exe" (
+    start "" "%LocalAppData%\Programs\Docker\Docker\Docker Desktop.exe"
+    echo.
+    echo ============================================================================
+    echo   [ACTION REQUISE] Dans la fenetre Docker Desktop qui vient de s'ouvrir :
+    echo   1. Acceptez les conditions ^(si demande^)
+    echo   2. Cliquez sur "Skip" ^(ou "Continue without signing in"^) pour demarrer
+    echo      le moteur Docker Engine.
+    echo ============================================================================
+) else (
+    echo [AVERTISSEMENT] Executable Docker Desktop.exe introuvable. Un redemarrage est peut-etre requis.
+)
+
+goto end
+
+
+
+:end
+echo.
+echo [NETTOYAGE] Suppression des fichiers temporaires...
+if defined LOCAL_TEMP (
+    cd /d "%~dp0" &gt;nul 2&gt;&amp;1
+    if exist "%LOCAL_TEMP%" (
+        rmdir /s /q "%LOCAL_TEMP%" &gt;nul 2&gt;&amp;1
+        if exist "%LOCAL_TEMP%" (
+            echo [AVERTISSEMENT] Certains fichiers temporaires sont encore verrouilles.
+        ) else (
+            echo [OK] Dossier temporaire supprime avec succes.
+        )
+    )
+)
+echo "END"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_script_uninstall_bat">10.2. Script <code>uninstall.bat</code></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bat hljs" data-lang="bat">@echo off
+setlocal EnableDelayedExpansion
+
+echo.
+echo ============================================================================
+echo   DESINSTALLATION DE DOCKER (DESKTOP OU ENGINE)
+echo ============================================================================
+
+:: Verification des privileges Administrateur
+net session &gt;nul 2&gt;&amp;1
+if !errorLevel! neq 0 (
+    echo [ERREUR] Ce script doit etre execute en tant qu'Administrateur.
+    goto end
+)
+
+:: Demande de confirmation (Y uniquement)
+set "confirm="
+set /p "confirm=Etes-vous sur de vouloir desinstaller Docker ? (Y/N) : "
+if /I "!confirm!" NEQ "Y" (
+    echo Desinstallation annulee.
+    goto end
+)
+
+set "FOUND_DOCKER=0"
+
+:: ============================================================================
+:: CAS 1 : DETECTION ET DESINSTALLATION DE DOCKER DESKTOP
+:: ============================================================================
+set "DESKTOP_INSTALLER="
+if exist "%ProgramFiles%\Docker\Docker\Docker Desktop Installer.exe" (
+    set "DESKTOP_INSTALLER=%ProgramFiles%\Docker\Docker\Docker Desktop Installer.exe"
+) else if exist "%LocalAppData%\Programs\Docker\Docker\Docker Desktop Installer.exe" (
+    set "DESKTOP_INSTALLER=%LocalAppData%\Programs\Docker\Docker\Docker Desktop Installer.exe"
+)
+
+if defined DESKTOP_INSTALLER (
+    set "FOUND_DOCKER=1"
+    echo.
+    echo [INFO] Docker Desktop detecte. Lancement de la desinstallation...
+    taskkill /F /IM "Docker Desktop.exe" &gt;nul 2&gt;&amp;1
+    net stop com.docker.service &gt;nul 2&gt;&amp;1
+
+    start /wait "" "!DESKTOP_INSTALLER!" uninstall --quiet
+    if !errorLevel! equ 0 (
+        echo [SUCCES] Docker Desktop a ete desinstalle.
+    ) else (
+        echo [AVERTISSEMENT] Le desinstalleur Docker Desktop a retourne le code !errorLevel!.
+    )
+
+    :: Nettoyage des dossiers residuels Docker Desktop
+    if exist "%AppData%\Docker" rmdir /s /q "%AppData%\Docker" &gt;nul 2&gt;&amp;1
+    if exist "%LocalAppData%\Docker" rmdir /s /q "%LocalAppData%\Docker" &gt;nul 2&gt;&amp;1
+)
+
+:: ============================================================================
+:: CAS 2 : DETECTION ET DESINSTALLATION DE DOCKER ENGINE (SANS GUI)
+:: ============================================================================
+set "ENGINE_FOUND=0"
+sc query docker &gt;nul 2&gt;&amp;1
+if !errorLevel! equ 0 set "ENGINE_FOUND=1"
+if exist "%ProgramFiles%\Docker\dockerd.exe" set "ENGINE_FOUND=1"
+
+if "!ENGINE_FOUND!"=="1" (
+    set "FOUND_DOCKER=1"
+    echo.
+    echo [INFO] Docker Engine ^(sans GUI^) detecte. Suppression en cours...
+
+    :: 1. Arret et suppression du service
+    net stop docker &gt;nul 2&gt;&amp;1
+    if exist "%ProgramFiles%\Docker\dockerd.exe" (
+        "%ProgramFiles%\Docker\dockerd.exe" --unregister-service &gt;nul 2&gt;&amp;1
+    ) else (
+        sc delete docker &gt;nul 2&gt;&amp;1
+    )
+
+    :: 2. Suppression des fichiers et donnees
+    if exist "%ProgramFiles%\Docker" rmdir /s /q "%ProgramFiles%\Docker" &gt;nul 2&gt;&amp;1
+    if exist "%ProgramData%\docker" rmdir /s /q "%ProgramData%\docker" &gt;nul 2&gt;&amp;1
+    if exist "%USERPROFILE%\DockerDownloads" rmdir /s /q "%USERPROFILE%\DockerDownloads" &gt;nul 2&gt;&amp;1
+
+    :: 3. Suppression du groupe local docker-users
+    net localgroup docker-users &gt;nul 2&gt;&amp;1
+    if !errorLevel! equ 0 net localgroup docker-users /delete &gt;nul 2&gt;&amp;1
+
+    :: 4. Nettoyage de la variable PATH
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+        "$target = \"$env:ProgramFiles\Docker\"; " ^
+        "$path = [Environment]::GetEnvironmentVariable('Path', 'Machine'); " ^
+        "$newPath = ($path -split ';' | Where-Object { $_ -ne $target -and $_ -ne '' }) -join ';'; " ^
+        "[Environment]::SetEnvironmentVariable('Path', $newPath, 'Machine')" &gt;nul 2&gt;&amp;1
+
+    echo [SUCCES] Docker Engine a ete completement desinstalle.
+)
+
+:: ============================================================================
+:: CAS 3 : AUCUNE INSTALLATION DETECTEE
+:: ============================================================================
+if "!FOUND_DOCKER!"=="0" (
+    echo.
+    echo [INFO] Aucune installation de Docker Desktop ou Docker Engine n'a ete detectee sur ce poste.
+)
+
+:end
+endlocal</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_générer_mon_fichier_adoc_en_live_server">11. Générer mon fichier <code>.adoc</code> en Live Server</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
@@ -5586,8 +5869,8 @@ L&#8217;option <code>-o index.html</code> permet de nommer directement le fichie
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.1<br>
-Last updated 2026-11-25 13:45:12 +0100
+Version 2.2<br>
+Last updated 2026-11-25 15:50:03 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
