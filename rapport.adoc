@@ -2675,10 +2675,6 @@ Il est possible de combiner des opérateurs dans chaque champ pour créer des pl
 NOTE: Si le **jour du mois** (champ 3) et le **jour de la semaine** (champ 5) sont tous les deux renseignés (différents de `*`), `cron` exécute la tâche dès que **l'une ou l'autre** des deux conditions est vraie (opérateur logique *OU*).
 
 
-
-
-
-
 ===== Caractères spéciaux
 
 * `*` : toutes les valeurs possibles (ex. chaque minute, chaque heure).
