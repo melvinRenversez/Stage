@@ -6026,10 +6026,20 @@ backend tb-api-backend
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy">acl core_down nbsrv(tb-api-backend) lt 1 use_backend tb-wait-backend if core_down
-nbsrv(tb-api-backend) retourne le nombre de serveurs disponibles dans le backend tb-api-backend.
-lt 1 vérifie qu'il ne reste aucun serveur disponible.
-use_backend tb-wait-backend if core_down redirige les requêtes vers le backend dédié à la page d'attente lorsque tous les serveurs Core sont indisponibles.</code></pre>
+nbsrv(tb-api-backend)</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Retourne le nombre de serveurs disponibles dans le backend tb-api-backend.
+<code>lt 1</code> vérifie qu&#8217;il ne reste aucun serveur disponible.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy">use_backend tb-wait-backend if core_down</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Redirige les requêtes vers le backend dédié à la page d&#8217;attente lorsque tous les serveurs Core sont indisponibles.</p>
 </div>
 <div class="paragraph">
 <p>Cette règle est présente dans les deux frontends afin de prendre en charge les connexions HTTP et HTTPS.</p>
@@ -6062,9 +6072,15 @@ use_backend tb-wait-backend if core_down redirige les requêtes vers le backend 
 <div class="paragraph">
 <p>Les deux instances Core sont ainsi surveillées indépendamment :</p>
 </div>
-<div class="paragraph">
-<p>tb-core1:8080
-tb-core2:8080</p>
+<div class="ulist">
+<ul>
+<li>
+<p>tb-core1:8080</p>
+</li>
+<li>
+<p>tb-core2:8080</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>Dès qu&#8217;un serveur redevient opérationnel, HAProxy peut le réintégrer automatiquement dans le pool des serveurs disponibles.</p>
@@ -6164,7 +6180,7 @@ L&#8217;option <code>-o index.html</code> permet de nommer directement le fichie
 <div id="footer">
 <div id="footer-text">
 Version 2.3<br>
-Last updated 2026-11-27 16:59:50 +0100
+Last updated 2026-11-27 17:05:19 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

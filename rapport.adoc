@@ -4056,10 +4056,17 @@ L'objectif est d'éviter que les utilisateurs obtiennent une erreur technique br
 Dans les frontends HTTP et HTTPS, les directives suivantes permettent de détecter si tous les serveurs Core sont indisponibles :
 
 [source, haproxy]
+----
 acl core_down nbsrv(tb-api-backend) lt 1 use_backend tb-wait-backend if core_down
-nbsrv(tb-api-backend) retourne le nombre de serveurs disponibles dans le backend tb-api-backend.
-lt 1 vérifie qu'il ne reste aucun serveur disponible.
-use_backend tb-wait-backend if core_down redirige les requêtes vers le backend dédié à la page d'attente lorsque tous les serveurs Core sont indisponibles.
+nbsrv(tb-api-backend) 
+----
+Retourne le nombre de serveurs disponibles dans le backend tb-api-backend.
+`lt 1` vérifie qu'il ne reste aucun serveur disponible.
+[source, haproxy]
+----
+use_backend tb-wait-backend if core_down 
+----
+Redirige les requêtes vers le backend dédié à la page d'attente lorsque tous les serveurs Core sont indisponibles.
 
 Cette règle est présente dans les deux frontends afin de prendre en charge les connexions HTTP et HTTPS.
 
@@ -4081,8 +4088,8 @@ check inter 5s
 
 Les deux instances Core sont ainsi surveillées indépendamment :
 
-tb-core1:8080
-tb-core2:8080
+- tb-core1:8080
+- tb-core2:8080
 
 Dès qu'un serveur redevient opérationnel, HAProxy peut le réintégrer automatiquement dans le pool des serveurs disponibles.
 
