@@ -938,7 +938,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Documentation technique : Stage Besttic</h1>
 <div class="details">
 <span id="author" class="author">Melvin Renversez</span><br>
-<span id="revnumber">version 2.2,</span>
+<span id="revnumber">version 2.3,</span>
 <span id="revdate">23-11-2026</span>
 </div>
 <div id="toc" class="toc2">
@@ -1172,7 +1172,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_script_uninstall_bat">10.2. Script <code>uninstall.bat</code></a></li>
 </ul>
 </li>
-<li><a href="#_générer_mon_fichier_adoc_en_live_server">11. Générer mon fichier <code>.adoc</code> en Live Server</a></li>
+<li><a href="#_mise_à_jour_de_haproxy_pour_afficher_une_page_dattente_en_attendant_que_le_backend_réponde">11. Mise à jour de <code>HAProxy</code> pour afficher une page d&#8217;attente en attendant que le backend réponde</a>
+<ul class="sectlevel2">
+<li><a href="#_contenue_du_fichier_de_configuaration">11.1. Contenue du fichier de configuaration</a></li>
+<li><a href="#_explication_de_la_configuration">11.2. Explication de la configuration</a>
+<ul class="sectlevel3">
+<li><a href="#_détection_de_lindisponibilité_du_backend_core">11.2.1. Détection de l&#8217;indisponibilité du backend Core</a></li>
+<li><a href="#_vérification_de_la_disponibilité_des_serveurs_core">11.2.2. Vérification de la disponibilité des serveurs Core</a></li>
+<li><a href="#_configuration_du_backend_de_la_page_dattente">11.2.3. Configuration du backend de la page d&#8217;attente</a></li>
+<li><a href="#_fonctionnement_général">11.2.4. Fonctionnement général</a></li>
+<li><a href="#_résultat_attendu_2">11.2.5. Résultat attendu</a></li>
+<li><a href="#_résultat_obtenu">11.2.6. Résultat obtenu</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_générer_mon_fichier_adoc_en_live_server">12. Générer mon fichier <code>.adoc</code> en Live Server</a></li>
 </ul>
 </div>
 </div>
@@ -5845,7 +5860,286 @@ endlocal</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_générer_mon_fichier_adoc_en_live_server">11. Générer mon fichier <code>.adoc</code> en Live Server</h2>
+<h2 id="_mise_à_jour_de_haproxy_pour_afficher_une_page_dattente_en_attendant_que_le_backend_réponde">11. Mise à jour de <code>HAProxy</code> pour afficher une page d&#8217;attente en attendant que le backend réponde</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_contenue_du_fichier_de_configuaration">11.1. Contenue du fichier de configuaration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy"># HAProxy Config
+
+global
+    ulimit-n 500000
+    maxconn 99999
+    maxpipes 99999
+    tune.maxaccept 500
+
+    log 127.0.0.1 local0
+    log 127.0.0.1 local1 notice
+
+    ca-base /etc/ssl/certs
+    crt-base /etc/ssl/private
+
+    ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
+    ssl-default-bind-options no-sslv3
+
+defaults
+    log global
+    mode http
+
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+    timeout tunnel 1h
+
+    default-server init-addr none
+
+# Docker DNS resolver
+resolvers docker_resolver
+    nameserver dns 127.0.0.11:53
+
+# Statistics
+listen stats
+    bind *:9999
+    stats enable
+    stats hide-version
+    stats uri /stats
+    stats auth admin:admin@123
+
+# MQTT
+listen mqtt-in
+    bind *:${MQTT_PORT}
+    mode tcp
+
+    option clitcpka
+    timeout client 3h
+    timeout server 3h
+    option tcplog
+
+    balance leastconn
+
+    server tbMqtt1 tb-mqtt-transport1:1883 check inter 5s resolvers docker_resolver resolve-prefer ipv4
+    server tbMqtt2 tb-mqtt-transport2:1883 check inter 5s resolvers docker_resolver resolve-prefer ipv4
+
+# HTTP frontend
+frontend http-in
+    bind *:${HTTP_PORT}
+
+    option forwardfor
+    reqadd X-Forwarded-Proto:\ http
+
+    acl transport_http_acl path_beg /api/v1/
+    acl letsencrypt_http_acl path_beg /.well-known/acme-challenge/
+    acl tb_api_acl path_beg /api/ /swagger /webjars /v2/ /static/rulenode/ /oauth2/ /login/oauth2/
+
+    redirect scheme https if !letsencrypt_http_acl !transport_http_acl { env(FORCE_HTTPS_REDIRECT) -m str true }
+
+    use_backend letsencrypt_http if letsencrypt_http_acl
+    use_backend tb-http-backend if transport_http_acl
+
+    # Waiting page when all Core servers are unavailable
+    acl core_down nbsrv(tb-api-backend) lt 1
+    use_backend tb-wait-backend if core_down
+
+    use_backend tb-api-backend if tb_api_acl
+
+    default_backend tb-web-backend
+
+# HTTPS frontend
+frontend https_in
+    bind *:${HTTPS_PORT} ssl crt /usr/local/etc/haproxy/default.pem crt /usr/local/etc/haproxy/certs.d ciphers ECDHE-RSA-AES256-SHA:RC4-SHA:RC4:HIGH:!MD5:!aNULL:!EDH:!AESGCM
+
+    option forwardfor
+    reqadd X-Forwarded-Proto:\ https
+
+    acl transport_http_acl path_beg /api/v1/
+    acl tb_api_acl path_beg /api/ /swagger /webjars /v2/ /static/rulenode/ /oauth2/ /login/oauth2/
+
+    use_backend tb-http-backend if transport_http_acl
+
+    # Waiting page when all Core servers are unavailable
+    acl core_down nbsrv(tb-api-backend) lt 1
+    use_backend tb-wait-backend if core_down
+
+    use_backend tb-api-backend if tb_api_acl
+
+    default_backend tb-web-backend
+
+# Let's Encrypt
+backend letsencrypt_http
+    server letsencrypt_http_srv 127.0.0.1:8080
+
+# Waiting page - HTTP 503
+backend tb-wait-backend
+    errorfile 503 /config/wait.http
+
+# ThingsBoard Web UI
+backend tb-web-backend
+    balance leastconn
+    option tcp-check
+    option log-health-checks
+
+    server tbWeb1 tb-web-ui1:8080 check inter 5s resolvers docker_resolver resolve-prefer ipv4
+    server tbWeb2 tb-web-ui2:8080 check inter 5s resolvers docker_resolver resolve-prefer ipv4
+
+    http-request set-header X-Forwarded-Port %[dst_port]
+
+# HTTP Transport
+backend tb-http-backend
+    balance leastconn
+    option tcp-check
+    option log-health-checks
+
+    server tbHttp1 tb-http-transport1:8081 check inter 5s resolvers docker_resolver resolve-prefer ipv4
+    server tbHttp2 tb-http-transport2:8081 check inter 5s resolvers docker_resolver resolve-prefer ipv4
+
+# ThingsBoard Core - HTTPS
+backend tb-api-backend
+    balance source
+
+    option httpchk GET /api/noauth/getGeneralSettings
+    http-check expect status 200
+
+    option log-health-checks
+
+    server tbApi1 tb-core1:8080 ssl verify none check inter 5s resolvers docker_resolver resolve-prefer ipv4
+
+    server tbApi2 tb-core2:8080 ssl verify none check inter 5s resolvers docker_resolver resolve-prefer ipv4
+
+    http-request set-header X-Forwarded-Port %[dst_port]</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_explication_de_la_configuration">11.2. Explication de la configuration</h3>
+<div class="paragraph">
+<p>La configuration de HAProxy a été adaptée afin d&#8217;afficher une page d&#8217;attente personnalisée lorsque tous les serveurs ThingsBoard Core sont indisponibles ou ne répondent plus aux contrôles de santé.</p>
+</div>
+<div class="paragraph">
+<p>L&#8217;objectif est d&#8217;éviter que les utilisateurs obtiennent une erreur technique brute lorsque le backend Core est indisponible.</p>
+</div>
+<div class="sect3">
+<h4 id="_détection_de_lindisponibilité_du_backend_core">11.2.1. Détection de l&#8217;indisponibilité du backend Core</h4>
+<div class="paragraph">
+<p>Dans les frontends HTTP et HTTPS, les directives suivantes permettent de détecter si tous les serveurs Core sont indisponibles :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy">acl core_down nbsrv(tb-api-backend) lt 1 use_backend tb-wait-backend if core_down
+nbsrv(tb-api-backend) retourne le nombre de serveurs disponibles dans le backend tb-api-backend.
+lt 1 vérifie qu'il ne reste aucun serveur disponible.
+use_backend tb-wait-backend if core_down redirige les requêtes vers le backend dédié à la page d'attente lorsque tous les serveurs Core sont indisponibles.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cette règle est présente dans les deux frontends afin de prendre en charge les connexions HTTP et HTTPS.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vérification_de_la_disponibilité_des_serveurs_core">11.2.2. Vérification de la disponibilité des serveurs Core</h4>
+<div class="paragraph">
+<p>Le backend tb-api-backend utilise des contrôles HTTP pour vérifier que les serveurs ThingsBoard Core sont opérationnels.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy">option httpchk GET /api/noauth/getGeneralSettings http-check expect status 200</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>HAProxy effectue une requête HTTP sur le endpoint /api/noauth/getGeneralSettings.</p>
+</div>
+<div class="paragraph">
+<p>Un serveur est considéré comme disponible lorsque la réponse HTTP correspond au code 200.</p>
+</div>
+<div class="paragraph">
+<p>Les contrôles sont effectués toutes les 5 secondes grâce au paramètre :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy">check inter 5s</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Les deux instances Core sont ainsi surveillées indépendamment :</p>
+</div>
+<div class="paragraph">
+<p>tb-core1:8080
+tb-core2:8080</p>
+</div>
+<div class="paragraph">
+<p>Dès qu&#8217;un serveur redevient opérationnel, HAProxy peut le réintégrer automatiquement dans le pool des serveurs disponibles.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_configuration_du_backend_de_la_page_dattente">11.2.3. Configuration du backend de la page d&#8217;attente</h4>
+<div class="paragraph">
+<p>Un backend spécifique a été ajouté pour gérer l&#8217;affichage de la page d&#8217;attente.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-haproxy hljs" data-lang="haproxy">backend tb-wait-backend errorfile 503 /config/wait.http</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Ce backend utilise la directive errorfile pour retourner une réponse HTTP 503 personnalisée.</p>
+</div>
+<div class="paragraph">
+<p>Le fichier /config/wait.http contient la réponse HTTP complète ainsi que le contenu HTML de la page affichée à l&#8217;utilisateur.</p>
+</div>
+<div class="paragraph">
+<p>Le code HTTP 503 (Service Unavailable) indique que le service est temporairement indisponible.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fonctionnement_général">11.2.4. Fonctionnement général</h4>
+<div class="paragraph">
+<p>Le fonctionnement est le suivant :</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Un utilisateur accède à l&#8217;application ThingsBoard via HTTP ou HTTPS. . HAProxy reçoit la requête et identifie le backend correspondant. . Avant de transmettre une requête destinée à l&#8217;API Core, HAProxy vérifie le nombre de serveurs Core disponibles. . Si au moins un serveur Core est disponible, la requête est transmise normalement vers tb-api-backend. . Si aucun serveur Core n&#8217;est disponible, la requête est dirigée vers tb-wait-backend. . HAProxy retourne alors une réponse HTTP 503 contenant la page d&#8217;attente personnalisée. . Lorsque les serveurs Core redeviennent disponibles, les requêtes sont de nouveau transmises normalement.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_résultat_attendu_2">11.2.5. Résultat attendu</h4>
+<div class="paragraph">
+<p>Cette modification permet d&#8217;améliorer l&#8217;expérience utilisateur lors d&#8217;une indisponibilité temporaire des services ThingsBoard Core.</p>
+</div>
+<div class="paragraph">
+<p>Au lieu d&#8217;afficher une erreur technique ou une page inaccessible, l&#8217;utilisateur visualise une page d&#8217;attente indiquant que le service est temporairement indisponible.</p>
+</div>
+<div class="paragraph">
+<p>La surveillance des serveurs étant automatique, aucune intervention manuelle sur HAProxy n&#8217;est nécessaire pour revenir au fonctionnement normal lorsque les instances Core sont rétablies.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+La détection d&#8217;indisponibilité repose sur les contrôles de santé HTTP configurés dans le backend tb-api-backend. La page d&#8217;attente est déclenchée uniquement lorsque le nombre de serveurs considérés comme disponibles est inférieur à un.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_résultat_obtenu">11.2.6. Résultat obtenu</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/image-2.png" alt="image 2">
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_générer_mon_fichier_adoc_en_live_server">12. Générer mon fichier <code>.adoc</code> en Live Server</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
@@ -5869,8 +6163,8 @@ L&#8217;option <code>-o index.html</code> permet de nommer directement le fichie
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.2<br>
-Last updated 2026-11-25 16:11:12 +0100
+Version 2.3<br>
+Last updated 2026-11-27 16:59:50 +0100
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
